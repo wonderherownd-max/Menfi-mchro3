@@ -1,425 +1,1084 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIP Mining - Premium Telegram Mini App</title>
+    <title>VIP Mining - Telegram Mini App</title>
     
     <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
-    <!-- Font Awesome -->
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- CSS -->
-    <link rel="stylesheet" href="style.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- CSS Styles -->
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #8b5cf6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #1f2937;
+            --light-color: #f9fafb;
+            --gray-color: #6b7280;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+            direction: ltr;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 2px solid #f3f4f6;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo i {
+            font-size: 32px;
+            color: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--dark-color);
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .username {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .user-id {
+            font-size: 12px;
+            color: var(--gray-color);
+        }
+
+        /* Balance Card */
+        .balance-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 20px;
+            padding: 25px;
+            color: white;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .balance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .rank-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        .balance-amount {
+            font-size: 56px;
+            font-weight: 800;
+            margin: 10px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .balance-sub {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .balance-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        /* Mining Section */
+        .mining-section {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 2px solid #f3f4f6;
+        }
+
+        .mining-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .mining-header h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--dark-color);
+        }
+
+        .mining-power {
+            background: var(--light-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .mine-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--success-color), #34d399);
+            border: none;
+            border-radius: 20px;
+            padding: 25px;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mine-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .mine-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .mine-icon {
+            font-size: 32px;
+        }
+
+        .mine-text {
+            text-align: center;
+        }
+
+        .mine-title {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .mine-reward {
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .mine-cooldown {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.2);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .mining-tip {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--gray-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* Referral Section */
+        .referral-section {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 2px solid #f3f4f6;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-header h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--dark-color);
+        }
+
+        .referral-bonus {
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .referral-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .ref-stat {
+            background: var(--light-color);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .ref-stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .ref-stat-label {
+            font-size: 12px;
+            color: var(--gray-color);
+        }
+
+        .referral-link-container {
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .input-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--light-color);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-size: 20px;
+        }
+
+        .referral-input {
+            flex: 1;
+            padding: 0 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 15px;
+            font-size: 14px;
+            outline: none;
+            transition: border 0.3s ease;
+        }
+
+        .referral-input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .copy-btn {
+            width: 50px;
+            height: 50px;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: var(--secondary-color);
+            transform: scale(1.05);
+        }
+
+        .referral-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .action-btn:first-child {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .action-btn.secondary {
+            background: var(--light-color);
+            color: var(--dark-color);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .referral-info {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .referral-info h4 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            color: var(--dark-color);
+        }
+
+        .info-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .step {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            min-width: 30px;
+            height: 30px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .step-content strong {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--dark-color);
+        }
+
+        .step-content p {
+            font-size: 13px;
+            color: var(--gray-color);
+        }
+
+        /* Progress Section */
+        .progress-section {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 2px solid #f3f4f6;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .progress-header h4 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--dark-color);
+        }
+
+        .next-rank {
+            font-size: 12px;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: #e5e7eb;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 5px;
+            width: 30%;
+            transition: width 0.5s ease;
+        }
+
+        .progress-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .progress-stat {
+            text-align: center;
+        }
+
+        .progress-stat span:first-child {
+            display: block;
+            font-size: 12px;
+            color: var(--gray-color);
+            margin-bottom: 5px;
+        }
+
+        .progress-stat span:last-child {
+            font-weight: 700;
+            color: var(--dark-color);
+        }
+
+        /* Bonus Section */
+        .bonus-section {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 2px solid #f3f4f6;
+        }
+
+        .bonus-section h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--dark-color);
+            margin-bottom: 20px;
+        }
+
+        .bonus-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .bonus-item {
+            background: var(--light-color);
+            padding: 15px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .bonus-icon {
+            font-size: 24px;
+        }
+
+        .bonus-title {
+            font-size: 12px;
+            color: var(--gray-color);
+            margin-bottom: 5px;
+        }
+
+        .bonus-amount {
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        /* Footer */
+        .app-footer {
+            text-align: center;
+            padding: 20px 0;
+            border-top: 2px solid #f3f4f6;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 15px;
+        }
+
+        .footer-link {
+            color: var(--gray-color);
+            text-decoration: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.3s ease;
+        }
+
+        .footer-link:hover {
+            color: var(--primary-color);
+        }
+
+        .footer-copyright {
+            font-size: 12px;
+            color: var(--gray-color);
+        }
+
+        .footer-copyright p:first-child {
+            margin-bottom: 5px;
+        }
+
+        /* Message Styles */
+        .message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            padding: 12px 24px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            font-weight: 500;
+        }
+
+        .message.success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .message.error {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .message.warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .message.info {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+                border-radius: 20px;
+            }
+            
+            .balance-amount {
+                font-size: 48px;
+            }
+            
+            .referral-stats,
+            .bonus-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .referral-actions {
+                flex-direction: column;
+            }
+            
+            .app-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .user-info {
+                text-align: center;
+            }
+        }
+    </style>
     
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛏️</text></svg>">
-    
-    <!-- Meta Tags -->
-    <meta name="description" content="Earn crypto points daily! VIP Mining - The ultimate Telegram Mini App for mining rewards.">
-    <meta property="og:title" content="VIP Mining - Earn Crypto Points">
-    <meta property="og:description" content="Start mining now and earn real rewards!">
-    <meta property="og:image" content="https://img.icons8.com/color/96/000000/bitcoin--v1.png">
 </head>
 <body>
-    <!-- App Container -->
-    <div class="app-container">
-        
-        <!-- Premium Header -->
-        <header class="premium-header">
-            <div class="header-content">
-                <div class="logo-title">
-                    <div class="app-logo">
-                        <i class="fas fa-gem animated-logo"></i>
-                    </div>
-                    <div class="app-title">
-                        <h1>VIP Mining</h1>
-                        <p class="app-subtitle">Premium Crypto Earnings</p>
-                    </div>
-                </div>
-                <div class="user-profile" id="userProfile">
-                    <div class="profile-avatar" id="userAvatar">U</div>
-                    <div class="profile-info">
-                        <div class="profile-name" id="username">Loading...</div>
-                        <div class="profile-id" id="userId">ID: ---</div>
-                    </div>
-                    <div class="online-status" id="onlineStatus"></div>
-                </div>
+    <div class="container">
+        <!-- Header Section -->
+        <header class="app-header">
+            <div class="logo">
+                <i class="fas fa-gem"></i>
+                <h1>VIP Mining</h1>
             </div>
-            
-            <!-- VIP Status Bar -->
-            <div class="vip-status-bar">
-                <div class="status-item">
-                    <i class="fas fa-bolt"></i>
-                    <span>Live Mining</span>
-                </div>
-                <div class="status-item">
-                    <i class="fas fa-shield-alt"></i>
-                    <span>Secure</span>
-                </div>
-                <div class="status-item">
-                    <i class="fas fa-rocket"></i>
-                    <span>Instant Rewards</span>
+            <div class="user-section" id="userSection">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <div class="user-info">
+                    <div class="username" id="username">Loading...</div>
+                    <div class="user-id" id="userId">ID: ---</div>
                 </div>
             </div>
         </header>
 
-        <!-- Main Dashboard -->
-        <main class="dashboard">
+        <!-- Balance Card -->
+        <div class="balance-card">
+            <div class="balance-header">
+                <span><i class="fas fa-wallet"></i> Your Balance</span>
+                <span class="rank-badge" id="rankBadge">Beginner</span>
+            </div>
+            <div class="balance-amount" id="balance">100</div>
+            <div class="balance-sub">Mining Points</div>
+            <div class="balance-stats">
+                <div class="stat-item">
+                    <i class="fas fa-users"></i>
+                    <span id="referrals">0 Referrals</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span id="totalEarned">100 Total</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mining Section -->
+        <div class="mining-section">
+            <div class="mining-header">
+                <h3><i class="fas fa-hard-hat"></i> Mining Station</h3>
+                <div class="mining-power" id="miningPower">
+                    <i class="fas fa-bolt"></i> Power: 10/hour
+                </div>
+            </div>
+            <button class="mine-btn" id="mineBtn">
+                <div class="mine-icon">
+                    <i class="fas fa-hammer"></i>
+                </div>
+                <div class="mine-text">
+                    <div class="mine-title">Start Mining</div>
+                    <div class="mine-reward">+<span id="rewardAmount">1</span> point</div>
+                </div>
+                <div class="mine-cooldown" id="cooldownTimer"></div>
+            </button>
+            <div class="mining-tip">
+                <i class="fas fa-lightbulb"></i> Click every 5 seconds for maximum profit
+            </div>
+        </div>
+
+        <!-- Referral System -->
+        <div class="referral-section">
+            <div class="section-header">
+                <h3><i class="fas fa-share-alt"></i> Referral Program</h3>
+                <div class="referral-bonus">
+                    <i class="fas fa-gift"></i> +25 points per referral
+                </div>
+            </div>
             
-            <!-- Earnings Card -->
-            <div class="earnings-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-coins"></i> Total Earnings</h2>
-                    <div class="card-badge" id="rankBadge">Beginner</div>
+            <div class="referral-stats">
+                <div class="ref-stat">
+                    <div class="ref-stat-value" id="refCount">0</div>
+                    <div class="ref-stat-label">Total Referrals</div>
                 </div>
-                <div class="earnings-display">
-                    <div class="main-balance">
-                        <div class="balance-label">Available Balance</div>
-                        <div class="balance-amount" id="balance">0</div>
-                        <div class="balance-unit">MINING POINTS</div>
-                    </div>
-                    <div class="earnings-stats">
-                        <div class="stat">
-                            <div class="stat-icon"><i class="fas fa-users"></i></div>
-                            <div class="stat-info">
-                                <div class="stat-value" id="referrals">0</div>
-                                <div class="stat-label">Referrals</div>
-                            </div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-                            <div class="stat-info">
-                                <div class="stat-value" id="totalEarned">0</div>
-                                <div class="stat-label">Total Earned</div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="ref-stat">
+                    <div class="ref-stat-value" id="refEarned">0</div>
+                    <div class="ref-stat-label">Points Earned</div>
                 </div>
-                <div class="earnings-graph">
-                    <div class="graph-bar" style="width: 25%;"></div>
+                <div class="ref-stat">
+                    <div class="ref-stat-value" id="refRank">Beginner</div>
+                    <div class="ref-stat-label">Your Rank</div>
                 </div>
             </div>
 
-            <!-- Mining Control -->
-            <div class="mining-control">
-                <div class="control-header">
-                    <h3><i class="fas fa-hard-hat"></i> Mining Station</h3>
-                    <div class="mining-stats">
-                        <div class="mining-stat">
-                            <i class="fas fa-bolt"></i>
-                            <span id="miningPower">10/h</span>
-                        </div>
-                        <div class="mining-stat">
-                            <i class="fas fa-clock"></i>
-                            <span id="cooldownTimer">Ready</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <button class="mining-button" id="mineBtn">
-                    <div class="button-content">
-                        <div class="mining-icon">
-                            <i class="fas fa-hammer"></i>
-                        </div>
-                        <div class="mining-info">
-                            <div class="mining-action">Start Mining</div>
-                            <div class="mining-reward">+<span id="rewardAmount">1</span> Points</div>
-                        </div>
-                    </div>
-                    <div class="button-pulse"></div>
-                </button>
-                
-                <div class="mining-tips">
-                    <i class="fas fa-lightbulb"></i>
-                    <p>Mine every 5 seconds for maximum earnings. Higher ranks = bigger rewards!</p>
-                </div>
-            </div>
-
-            <!-- Referral System -->
-            <div class="referral-system">
-                <div class="system-header">
-                    <h3><i class="fas fa-share-alt"></i> Referral Program</h3>
-                    <div class="referral-bonus-tag">
-                        <i class="fas fa-gift"></i>
-                        <span>+25 Points Each</span>
-                    </div>
-                </div>
-                
-                <div class="referral-performance">
-                    <div class="performance-card">
-                        <div class="performance-value" id="refCount">0</div>
-                        <div class="performance-label">Total Referrals</div>
-                    </div>
-                    <div class="performance-card">
-                        <div class="performance-value" id="refEarned">0</div>
-                        <div class="performance-label">Bonus Earned</div>
-                    </div>
-                    <div class="performance-card">
-                        <div class="performance-value" id="refRank">Beginner</div>
-                        <div class="performance-label">Your Rank</div>
-                    </div>
-                </div>
-
-                <!-- REFERRAL LINK SOLUTION -->
-                <div class="referral-link-section">
-                    <div class="section-title">
+            <!-- Referral Link -->
+            <div class="referral-link-container">
+                <div class="input-group">
+                    <div class="input-icon">
                         <i class="fas fa-link"></i>
-                        <span>Your Personal Referral Link</span>
                     </div>
-                    
-                    <div class="link-container">
-                        <div class="link-input-group">
-                            <div class="input-prefix">
-                                <i class="fas fa-external-link-alt"></i>
-                            </div>
-                            <input type="text" 
-                                   class="referral-link-input" 
-                                   id="referralLink" 
-                                   value="Generating your unique link..." 
-                                   readonly
-                                   onclick="this.select()">
-                            <button class="copy-button" id="copyBtn" title="Copy to clipboard">
-                                <i class="far fa-copy"></i>
-                            </button>
-                        </div>
-                        
-                        <!-- SHARE BUTTONS -->
-                        <div class="share-buttons">
-                            <button class="share-btn telegram-share" id="telegramShareBtn">
-                                <i class="fab fa-telegram"></i>
-                                <span>Share on Telegram</span>
-                            </button>
-                            <button class="share-btn app-share" id="appShareBtn">
-                                <i class="fas fa-share-square"></i>
-                                <span>Copy App Link</span>
-                            </button>
+                    <input type="text" 
+                           class="referral-input" 
+                           id="referralLink" 
+                           value="Generating referral link..." 
+                           readonly>
+                    <button class="copy-btn" id="copyBtn">
+                        <i class="far fa-copy"></i>
+                    </button>
+                </div>
+                <div class="referral-actions">
+                    <button class="action-btn" id="shareBtn">
+                        <i class="fab fa-telegram"></i> Share on Telegram
+                    </button>
+                    <button class="action-btn secondary" id="whatsappBtn">
+                        <i class="fab fa-whatsapp"></i> Share on WhatsApp
+                    </button>
+                </div>
+            </div>
+
+            <!-- How it Works -->
+            <div class="referral-info">
+                <h4><i class="fas fa-info-circle"></i> How Referral System Works?</h4>
+                <div class="info-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <strong>Share Your Unique Link</strong>
+                            <p>Copy and share the link above with your friends</p>
                         </div>
                     </div>
-                    
-                    <div class="referral-instructions">
-                        <h4><i class="fas fa-graduation-cap"></i> How It Works</h4>
-                        <div class="instructions-grid">
-                            <div class="instruction">
-                                <div class="step-number">1</div>
-                                <div class="step-content">
-                                    <h5>Share Your Link</h5>
-                                    <p>Copy your unique link and share it with friends</p>
-                                </div>
-                            </div>
-                            <div class="instruction">
-                                <div class="step-number">2</div>
-                                <div class="step-content">
-                                    <h5>Friend Joins App</h5>
-                                    <p>They click the link and open the VIP Mining App</p>
-                                </div>
-                            </div>
-                            <div class="instruction">
-                                <div class="step-number">3</div>
-                                <div class="step-content">
-                                    <h5>Get Instant Rewards</h5>
-                                    <p>You receive +25 points automatically when they join</p>
-                                </div>
-                            </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <strong>Friend Joins via Telegram</strong>
+                            <p>They must click the link and join via @VIPMainingPROBot</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <strong>Get Automatic Rewards</strong>
+                            <p>You receive +25 points immediately when they join</p>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Progress & Ranking -->
-            <div class="progress-ranking">
-                <div class="ranking-header">
-                    <h3><i class="fas fa-trophy"></i> Rank Progress</h3>
-                    <div class="next-rank-info" id="nextRank">Next: Pro (200 points)</div>
+        <!-- Progress Section -->
+        <div class="progress-section">
+            <div class="progress-header">
+                <h4><i class="fas fa-trophy"></i> Rank Progress</h4>
+                <div class="next-rank" id="nextRank">Next: Professional (200 points)</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-stats">
+                <div class="progress-stat">
+                    <span>Current:</span>
+                    <span id="currentPoints">100</span>
                 </div>
-                
-                <div class="progress-container">
-                    <div class="progress-track">
-                        <div class="progress-fill" id="progressFill"></div>
-                        <div class="progress-marker" id="progressMarker"></div>
-                    </div>
-                    <div class="progress-labels">
-                        <span class="current-label" id="currentLabel">Beginner</span>
-                        <span class="target-label" id="targetLabel">Pro</span>
+                <div class="progress-stat">
+                    <span>Target:</span>
+                    <span id="targetPoints">200</span>
+                </div>
+                <div class="progress-stat">
+                    <span>Remaining:</span>
+                    <span id="remainingPoints">100</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Bonus Section -->
+        <div class="bonus-section">
+            <h3><i class="fas fa-calendar-star"></i> Daily Bonuses</h3>
+            <div class="bonus-grid">
+                <div class="bonus-item">
+                    <div class="bonus-icon">🎁</div>
+                    <div class="bonus-info">
+                        <div class="bonus-title">Daily Login</div>
+                        <div class="bonus-amount">+10 points</div>
                     </div>
                 </div>
-                
-                <div class="rank-details">
-                    <div class="detail-card">
-                        <div class="detail-icon"><i class="fas fa-bullseye"></i></div>
-                        <div class="detail-content">
-                            <div class="detail-title">Current Points</div>
-                            <div class="detail-value" id="currentPoints">0</div>
-                        </div>
+                <div class="bonus-item">
+                    <div class="bonus-icon">👥</div>
+                    <div class="bonus-info">
+                        <div class="bonus-title">New Referral</div>
+                        <div class="bonus-amount">+25 points</div>
                     </div>
-                    <div class="detail-card">
-                        <div class="detail-icon"><i class="fas fa-flag-checkered"></i></div>
-                        <div class="detail-content">
-                            <div class="detail-title">Points Needed</div>
-                            <div class="detail-value" id="remainingPoints">200</div>
-                        </div>
-                    </div>
-                    <div class="detail-card">
-                        <div class="detail-icon"><i class="fas fa-crown"></i></div>
-                        <div class="detail-content">
-                            <div class="detail-title">Next Reward</div>
-                            <div class="detail-value">+2 Points</div>
-                        </div>
+                </div>
+                <div class="bonus-item">
+                    <div class="bonus-icon">⚡</div>
+                    <div class="bonus-info">
+                        <div class="bonus-title">Active Mining</div>
+                        <div class="bonus-amount">+5 points</div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Features Grid -->
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
-                    <div class="feature-title">Secure</div>
-                    <div class="feature-desc">Bank-level security</div>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-bolt"></i></div>
-                    <div class="feature-title">Fast</div>
-                    <div class="feature-desc">Instant withdrawals</div>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-globe"></i></div>
-                    <div class="feature-title">Global</div>
-                    <div class="feature-desc">Available worldwide</div>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-headset"></i></div>
-                    <div class="feature-title">24/7 Support</div>
-                    <div class="feature-desc">Always here to help</div>
-                </div>
-            </div>
-        </main>
-
-        <!-- App Footer -->
+        <!-- Footer -->
         <footer class="app-footer">
-            <div class="footer-nav">
-                <button class="nav-btn" onclick="showHelp()">
-                    <i class="fas fa-question-circle"></i>
-                    <span>Help</span>
-                </button>
-                <button class="nav-btn" onclick="showStats()">
-                    <i class="fas fa-chart-pie"></i>
-                    <span>Stats</span>
-                </button>
-                <button class="nav-btn" onclick="refreshApp()">
-                    <i class="fas fa-sync-alt"></i>
-                    <span>Refresh</span>
-                </button>
-                <button class="nav-btn" onclick="showSettings()">
-                    <i class="fas fa-cog"></i>
-                    <span>Settings</span>
-                </button>
+            <div class="footer-links">
+                <a href="javascript:void(0)" class="footer-link" onclick="showHelp()">
+                    <i class="fas fa-question-circle"></i> Help
+                </a>
+                <a href="javascript:void(0)" class="footer-link" onclick="showStatistics()">
+                    <i class="fas fa-chart-bar"></i> Statistics
+                </a>
+                <a href="javascript:void(0)" class="footer-link" onclick="refreshPage()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </a>
             </div>
-            
-            <div class="footer-info">
-                <div class="app-version">VIP Mining v2.0</div>
-                <div class="connection-status" id="connectionStatus">
-                    <span class="status-dot"></span>
-                    <span class="status-text">Connecting...</span>
-                </div>
-                <div class="copyright">© 2024 VIP Mining. All rights reserved.</div>
+            <div class="footer-copyright">
+                <p>Powered by @VIPMainingPROBot • VIP Mining © 2024</p>
+                <p id="connectionStatus">🔵 Connecting...</p>
             </div>
         </footer>
     </div>
 
-    <!-- Notification Toast -->
-    <div class="notification-toast" id="notificationToast">
-        <div class="toast-content">
-            <i class="fas fa-check-circle toast-icon"></i>
-            <span class="toast-message" id="toastMessage">Notification</span>
-        </div>
-    </div>
-
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner">
-            <div class="spinner"></div>
-            <div class="loading-text">Loading VIP Mining...</div>
-        </div>
-    </div>
-
-    <!-- JavaScript -->
-    <script src="app.js"></script>
-    
-    <!-- Helper Script -->
+    <!-- Main App JavaScript (Will be loaded separately) -->
     <script>
-        // Helper functions
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCuzWYapa7LBRg40OzcHLWFBpfSrjEVQoU",
+            authDomain: "vip-mining.firebaseapp.com",
+            projectId: "vip-mining",
+            storageBucket: "vip-mining.firebasestorage.app",
+            messagingSenderId: "205041694428",
+            appId: "1:205041694428:web:5b9a0ab2cc31b118d8be619"
+        };
+        
+        // Initialize Firebase (if Firebase SDK is loaded)
+        let firebaseApp, db;
+        if (typeof firebase !== 'undefined') {
+            firebaseApp = firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            console.log("🔥 Firebase initialized");
+        }
+    </script>
+    
+    <!-- Helper Functions -->
+    <script>
+        // Helper Functions
         function showHelp() {
-            const helpContent = `
-                <div class="help-modal">
-                    <h3>🎮 VIP Mining Guide</h3>
-                    <div class="help-section">
-                        <h4><i class="fas fa-coins"></i> Mining System</h4>
-                        <p>• Click "Start Mining" every 5 seconds</p>
-                        <p>• Earn 1-5 points per click (based on rank)</p>
-                        <p>• Higher ranks = Bigger rewards</p>
-                    </div>
-                    <div class="help-section">
-                        <h4><i class="fas fa-share-alt"></i> Referral Program</h4>
-                        <p>• Share your unique referral link</p>
-                        <p>• Get +25 points for each friend who joins</p>
-                        <p>• No limit on referrals!</p>
-                    </div>
-                    <div class="help-section">
-                        <h4><i class="fas fa-trophy"></i> Ranking System</h4>
-                        <p>• Beginner: 0-199 points (1 point/click)</p>
-                        <p>• Pro: 200-499 points (2 points/click)</p>
-                        <p>• Expert: 500-999 points (3 points/click)</p>
-                        <p>• VIP: 1000+ points (5 points/click)</p>
-                    </div>
+            const helpMessage = `
+                <div style="text-align: left; line-height: 1.8; padding: 20px;">
+                    <h3 style="color: #3b82f6; margin-bottom: 15px;">🧭 App Usage Guide</h3>
+                    
+                    <p><strong>⛏️ Mining:</strong></p>
+                    <p>• Click "Start Mining" button every 5 seconds</p>
+                    <p>• Each click = +1 to +5 points (based on your rank)</p>
+                    
+                    <p><strong>👥 Referral System:</strong></p>
+                    <p>• Copy your referral link and share it</p>
+                    <p>• Each friend who joins = +25 points for you</p>
+                    
+                    <p><strong>🏆 Rank System:</strong></p>
+                    <p>• Beginner: 0-199 points</p>
+                    <p>• Professional: 200-499 points</p>
+                    <p>• Expert: 500-999 points</p>
+                    <p>• VIP: 1000-9999 points</p>
+                    <p>• Legend: 10000+ points</p>
+                    
+                    <p><strong>💾 Auto Save:</strong></p>
+                    <p>• Your data saves automatically</p>
+                    <p>• Returns when you reopen the app</p>
+                    
+                    <p><strong>🔥 Firebase:</strong></p>
+                    <p>• Data syncs with cloud storage</p>
+                    <p>• Referrals work across devices</p>
                 </div>
             `;
             
-            showNotification('Opening Help Guide', 'info');
-            setTimeout(() => {
-                alert('Help Guide:\n\n1. Mine every 5 seconds\n2. Share link for +25 points\n3. Rank up for better rewards\n4. Data saves automatically');
-            }, 300);
-        }
-        
-        function showStats() {
-            if (window.userData) {
-                showNotification('Loading Statistics...', 'info');
+            if (window.showMessage) {
+                window.showMessage('Opening help guide', 'info');
                 setTimeout(() => {
-                    alert(`📊 Your Statistics:\n\n• Balance: ${window.userData.balance} points\n• Referrals: ${window.userData.referrals}\n• Total Earned: ${window.userData.totalEarned}\n• Rank: ${window.userData.rank}\n• Referral Earnings: ${window.userData.referralEarnings} points`);
-                }, 300);
+                    alert(helpMessage);
+                }, 500);
+            } else {
+                alert(helpMessage);
             }
         }
         
-        function refreshApp() {
-            if (confirm('Refresh application?\nYour data is saved automatically.')) {
+        function showStatistics() {
+            if (window.userData) {
+                const stats = `
+                    📊 <strong>Your Account Statistics</strong>
+                    
+                    💰 Balance: ${window.userData.balance} points
+                    👥 Referrals: ${window.userData.referrals}
+                    📈 Total Earned: ${window.userData.totalEarned} points
+                    🏆 Rank: ${window.userData.rank}
+                    🎯 Referral Earnings: ${window.userData.referralEarnings} points
+                    🔗 Referral Code: ${window.userData.referralCode || 'Not set'}
+                    
+                    ⏳ Last Mine: ${window.userData.lastMineTime ? 'Recently' : 'Not started'}
+                    🔥 Firebase: ${db ? 'Connected' : 'Not connected'}
+                `;
+                
+                if (window.showMessage) {
+                    window.showMessage('Opening statistics', 'info');
+                    setTimeout(() => {
+                        alert(stats);
+                    }, 500);
+                } else {
+                    alert(stats);
+                }
+            } else {
+                alert("Statistics not available yet. Please wait for app to load.");
+            }
+        }
+        
+        function refreshPage() {
+            if (confirm('Do you want to refresh the page? Your data will be saved.')) {
                 location.reload();
             }
         }
         
-        function showSettings() {
-            showNotification('Settings Panel Coming Soon', 'info');
-        }
+        // Add Telegram class if in Telegram
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.Telegram && Telegram.WebApp) {
+                document.body.classList.add('tg');
+            }
+        });
         
-        function showNotification(message, type = 'info') {
-            if (window.showToast) {
-                window.showToast(message, type);
+        // Message function (fallback if not in app.js)
+        window.showMessage = window.showMessage || function(text, type = 'info') {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 
+                                 type === 'error' ? 'exclamation-circle' : 
+                                 type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                <span>${text}</span>
+            `;
+            
+            messageDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%) translateY(-100px);
+                background: ${type === 'success' ? '#10b981' : 
+                             type === 'error' ? '#ef4444' : 
+                             type === 'warning' ? '#f59e0b' : '#3b82f6'};
+                color: white;
+                padding: 12px 24px;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                z-index: 1000;
+                opacity: 0;
+                transition: all 0.3s ease;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                font-weight: 500;
+            `;
+            
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.style.opacity = '1';
+                messageDiv.style.transform = 'translateX(-50%) translateY(0)';
+            }, 10);
+            
+            setTimeout(() => {
+                messageDiv.style.opacity = '0';
+                messageDiv.style.transform = 'translateX(-50%) translateY(-100px)';
+                setTimeout(() => {
+                    if (messageDiv.parentNode) {
+                        messageDiv.parentNode.removeChild(messageDiv);
+                    }
+                }, 300);
+            }, 3000);
+        };
+        
+        // Simple referral check on load
+        function checkForReferralOnLoad() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const referrerId = urlParams.get('ref');
+            
+            if (referrerId) {
+                console.log("🔍 Found referral code in URL:", referrerId);
+                localStorage.setItem('pending_referral', referrerId);
+                
+                if (window.showMessage) {
+                    window.showMessage('Referral code detected!', 'info');
+                }
             }
         }
         
-        // Initialize when ready
-        document.addEventListener('DOMContentLoaded', function() {
-            // Hide loading after 2 seconds
-            setTimeout(() => {
-                const loadingOverlay = document.getElementById('loadingOverlay');
-                if (loadingOverlay) {
-                    loadingOverlay.style.opacity = '0';
-                    setTimeout(() => {
-                        loadingOverlay.style.display = 'none';
-                    }, 300);
-                }
-            }, 2000);
-        });
+        // Check for referral on page load
+        checkForReferralOnLoad();
     </script>
+    
+    <!-- Load main app script -->
+    <script src="app.js" defer></script>
 </body>
 </html>
