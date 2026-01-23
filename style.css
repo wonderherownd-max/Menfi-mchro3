@@ -1,9 +1,9 @@
-/* ====== RESET & BASE STYLES ====== */
+/* ====== إعدادات أساسية ====== */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    font-family: 'Segoe UI', 'Cairo', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
@@ -12,22 +12,16 @@ body {
     line-height: 1.6;
     min-height: 100vh;
     padding: 20px;
-    transition: all 0.3s ease;
+    text-align: right;
 }
 
 .container {
     max-width: 450px;
     margin: 0 auto;
     padding-bottom: 30px;
-    animation: fadeIn 0.5s ease;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* ====== HEADER ====== */
+/* ====== الهيدر ====== */
 .app-header {
     display: flex;
     justify-content: space-between;
@@ -38,12 +32,6 @@ body {
     border-radius: 20px;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    animation: slideDown 0.5s ease;
-}
-
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-30px); }
-    to { opacity: 1; transform: translateY(0); }
 }
 
 .logo {
@@ -58,13 +46,6 @@ body {
     background: rgba(251, 191, 36, 0.1);
     padding: 10px;
     border-radius: 12px;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
 }
 
 .logo h1 {
@@ -92,11 +73,6 @@ body {
     font-weight: bold;
     font-size: 18px;
     border: 2px solid rgba(255, 255, 255, 0.2);
-    transition: transform 0.3s;
-}
-
-.user-avatar:hover {
-    transform: scale(1.05);
 }
 
 .user-info {
@@ -116,7 +92,7 @@ body {
     font-family: monospace;
 }
 
-/* ====== BALANCE CARD ====== */
+/* ====== بطاقة الرصيد ====== */
 .balance-card {
     background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
     border-radius: 20px;
@@ -125,12 +101,6 @@ body {
     border: 1px solid rgba(59, 130, 246, 0.2);
     position: relative;
     overflow: hidden;
-    animation: slideUp 0.6s ease;
-}
-
-@keyframes slideUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
 }
 
 .balance-card::before {
@@ -166,11 +136,6 @@ body {
     font-size: 12px;
     font-weight: 600;
     border: 1px solid rgba(34, 197, 94, 0.3);
-    transition: all 0.3s;
-}
-
-.rank-badge:hover {
-    transform: scale(1.05);
 }
 
 .balance-amount {
@@ -179,13 +144,7 @@ body {
     color: #fbbf24;
     text-align: center;
     margin: 10px 0;
-    text-shadow: 0 0 30px rgba(251, 191, 36, 0.3);
-    animation: glow 2s infinite alternate;
-}
-
-@keyframes glow {
-    from { text-shadow: 0 0 20px rgba(251, 191, 36, 0.3); }
-    to { text-shadow: 0 0 30px rgba(251, 191, 36, 0.5); }
+    text-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
 }
 
 .balance-sub {
@@ -208,25 +167,19 @@ body {
     gap: 8px;
     color: #cbd5e0;
     font-size: 14px;
-    transition: transform 0.3s;
-}
-
-.stat-item:hover {
-    transform: translateY(-2px);
 }
 
 .stat-item i {
     color: #60a5fa;
 }
 
-/* ====== MINING SECTION ====== */
+/* ====== قسم التعدين ====== */
 .mining-section {
     background: rgba(30, 41, 59, 0.8);
     border-radius: 20px;
     padding: 25px;
     margin-bottom: 25px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    animation: slideUp 0.7s ease;
 }
 
 .mining-header {
@@ -270,19 +223,6 @@ body {
     cursor: pointer;
     transition: all 0.3s;
     margin-bottom: 15px;
-    position: relative;
-    overflow: hidden;
-}
-
-.mine-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
 }
 
 .mine-btn:hover:not(:disabled) {
@@ -290,17 +230,9 @@ body {
     box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
 }
 
-.mine-btn:hover:not(:disabled)::before {
-    left: 100%;
-}
-
 .mine-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-}
-
-.mine-btn:active:not(:disabled) {
-    transform: scale(0.98);
 }
 
 .mine-icon {
@@ -308,11 +240,6 @@ body {
     background: rgba(255, 255, 255, 0.2);
     padding: 12px;
     border-radius: 12px;
-    transition: transform 0.3s;
-}
-
-.mine-btn:hover:not(:disabled) .mine-icon {
-    transform: rotate(15deg);
 }
 
 .mine-text {
@@ -352,17 +279,15 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    animation: pulse 3s infinite;
 }
 
-/* ====== REFERRAL SECTION ====== */
+/* ====== نظام الإحالة ====== */
 .referral-section {
     background: rgba(30, 41, 59, 0.8);
     border-radius: 20px;
     padding: 25px;
     margin-bottom: 25px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    animation: slideUp 0.8s ease;
 }
 
 .section-header {
@@ -403,12 +328,6 @@ body {
     padding: 15px;
     border-radius: 12px;
     text-align: center;
-    transition: transform 0.3s, background 0.3s;
-}
-
-.ref-stat:hover {
-    transform: translateY(-3px);
-    background: rgba(255, 255, 255, 0.08);
 }
 
 .ref-stat-value {
@@ -434,12 +353,6 @@ body {
     border-radius: 12px;
     overflow: hidden;
     margin-bottom: 15px;
-    transition: border-color 0.3s;
-}
-
-.input-group:focus-within {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
 .input-icon {
@@ -460,11 +373,7 @@ body {
     outline: none;
     font-family: monospace;
     width: 100%;
-}
-
-.referral-input::selection {
-    background: rgba(59, 130, 246, 0.5);
-    color: white;
+    text-align: right;
 }
 
 .copy-btn {
@@ -473,7 +382,7 @@ body {
     padding: 0 20px;
     color: #60a5fa;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: background 0.3s;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -482,10 +391,6 @@ body {
 
 .copy-btn:hover {
     background: rgba(59, 130, 246, 0.3);
-}
-
-.copy-btn:active {
-    transform: scale(0.95);
 }
 
 .referral-actions {
@@ -568,11 +473,6 @@ body {
     font-weight: bold;
     font-size: 14px;
     flex-shrink: 0;
-    transition: transform 0.3s;
-}
-
-.step:hover .step-number {
-    transform: scale(1.1);
 }
 
 .step-content {
@@ -592,14 +492,13 @@ body {
     line-height: 1.5;
 }
 
-/* ====== PROGRESS SECTION ====== */
+/* ====== قسم التقدم ====== */
 .progress-section {
     background: rgba(30, 41, 59, 0.8);
     border-radius: 20px;
     padding: 25px;
     margin-bottom: 25px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    animation: slideUp 0.9s ease;
 }
 
 .progress-header {
@@ -631,33 +530,14 @@ body {
     border-radius: 5px;
     overflow: hidden;
     margin-bottom: 20px;
-    position: relative;
 }
 
 .progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #3b82f6, #8b5cf6);
     border-radius: 5px;
-    width: 0%;
+    width: 50%;
     transition: width 0.5s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.progress-fill::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 20px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(400%); }
 }
 
 .progress-stats {
@@ -671,11 +551,6 @@ body {
     padding: 12px;
     border-radius: 10px;
     text-align: center;
-    transition: transform 0.3s;
-}
-
-.progress-stat:hover {
-    transform: translateY(-2px);
 }
 
 .progress-stat span:first-child {
@@ -691,54 +566,69 @@ body {
     font-size: 14px;
 }
 
-/* ====== DEMO CONTROLS ====== */
-.demo-controls {
-    background: rgba(15, 23, 42, 0.9);
-    border-radius: 15px;
-    padding: 15px;
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    border: 2px dashed #8b5cf6;
-    animation: slideUp 1s ease;
+/* ====== قسم المكافآت ====== */
+.bonus-section {
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.demo-btn {
-    background: linear-gradient(135deg, #3b82f6, #6366f1);
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
+.bonus-section h3 {
+    font-size: 18px;
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 10px;
-    transition: all 0.3s;
+    color: #f8fafc;
+    margin-bottom: 15px;
 }
 
-.demo-btn:hover {
+.bonus-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.bonus-item {
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    transition: transform 0.3s;
+}
+
+.bonus-item:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
 }
 
-.demo-btn.reset {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
+.bonus-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
 }
 
-.demo-btn.reset:hover {
-    box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+.bonus-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
-/* ====== FOOTER ====== */
+.bonus-title {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.bonus-amount {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fbbf24;
+}
+
+/* ====== الفوتر ====== */
 .app-footer {
     text-align: center;
     padding-top: 25px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
-    animation: slideUp 1.1s ease;
 }
 
 .footer-links {
@@ -755,15 +645,12 @@ body {
     display: flex;
     align-items: center;
     gap: 6px;
-    transition: all 0.3s;
-    padding: 8px 12px;
-    border-radius: 8px;
+    transition: color 0.3s;
+    cursor: pointer;
 }
 
 .footer-link:hover {
     color: #60a5fa;
-    background: rgba(59, 130, 246, 0.1);
-    transform: translateY(-2px);
 }
 
 .footer-copyright {
@@ -779,52 +666,9 @@ body {
     font-size: 12px;
     margin-top: 5px;
     font-weight: 600;
-    transition: color 0.3s;
 }
 
-/* ====== TOAST NOTIFICATION ====== */
-.toast {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: #10b981;
-    color: white;
-    padding: 15px 25px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    z-index: 1000;
-    opacity: 0;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-    max-width: 90%;
-    text-align: center;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-}
-
-.toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-}
-
-.toast-content {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.toast-content i {
-    font-size: 18px;
-}
-
-.toast-message {
-    font-size: 14px;
-    font-weight: 500;
-}
-
-/* ====== RESPONSIVE DESIGN ====== */
+/* ====== تصميم متجاوب ====== */
 @media (max-width: 480px) {
     body {
         padding: 15px;
@@ -851,7 +695,8 @@ body {
     }
     
     .referral-stats,
-    .progress-stats {
+    .progress-stats,
+    .bonus-grid {
         grid-template-columns: 1fr;
         gap: 10px;
     }
@@ -864,56 +709,34 @@ body {
         flex-wrap: wrap;
         gap: 15px;
     }
-    
-    .input-group {
-        flex-direction: column;
-    }
-    
-    .copy-btn {
-        padding: 10px;
-        width: 100%;
-    }
 }
 
-@media (max-width: 380px) {
-    .app-header {
-        flex-direction: column;
-        gap: 15px;
-        text-align: center;
-    }
-    
-    .user-section {
-        justify-content: center;
-    }
-    
-    .section-header {
-        flex-direction: column;
-        gap: 10px;
-        text-align: center;
-    }
-    
-    .referral-bonus {
-        width: 100%;
-        justify-content: center;
-    }
+/* ====== إشعارات الرسائل ====== */
+.message {
+    position: fixed;
+    top: 20px;
+    right: 50%;
+    transform: translateX(50%) translateY(-100px);
+    background: #10b981;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1000;
+    opacity: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    font-weight: 500;
 }
 
-/* ====== LOADING ANIMATION ====== */
-.loading {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: #3b82f6;
-    animation: spin 1s ease-in-out infinite;
+.message.show {
+    opacity: 1;
+    transform: translateX(50%) translateY(0);
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* ====== SCROLLBAR ====== */
+/* ====== شريط التمرير ====== */
 ::-webkit-scrollbar {
     width: 8px;
 }
@@ -930,28 +753,4 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(135deg, #4f93ff, #9d78ff);
-}
-
-/* ====== SELECTION ====== */
-::selection {
-    background: rgba(59, 130, 246, 0.5);
-    color: white;
-}
-
-/* ====== FOCUS STATES ====== */
-button:focus, 
-input:focus, 
-textarea:focus {
-    outline: 2px solid #3b82f6;
-    outline-offset: 2px;
-}
-
-/* ====== PRINT STYLES ====== */
-@media print {
-    .demo-controls,
-    .action-btn,
-    .copy-btn,
-    .mine-btn {
-        display: none !important;
     }
-        }
