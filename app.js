@@ -1,6 +1,6 @@
 // ============================================
 // VIP Mining Mini App - Professional Version
-// Connected with @VIPMainingPROBot
+// Direct Bot Link: http://t.me/VIPMainingPROBot/PRO
 // Firebase Integrated (Firestore)
 // ============================================
 
@@ -11,7 +11,7 @@ import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 const db = getFirestore(app);
 
 // Initialize Telegram WebApp
-const tg = window.Telegram.WebApp;
+const tg = window.Telegram?.WebApp || null;
 
 // User Data Structure
 let userData = {
@@ -34,7 +34,7 @@ const CONFIG = {
     MINE_COOLDOWN: 5000, // 5 seconds
     BASE_REWARD: 1,
     REFERRAL_REWARD: 25,
-    REFERRAL_BOT: '@VIPMainingPROBot',
+    REFERRAL_BOT_LINK: "http://t.me/VIPMainingPROBot/PRO",
     RANKS: [
         { name: 'Beginner', min: 0, max: 199, reward: 1, power: '10/h', color: '#10B981' },
         { name: 'Pro', min: 200, max: 499, reward: 2, power: '25/h', color: '#3B82F6' },
@@ -50,28 +50,13 @@ const elements = {
     username: document.getElementById('username'),
     userId: document.getElementById('userId'),
     userAvatar: document.getElementById('userAvatar'),
-    userSection: document.getElementById('userSection'),
     balance: document.getElementById('balance'),
-    referrals: document.getElementById('referrals'),
-    totalEarned: document.getElementById('totalEarned'),
-    rankBadge: document.getElementById('rankBadge'),
     mineBtn: document.getElementById('mineBtn'),
-    rewardAmount: document.getElementById('rewardAmount'),
-    cooldownTimer: document.getElementById('cooldownTimer'),
-    miningPower: document.getElementById('miningPower'),
-    refCount: document.getElementById('refCount'),
-    refEarned: document.getElementById('refEarned'),
-    refRank: document.getElementById('refRank'),
     referralInput: document.getElementById('referralInput'),
     copyBtn: document.getElementById('copyBtn'),
     shareBtn: document.getElementById('shareBtn'),
     whatsappBtn: document.getElementById('whatsappBtn'),
-    nextRank: document.getElementById('nextRank'),
-    progressFill: document.getElementById('progressFill'),
-    currentPoints: document.getElementById('currentPoints'),
-    targetPoints: document.getElementById('targetPoints'),
-    remainingPoints: document.getElementById('remainingPoints'),
-    toast: document.getElementById('toast')
+    toast: document.getElementById('toast'),
 };
 
 // ============================================
@@ -81,49 +66,43 @@ const elements = {
 async function initApp() {
     console.log('🚀 Initializing VIP Mining App...');
 
-    if (!tg.initDataUnsafe) {
-        alert('⚠️ Telegram WebApp not detected!');
-        return;
-    }
+    initTelegramUser();       // Initialize user from Telegram
+    await loadUserData();     // Load user data from Firebase
 
-    tg.ready();
-    tg.expand();
-    initTelegramUser();
-
-    // Load Firebase Data **بعد** التأكد من وجود userId
-    await loadUserData();
-
-    // Enable mine button after data is loaded
-    elements.mineBtn.disabled = false;
-
-    setupEventListeners();
-    requestAnimationFrame(updateLoop);
+    setupEventListeners();    // Attach button handlers
+    requestAnimationFrame(updateLoop); // Start UI update loop
+    updateUI();
 
     console.log('✅ App initialized successfully');
 }
 
 function initTelegramUser() {
-    const tgUser = tg.initDataUnsafe.user;
-    
-    if (tgUser) {
+    if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        const tgUser = tg.initDataUnsafe.user;
         userData.userId = tgUser.id.toString();
         userData.username = tgUser.username ? `@${tgUser.username}` : `User${userData.userId.slice(-4)}`;
         userData.firstName = tgUser.first_name || 'User';
-        elements.username.textContent = userData.username;
-        elements.userId.textContent = `ID: ${userData.userId}`;
-        elements.userAvatar.textContent = userData.firstName.charAt(0).toUpperCase();
-        userData.referralLink = generateReferralLink();
-        elements.referralInput.value = userData.referralLink;
-        elements.userSection.classList.add('telegram-user');
+    } else {
+        // Fallback if Telegram not available
+        userData.userId = `guest_${Date.now()}`;
+        userData.username = 'Guest';
+        userData.firstName = 'Guest';
     }
+
+    userData.referralLink = generateReferralLink();
+
+    // Update DOM
+    if (elements.username) elements.username.textContent = userData.username;
+    if (elements.userId) elements.userId.textContent = `ID: ${userData.userId}`;
+    if (elements.userAvatar) elements.userAvatar.textContent = userData.firstName.charAt(0).toUpperCase();
+    if (elements.referralInput) elements.referralInput.value = userData.referralLink;
 }
 
+// Generate referral link
 function generateReferralLink() {
-    if (userData.userId) {
-        const encodedId = encodeURIComponent(userData.userId);
-        return `https://t.me/VIPMainingPROBot?start=${encodedId}`;
-    }
-    return `https://t.me/VIPMainingPROBot?start=demo_${Date.now()}`;
+    if (!userData.userId) return CONFIG.REFERRAL_BOT_LINK;
+    const encodedId = encodeURIComponent(userData.userId);
+    return `${CONFIG.REFERRAL_BOT_LINK}?start=${encodedId}`;
 }
 
 // ============================================
@@ -131,17 +110,11 @@ function generateReferralLink() {
 // ============================================
 
 function setupEventListeners() {
-    elements.mineBtn.addEventListener('click', handleMining);
-    elements.copyBtn.addEventListener('click', handleCopyLink);
-    elements.shareBtn.addEventListener('click', handleShareTelegram);
-    elements.whatsappBtn.addEventListener('click', handleShareWhatsApp);
+    if (elements.mineBtn) elements.mineBtn.addEventListener('click', handleMining);
+    if (elements.copyBtn) elements.copyBtn.addEventListener('click', handleCopyLink);
+    if (elements.shareBtn) elements.shareBtn.addEventListener('click', handleShareTelegram);
+    if (elements.whatsappBtn) elements.whatsappBtn.addEventListener('click', handleShareWhatsApp);
     window.addEventListener('beforeunload', saveUserData);
-    document.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' && !e.target.matches('input, textarea')) {
-            e.preventDefault();
-            handleMining();
-        }
-    });
 }
 
 // ============================================
@@ -151,31 +124,51 @@ function setupEventListeners() {
 async function handleMining() {
     const now = Date.now();
     const timeSinceLastMine = now - userData.lastMineTime;
-    
+
     if (timeSinceLastMine < CONFIG.MINE_COOLDOWN) {
-        const secondsLeft = Math.ceil((CONFIG.MINE_COOLDOWN - timeSinceLastMine) / 1000);
-        showToast(`⏳ Please wait ${secondsLeft}s`, 'warning');
+        showToast(`⏳ Please wait ${Math.ceil((CONFIG.MINE_COOLDOWN - timeSinceLastMine)/1000)}s`, 'warning');
         return;
     }
 
     const currentRank = CONFIG.RANKS.find(r => r.name === userData.rank) || CONFIG.RANKS[0];
     const reward = currentRank.reward;
-    
+
     userData.balance += reward;
     userData.totalEarned += reward;
     userData.lastMineTime = now;
     userData.minesToday++;
     userData.totalMines++;
-    
+
     updateUI();
     await saveUserData();
 
-    animateMineButton(reward);
     showToast(`⛏️ +${reward} points mined!`, 'success');
-    checkRankUp();
 }
 
-// باقي الكود كما هو، مع الحفاظ على وظائف الرصيد وFirebase
+// ============================================
+// REFERRAL SYSTEM
+// ============================================
+
+function handleCopyLink() {
+    if (!userData.referralLink) return;
+    navigator.clipboard.writeText(userData.referralLink)
+        .then(() => showToast('✅ Referral link copied!', 'success'))
+        .catch(() => showToast('❌ Copy failed', 'error'));
+}
+
+function handleShareTelegram() {
+    if (!userData.referralLink) return;
+    const shareText = `Join VIP Mining and earn free points! 🪙\n${userData.referralLink}`;
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(userData.referralLink)}&text=${encodeURIComponent(shareText)}`, '_blank');
+    showToast('📱 Opening Telegram...', 'info');
+}
+
+function handleShareWhatsApp() {
+    if (!userData.referralLink) return;
+    const shareText = `Join VIP Mining! Earn points using my link: ${userData.referralLink}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
+    showToast('💚 Opening WhatsApp...', 'info');
+}
 
 // ============================================
 // FIREBASE STORAGE
@@ -198,14 +191,35 @@ async function loadUserData() {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
             Object.assign(userData, docSnap.data());
-            updateUI();
             console.log('📂 Data loaded from Firebase');
-        } else {
-            console.log('ℹ️ No data in Firebase, starting fresh');
         }
     } catch (err) {
         console.error('❌ Firebase load error:', err);
     }
+    updateUI();
+}
+
+// ============================================
+// UI UPDATES
+// ============================================
+
+function updateUI() {
+    if (elements.balance) elements.balance.textContent = userData.balance.toLocaleString();
+}
+
+// Toast utility
+function showToast(message, type='info') {
+    if (!elements.toast) return;
+    elements.toast.textContent = message;
+    const colors = { success: 'green', error: 'red', warning: 'orange', info: 'blue' };
+    elements.toast.style.background = colors[type] || 'blue';
+    elements.toast.classList.add('show');
+    setTimeout(() => elements.toast.classList.remove('show'), 2500);
+}
+
+// Cooldown loop
+function updateLoop() {
+    requestAnimationFrame(updateLoop);
 }
 
 // ============================================
@@ -217,4 +231,4 @@ if (document.readyState === 'loading') {
 } else { initApp(); }
 
 window.VIPMiningApp = { userData, CONFIG, saveUserData, loadUserData };
-console.log('🌟 VIP Mining Mini App with Firebase loaded!');
+console.log('🌟 VIP Mining App Loaded with Firebase & Direct Bot Link!');
