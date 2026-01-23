@@ -4,9 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIP Mining - Professional Mini App</title>
+    
+    <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="style.css">
+    
+    <!-- Firebase SDKs (CDN) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+    
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS Styles -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛏️</text></svg>">
 </head>
 <body>
     <div class="container">
@@ -19,8 +32,8 @@
             <div class="user-section" id="userSection">
                 <div class="user-avatar" id="userAvatar">U</div>
                 <div class="user-info">
-                    <div class="username" id="username">Guest User</div>
-                    <div class="user-id" id="userId">ID: Not connected</div>
+                    <div class="username" id="username">Loading...</div>
+                    <div class="user-id" id="userId">ID: ---</div>
                 </div>
             </div>
         </header>
@@ -64,11 +77,11 @@
                 <div class="mine-cooldown" id="cooldownTimer"></div>
             </button>
             <div class="mining-tip">
-                <i class="fas fa-lightbulb"></i> Mine every 5 seconds for maximum earnings
+                <i class="fas fa-lightbulb"></i> Click to mine points every 5 seconds
             </div>
         </div>
 
-        <!-- Referral System - التركيز الأساسي -->
+        <!-- Referral System -->
         <div class="referral-section">
             <div class="section-header">
                 <h3><i class="fas fa-share-alt"></i> Referral Program</h3>
@@ -87,12 +100,12 @@
                     <div class="ref-stat-label">Points Earned</div>
                 </div>
                 <div class="ref-stat">
-                    <div class="ref-stat-value" id="refRank">-</div>
+                    <div class="ref-stat-value" id="refRank">Beginner</div>
                     <div class="ref-stat-label">Your Rank</div>
                 </div>
             </div>
 
-            <!-- رابط الإحالة الرئيسي -->
+            <!-- Referral Link -->
             <div class="referral-link-container">
                 <div class="input-group">
                     <div class="input-icon">
@@ -100,7 +113,7 @@
                     </div>
                     <input type="text" 
                            class="referral-input" 
-                           id="referralInput" 
+                           id="referralLink" 
                            value="Loading referral link..." 
                            readonly>
                     <button class="copy-btn" id="copyBtn">
@@ -117,7 +130,7 @@
                 </div>
             </div>
 
-            <!-- كيف يعمل نظام الإحالة -->
+            <!-- How it Works -->
             <div class="referral-info">
                 <h4><i class="fas fa-info-circle"></i> How Referral System Works</h4>
                 <div class="info-steps">
@@ -171,21 +184,35 @@
             </div>
         </div>
 
+        <!-- Demo Controls (Hidden in Telegram) -->
+        <div class="demo-controls" id="demoControls">
+            <button class="demo-btn" onclick="simulateReferral()">
+                <i class="fas fa-user-plus"></i> Simulate Referral (+25)
+            </button>
+            <button class="demo-btn" onclick="addDemoPoints()">
+                <i class="fas fa-coins"></i> Add 100 Points
+            </button>
+            <button class="demo-btn reset" onclick="resetData()">
+                <i class="fas fa-redo"></i> Reset Data
+            </button>
+        </div>
+
         <!-- Footer -->
         <footer class="app-footer">
             <div class="footer-links">
-                <a href="#" class="footer-link">
+                <a href="#" class="footer-link" onclick="showInfo()">
                     <i class="fas fa-question-circle"></i> Help
                 </a>
-                <a href="#" class="footer-link">
+                <a href="#" class="footer-link" onclick="showStats()">
                     <i class="fas fa-chart-bar"></i> Stats
                 </a>
-                <a href="#" class="footer-link">
-                    <i class="fas fa-cog"></i> Settings
+                <a href="#" class="footer-link" onclick="refreshApp()">
+                    <i class="fas fa-sync-alt"></i> Refresh
                 </a>
             </div>
             <div class="footer-copyright">
                 <p>Powered by @VIPMainingPROBot • VIP Mining Mini App © 2024</p>
+                <p id="connectionStatus">🔵 Connecting...</p>
             </div>
         </footer>
     </div>
@@ -194,10 +221,94 @@
     <div class="toast" id="toast">
         <div class="toast-content">
             <i class="fas fa-check-circle"></i>
-            <span class="toast-message">Copied to clipboard!</span>
+            <span class="toast-message">Notification</span>
         </div>
     </div>
 
+    <!-- App JavaScript -->
     <script src="app.js"></script>
+    
+    <!-- Demo Functions (For Testing) -->
+    <script>
+        // Demo functions for testing
+        function simulateReferral() {
+            if (window.userData) {
+                window.userData.referrals += 1;
+                window.userData.balance += 25;
+                window.userData.totalEarned += 25;
+                updateUI();
+                showMessage('🎉 Simulated referral! +25 points', 'success');
+            }
+        }
+        
+        function addDemoPoints() {
+            if (window.userData) {
+                window.userData.balance += 100;
+                window.userData.totalEarned += 100;
+                updateUI();
+                showMessage('💰 +100 demo points added', 'success');
+            }
+        }
+        
+        function resetData() {
+            if (confirm('Reset all data to default?')) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+        
+        function showInfo() {
+            alert('VIP Mining Mini App\n\n• Click "Mine Now" to earn points\n• Share referral link for bonus points\n• Rank up for better rewards\n\nData is saved automatically!');
+        }
+        
+        function showStats() {
+            if (window.userData) {
+                alert(`User Statistics:\n\n• Balance: ${window.userData.balance} points\n• Referrals: ${window.userData.referrals}\n• Total Earned: ${window.userData.totalEarned}\n• Rank: ${window.userData.rank}\n\nKeep mining to rank up!`);
+            }
+        }
+        
+        function refreshApp() {
+            location.reload();
+        }
+        
+        // Global function to update UI (for demo controls)
+        function updateUI() {
+            if (window.updateUI) {
+                window.updateUI();
+            }
+        }
+        
+        // Global function to show messages
+        function showMessage(text, type) {
+            if (window.showToast) {
+                window.showToast(text, type);
+            } else {
+                alert(text);
+            }
+        }
+        
+        // Hide demo controls in Telegram
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.Telegram && Telegram.WebApp) {
+                document.getElementById('demoControls').style.display = 'none';
+            }
+        });
+    </script>
+    
+    <!-- Firebase Configuration Script -->
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCuZwYapa7LBRg4OOzcHLWFBpfSrjEVQ0U",
+            authDomain: "vip-mining.firebaseapp.com",
+            projectId: "vip-mining",
+            storageBucket: "vip-mining.firebasestorage.app",
+            messagingSenderId: "205041694428",
+            appId: "1:205041694428:web:5b90ab2cc31b118d8be619"
+        };
+        
+        // Make config globally available
+        window.firebaseConfig = firebaseConfig;
+    </script>
 </body>
 </html>
