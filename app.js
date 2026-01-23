@@ -1,10 +1,43 @@
 // ============================================
-// VIP Mining Mini App - Main Application Logic
+// VIP Mining Mini App - Complete with PRO Link
 // ============================================
 
-// Global Variables
+// Telegram WebApp
 let tg = null;
+try {
+    tg = window.Telegram.WebApp;
+    if (tg) {
+        tg.ready();
+        tg.expand();
+        console.log("✅ Telegram WebApp initialized");
+    }
+} catch (e) {
+    console.log("⚠️ Not in Telegram environment");
+}
+
+// Firebase Configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyCuzWYapa7LBRg40OzcHLWFBpfSrjEVQoU",
+    authDomain: "vip-mining.firebaseapp.com",
+    projectId: "vip-mining",
+    storageBucket: "vip-mining.firebasestorage.app",
+    messagingSenderId: "205041694428",
+    appId: "1:205041694428:web:5b9a0ab2cc31b118d8be619"
+};
+
+// Initialize Firebase
 let firebaseApp, db;
+if (typeof firebase !== 'undefined') {
+    try {
+        firebaseApp = firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+        console.log("✅ Firebase initialized");
+    } catch (error) {
+        console.error("❌ Firebase error:", error);
+    }
+}
+
+// User Data
 let userData = {
     balance: 100,
     referrals: 0,
@@ -19,6 +52,7 @@ let userData = {
     firstName: 'User'
 };
 
+// Configuration
 const CONFIG = {
     MINE_COOLDOWN: 5000,
     REFERRAL_REWARD: 25,
@@ -33,7 +67,7 @@ const CONFIG = {
     ]
 };
 
-// DOM Elements Cache
+// DOM Elements
 const elements = {};
 
 // ============================================
@@ -41,15 +75,9 @@ const elements = {};
 // ============================================
 
 async function initApp() {
-    console.log("🚀 Initializing VIP Mining App...");
+    console.log("🚀 Starting VIP Mining App...");
     
     try {
-        // Initialize Telegram
-        initTelegram();
-        
-        // Initialize Firebase
-        initFirebase();
-        
         // Cache DOM elements
         cacheElements();
         
@@ -71,45 +99,11 @@ async function initApp() {
         // Check for referrals
         checkForReferral();
         
-        console.log("✅ App initialized successfully");
+        console.log("✅ App ready!");
         
     } catch (error) {
         console.error("❌ Initialization error:", error);
         showMessage('Error starting app. Please refresh.', 'error');
-    }
-}
-
-function initTelegram() {
-    try {
-        tg = window.Telegram.WebApp;
-        if (tg) {
-            tg.ready();
-            tg.expand();
-            console.log("✅ Telegram WebApp initialized");
-        }
-    } catch (e) {
-        console.log("⚠️ Not in Telegram environment");
-    }
-}
-
-function initFirebase() {
-    const firebaseConfig = {
-        apiKey: "AIzaSyCuzWYapa7LBRg40OzcHLWFBpfSrjEVQoU",
-        authDomain: "vip-mining.firebaseapp.com",
-        projectId: "vip-mining",
-        storageBucket: "vip-mining.firebasestorage.app",
-        messagingSenderId: "205041694428",
-        appId: "1:205041694428:web:5b9a0ab2cc31b118d8be619"
-    };
-    
-    if (typeof firebase !== 'undefined') {
-        try {
-            firebaseApp = firebase.initializeApp(firebaseConfig);
-            db = firebase.firestore();
-            console.log("✅ Firebase initialized");
-        } catch (error) {
-            console.error("❌ Firebase initialization error:", error);
-        }
     }
 }
 
@@ -125,9 +119,6 @@ function cacheElements() {
     
     elementIds.forEach(id => {
         elements[id] = document.getElementById(id);
-        if (!elements[id]) {
-            console.warn(`⚠️ Element not found: ${id}`);
-        }
     });
 }
 
@@ -138,10 +129,11 @@ function cacheElements() {
 async function setupUser() {
     console.log("👤 Setting up user...");
     
+    // Get Telegram user
     let telegramUser = null;
     if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
         telegramUser = tg.initDataUnsafe.user;
-        console.log("📱 Telegram user found:", telegramUser);
+        console.log("📱 Telegram user:", telegramUser);
     }
     
     if (telegramUser) {
@@ -161,13 +153,16 @@ async function setupUser() {
         }
     }
     
+    // Generate referral code
     if (!userData.referralCode) {
         userData.referralCode = generateReferralCode(userData.userId);
-        console.log("🔗 Generated referral code:", userData.referralCode);
+        console.log("🔗 Generated code:", userData.referralCode);
     }
     
+    // Update UI
     updateUserUI();
     
+    // Sync with Firebase
     if (db) {
         await syncUserWithFirebase();
     }
@@ -184,32 +179,44 @@ function generateReferralCode(userId) {
 }
 
 function updateUserUI() {
-    console.log("🎨 Updating user UI...");
-    
+    // Update username
     if (elements.username) {
         elements.username.textContent = userData.username;
     }
     
+    // Update user ID
     if (elements.userId) {
         elements.userId.textContent = `ID: ${userData.userId.slice(-8)}`;
     }
     
+    // Update avatar
     if (elements.userAvatar) {
         const firstChar = userData.firstName.charAt(0).toUpperCase();
         elements.userAvatar.textContent = firstChar;
-        elements.userAvatar.style.background = 'linear-gradient(135deg, #3b82f6, #8b5cf6)';
     }
     
+    // Update referral link
     updateReferralLink();
 }
 
+// ============================================
+// Referral Link System - USING PRO LINK
+// ============================================
+
+function generateReferralLink() {
+    if (userData.referralCode) {
+        // هذا الرابط يفتح التطبيق المصغر مباشرة!
+        return `https://t.me/VIPMainingPROBot/PRO?startapp=${userData.referralCode}`;
+    }
+    return 'https://t.me/VIPMainingPROBot/PRO';
+}
+
 function updateReferralLink() {
-    if (!userData.referralCode) return;
-    
-    const refLink = `https://t.me/VIPMainingPROBot?start=${userData.referralCode}`;
+    const refLink = generateReferralLink();
     
     if (elements.referralLink) {
         elements.referralLink.value = refLink;
+        console.log("🔗 Referral link updated:", refLink);
     }
 }
 
@@ -237,10 +244,12 @@ async function loadUserData() {
             console.log("📂 Loaded local data");
         }
         
+        // Load from Firebase
         if (db) {
             await loadUserFromFirebase();
         }
         
+        // Save to ensure consistency
         saveUserData();
         
     } catch (error) {
@@ -268,6 +277,7 @@ function saveUserData() {
         
         localStorage.setItem(storageKey, JSON.stringify(dataToSave));
         
+        // Save to Firebase
         if (db) {
             saveUserToFirebase();
         }
@@ -340,7 +350,7 @@ async function loadUserFromFirebase() {
                 userData.referralCode = firebaseData.referralCode;
             }
             
-            console.log("🔥 Loaded data from Firebase");
+            console.log("🔥 Loaded from Firebase");
         }
     } catch (error) {
         console.error("❌ Firebase load error:", error);
@@ -378,6 +388,141 @@ function saveUserToFirebase() {
 }
 
 // ============================================
+// Referral Processing
+// ============================================
+
+function checkForReferral() {
+    console.log("🔍 Checking for referral...");
+    
+    // Check Telegram start parameter
+    if (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param) {
+        const telegramRef = tg.initDataUnsafe.start_param;
+        if (telegramRef && telegramRef !== userData.referralCode) {
+            console.log("📱 Telegram referral detected:", telegramRef);
+            processReferral(telegramRef);
+            return;
+        }
+    }
+    
+    // Check URL parameter (startapp, ref, or start)
+    const urlParams = new URLSearchParams(window.location.search);
+    const referrerCode = urlParams.get('startapp') || urlParams.get('ref') || urlParams.get('start');
+    
+    if (referrerCode && referrerCode !== userData.referralCode) {
+        console.log("🔗 URL referral detected:", referrerCode);
+        processReferral(referrerCode);
+    }
+    
+    // Check localStorage for pending referral
+    const pendingRef = localStorage.getItem('pending_referral');
+    if (pendingRef && pendingRef !== userData.referralCode) {
+        console.log("💾 Pending referral detected:", pendingRef);
+        processReferral(pendingRef);
+        localStorage.removeItem('pending_referral');
+    }
+}
+
+async function processReferral(referralCode) {
+    if (!referralCode || referralCode === userData.referralCode) {
+        console.log("⚠️ Invalid or self-referral");
+        return;
+    }
+    
+    // Check if already referred
+    if (userData.referredBy) {
+        console.log("⚠️ User already referred by:", userData.referredBy);
+        return;
+    }
+    
+    console.log("🎯 Processing referral:", referralCode);
+    
+    try {
+        // Find referrer in Firebase
+        if (db) {
+            const usersRef = db.collection('users');
+            const querySnapshot = await usersRef.where('referralCode', '==', referralCode).get();
+            
+            if (!querySnapshot.empty) {
+                const referrerDoc = querySnapshot.docs[0];
+                const referrerData = referrerDoc.data();
+                
+                // Prevent self-referral
+                if (referrerData.userId === userData.userId) {
+                    console.log("⚠️ Cannot refer yourself");
+                    return;
+                }
+                
+                // Update referrer's data
+                await referrerDoc.ref.update({
+                    referrals: firebase.firestore.FieldValue.increment(1),
+                    referralEarnings: firebase.firestore.FieldValue.increment(CONFIG.REFERRER_REWARD),
+                    balance: firebase.firestore.FieldValue.increment(CONFIG.REFERRER_REWARD),
+                    totalEarned: firebase.firestore.FieldValue.increment(CONFIG.REFERRER_REWARD)
+                });
+                
+                // Update current user
+                userData.referredBy = referralCode;
+                
+                // Update locally
+                userData.referrals += 1;
+                userData.balance += CONFIG.REFERRER_REWARD;
+                userData.totalEarned += CONFIG.REFERRER_REWARD;
+                userData.referralEarnings += CONFIG.REFERRER_REWARD;
+                
+                // Save data
+                saveUserData();
+                updateUI();
+                
+                // Show success message
+                showMessage(`🎉 Referral successful! +${CONFIG.REFERRER_REWARD} points`, 'success');
+                
+                // Log referral event
+                await logReferralEvent(referrerData.userId, userData.userId, referralCode);
+                
+                console.log("✅ Referral processed successfully");
+                return true;
+            }
+        }
+        
+        // Fallback to local storage if Firebase not available
+        userData.referredBy = referralCode;
+        userData.balance += CONFIG.REFERRER_REWARD;
+        userData.totalEarned += CONFIG.REFERRER_REWARD;
+        userData.referralEarnings += CONFIG.REFERRER_REWARD;
+        
+        saveUserData();
+        updateUI();
+        showMessage(`🎉 Referral recorded! +${CONFIG.REFERRER_REWARD} points`, 'success');
+        
+        console.log("📝 Referral recorded (local storage)");
+        return true;
+        
+    } catch (error) {
+        console.error("❌ Referral processing error:", error);
+        showMessage('Error processing referral', 'error');
+        return false;
+    }
+}
+
+async function logReferralEvent(referrerId, referredId, referralCode) {
+    if (!db) return;
+    
+    try {
+        await db.collection('referrals').add({
+            referrerId: referrerId,
+            referredId: referredId,
+            referralCode: referralCode,
+            reward: CONFIG.REFERRER_REWARD,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            status: 'completed'
+        });
+        console.log("📝 Referral logged in Firebase");
+    } catch (error) {
+        console.error("❌ Referral logging error:", error);
+    }
+}
+
+// ============================================
 // Mining System
 // ============================================
 
@@ -385,7 +530,7 @@ function minePoints() {
     console.log("⛏️ Mining points...");
     
     if (!userData.userId) {
-        showMessage('Please wait for user setup to complete', 'error');
+        showMessage('Please wait for user setup', 'error');
         return;
     }
     
@@ -457,40 +602,43 @@ function animateMineButton(reward) {
 }
 
 // ============================================
-// Referral System
+// Event Listeners
 // ============================================
 
 function setupEventListeners() {
     console.log("🎯 Setting up event listeners...");
     
+    // Mine button
     if (elements.mineBtn) {
         elements.mineBtn.addEventListener('click', minePoints);
         console.log("✅ Mine button listener added");
     }
     
+    // Copy referral link
     if (elements.copyBtn) {
         elements.copyBtn.addEventListener('click', copyReferralLink);
         console.log("✅ Copy button listener added");
     }
     
+    // Share on Telegram
     if (elements.shareBtn) {
         elements.shareBtn.addEventListener('click', shareOnTelegram);
-        console.log("✅ Share button listener added");
+        console.log("✅ Telegram share button added");
     }
     
+    // Share on WhatsApp
     if (elements.whatsappBtn) {
         elements.whatsappBtn.addEventListener('click', shareOnWhatsApp);
-        console.log("✅ WhatsApp button listener added");
+        console.log("✅ WhatsApp share button added");
     }
 }
 
 function copyReferralLink() {
-    const refLink = elements.referralLink ? elements.referralLink.value : 
-                   `https://t.me/VIPMainingPROBot?start=${userData.referralCode}`;
+    const refLink = generateReferralLink();
     
     navigator.clipboard.writeText(refLink)
         .then(() => {
-            showMessage('✅ Link copied', 'success');
+            showMessage('✅ Link copied to clipboard!', 'success');
             if (elements.copyBtn) {
                 elements.copyBtn.innerHTML = '<i class="fas fa-check"></i>';
                 setTimeout(() => {
@@ -500,15 +648,13 @@ function copyReferralLink() {
         })
         .catch(err => {
             console.error('Copy error:', err);
-            showMessage('❌ Failed to copy', 'error');
+            showMessage('❌ Failed to copy link', 'error');
         });
 }
 
 function shareOnTelegram() {
-    const refLink = elements.referralLink ? elements.referralLink.value : 
-                   `https://t.me/VIPMainingPROBot?start=${userData.referralCode}`;
-    
-    const shareText = `Join me on VIP Mining and earn free points! 🪙\n\nUse my referral link to get extra rewards:\n${refLink}\n\n@VIPMainingPROBot`;
+    const refLink = generateReferralLink();
+    const shareText = `🚀 Join VIP Mining!\n\n⛏️ Mine points every 5 seconds\n👥 Get +25 bonus points with my link\n\n${refLink}\n\n@VIPMainingPROBot`;
     const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(shareText)}`;
     
     window.open(shareUrl, '_blank');
@@ -516,35 +662,12 @@ function shareOnTelegram() {
 }
 
 function shareOnWhatsApp() {
-    const refLink = elements.referralLink ? elements.referralLink.value : 
-                   `https://t.me/VIPMainingPROBot?start=${userData.referralCode}`;
-    
-    const shareText = `Join me on VIP Mining and earn free points! 🪙\n\nReferral link: ${refLink}`;
+    const refLink = generateReferralLink();
+    const shareText = `Join VIP Mining and earn free points! 🪙\n\nReferral link: ${refLink}`;
     const shareUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
     
     window.open(shareUrl, '_blank');
     showMessage('💚 Opening WhatsApp...', 'info');
-}
-
-function checkForReferral() {
-    // Check URL parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    const referrerCode = urlParams.get('ref') || urlParams.get('start');
-    
-    // Check Telegram start parameter
-    if (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param) {
-        const telegramRef = tg.initDataUnsafe.start_param;
-        if (telegramRef && telegramRef !== userData.referralCode) {
-            console.log("Telegram referral detected:", telegramRef);
-            processReferral(telegramRef);
-        }
-    }
-    
-    // Check URL parameter
-    if (referrerCode && referrerCode !== userData.referralCode) {
-        console.log("URL referral detected:", referrerCode);
-        processReferral(referrerCode);
-    }
 }
 
 // ============================================
@@ -552,8 +675,6 @@ function checkForReferral() {
 // ============================================
 
 function updateUI() {
-    console.log("🔄 Updating UI...");
-    
     // Update numbers
     if (elements.balance) {
         elements.balance.textContent = userData.balance.toLocaleString();
@@ -746,7 +867,7 @@ setInterval(() => {
     }
 }, 1000);
 
-// Initialize app when DOM is ready
+// Initialize app
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initApp);
 } else {
@@ -754,7 +875,6 @@ if (document.readyState === 'loading') {
 }
 
 // Export for debugging
-window.appData = userData;
-window.appConfig = CONFIG;
-window.appElements = elements;
+window.userData = userData;
 window.showMessage = showMessage;
+window.generateReferralLink = generateReferralLink;
