@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIP Mining - Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⛏️ VIP Mining</h1>
+            <p id="userInfo">Loading...</p>
+        </header>
+        
+        <main>
+            <div class="balance-card">
+                <div class="balance-label">Your Balance</div>
+                <div class="balance-amount" id="balance">0</div>
+                <div class="balance-sub" id="rank">Rank: Beginner</div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat">
+                    <div class="stat-value" id="referrals">0</div>
+                    <div class="stat-label">Referrals</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="totalEarned">0</div>
+                    <div class="stat-label">Total Earned</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="miningPower">10/h</div>
+                    <div class="stat-label">Mining Power</div>
+                </div>
+            </div>
+            
+            <button class="btn-primary" id="mineBtn">
+                ⛏️ Mine Now (+<span id="rewardAmount">1</span>)
+            </button>
+            
+            <div class="referral-section">
+                <h3>🔗 Your Referral Link</h3>
+                <div class="referral-link" id="referralLink">Generating...</div>
+                <button class="btn-secondary" id="copyBtn">📋 Copy Link</button>
+                <p class="info-text">Earn 25 points for each friend who joins!</p>
+            </div>
+        </main>
+        
+        <footer>
+            <p>VIP Mining Mini App © 2024</p>
+        </footer>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
