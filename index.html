@@ -1,16 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIP Mining - Professional Mini App</title>
+    <title>تعدين VIP - تطبيق تلغرام مصغر</title>
     
     <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
-    <!-- Firebase SDKs (CDN) -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
     
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -27,13 +23,13 @@
         <header class="app-header">
             <div class="logo">
                 <i class="fas fa-gem"></i>
-                <h1>VIP Mining</h1>
+                <h1>تعدين VIP</h1>
             </div>
             <div class="user-section" id="userSection">
-                <div class="user-avatar" id="userAvatar">U</div>
+                <div class="user-avatar" id="userAvatar">م</div>
                 <div class="user-info">
-                    <div class="username" id="username">Loading...</div>
-                    <div class="user-id" id="userId">ID: ---</div>
+                    <div class="username" id="username">جارِ التحميل...</div>
+                    <div class="user-id" id="userId">المعرف: ---</div>
                 </div>
             </div>
         </header>
@@ -41,19 +37,19 @@
         <!-- Balance Card -->
         <div class="balance-card">
             <div class="balance-header">
-                <span><i class="fas fa-wallet"></i> Current Balance</span>
-                <span class="rank-badge" id="rankBadge">Beginner</span>
+                <span><i class="fas fa-wallet"></i> رصيدك الحالي</span>
+                <span class="rank-badge" id="rankBadge">مبتدئ</span>
             </div>
-            <div class="balance-amount" id="balance">0</div>
-            <div class="balance-sub">Mining Points</div>
+            <div class="balance-amount" id="balance">100</div>
+            <div class="balance-sub">نقطة تعدين</div>
             <div class="balance-stats">
                 <div class="stat-item">
                     <i class="fas fa-users"></i>
-                    <span id="referrals">0 Referrals</span>
+                    <span id="referrals">0 إحالة</span>
                 </div>
                 <div class="stat-item">
                     <i class="fas fa-chart-line"></i>
-                    <span id="totalEarned">0 Total</span>
+                    <span id="totalEarned">100 الإجمالي</span>
                 </div>
             </div>
         </div>
@@ -61,9 +57,9 @@
         <!-- Mining Section -->
         <div class="mining-section">
             <div class="mining-header">
-                <h3><i class="fas fa-hard-hat"></i> Mining Station</h3>
+                <h3><i class="fas fa-hard-hat"></i> محطة التعدين</h3>
                 <div class="mining-power" id="miningPower">
-                    <i class="fas fa-bolt"></i> Power: 10/h
+                    <i class="fas fa-bolt"></i> القوة: 10/س
                 </div>
             </div>
             <button class="mine-btn" id="mineBtn">
@@ -71,37 +67,37 @@
                     <i class="fas fa-hammer"></i>
                 </div>
                 <div class="mine-text">
-                    <div class="mine-title">Mine Now</div>
-                    <div class="mine-reward">+<span id="rewardAmount">1</span> Points</div>
+                    <div class="mine-title">ابدأ التعدين</div>
+                    <div class="mine-reward">+<span id="rewardAmount">1</span> نقطة</div>
                 </div>
                 <div class="mine-cooldown" id="cooldownTimer"></div>
             </button>
             <div class="mining-tip">
-                <i class="fas fa-lightbulb"></i> Click to mine points every 5 seconds
+                <i class="fas fa-lightbulb"></i> اضغط كل 5 ثوانٍ لأقصى أرباح
             </div>
         </div>
 
         <!-- Referral System -->
         <div class="referral-section">
             <div class="section-header">
-                <h3><i class="fas fa-share-alt"></i> Referral Program</h3>
+                <h3><i class="fas fa-share-alt"></i> برنامج الإحالة</h3>
                 <div class="referral-bonus">
-                    <i class="fas fa-gift"></i> +25 Points per referral
+                    <i class="fas fa-gift"></i> +25 نقطة لكل إحالة
                 </div>
             </div>
             
             <div class="referral-stats">
                 <div class="ref-stat">
                     <div class="ref-stat-value" id="refCount">0</div>
-                    <div class="ref-stat-label">Total Referrals</div>
+                    <div class="ref-stat-label">إجمالي الإحالات</div>
                 </div>
                 <div class="ref-stat">
                     <div class="ref-stat-value" id="refEarned">0</div>
-                    <div class="ref-stat-label">Points Earned</div>
+                    <div class="ref-stat-label">النقاط المكتسبة</div>
                 </div>
                 <div class="ref-stat">
-                    <div class="ref-stat-value" id="refRank">Beginner</div>
-                    <div class="ref-stat-label">Your Rank</div>
+                    <div class="ref-stat-value" id="refRank">مبتدئ</div>
+                    <div class="ref-stat-label">رتبتك</div>
                 </div>
             </div>
 
@@ -114,7 +110,7 @@
                     <input type="text" 
                            class="referral-input" 
                            id="referralLink" 
-                           value="Loading referral link..." 
+                           value="جارِ إنشاء رابط الإحالة..." 
                            readonly>
                     <button class="copy-btn" id="copyBtn">
                         <i class="far fa-copy"></i>
@@ -122,37 +118,37 @@
                 </div>
                 <div class="referral-actions">
                     <button class="action-btn" id="shareBtn">
-                        <i class="fab fa-telegram"></i> Share on Telegram
+                        <i class="fab fa-telegram"></i> شارك على تلغرام
                     </button>
                     <button class="action-btn secondary" id="whatsappBtn">
-                        <i class="fab fa-whatsapp"></i> Share on WhatsApp
+                        <i class="fab fa-whatsapp"></i> شارك على واتساب
                     </button>
                 </div>
             </div>
 
             <!-- How it Works -->
             <div class="referral-info">
-                <h4><i class="fas fa-info-circle"></i> How Referral System Works</h4>
+                <h4><i class="fas fa-info-circle"></i> كيف يعمل نظام الإحالة؟</h4>
                 <div class="info-steps">
                     <div class="step">
                         <div class="step-number">1</div>
                         <div class="step-content">
-                            <strong>Share your unique link</strong>
-                            <p>Copy and share the link above with friends</p>
+                            <strong>شارك رابطك الفريد</strong>
+                            <p>انسخ وشارك الرابط أعلاه مع أصدقائك</p>
                         </div>
                     </div>
                     <div class="step">
                         <div class="step-number">2</div>
                         <div class="step-content">
-                            <strong>Friend joins via Telegram</strong>
-                            <p>They must click the link and join via @VIPMainingPROBot</p>
+                            <strong>ينضم صديقك عبر تلغرام</strong>
+                            <p>يجب أن يضغط على الرابط وينضم عبر @VIPMainingPROBot</p>
                         </div>
                     </div>
                     <div class="step">
                         <div class="step-number">3</div>
                         <div class="step-content">
-                            <strong>Earn automatic rewards</strong>
-                            <p>You get +25 points instantly when they join</p>
+                            <strong>احصل على مكافآت تلقائية</strong>
+                            <p>تحصل على +25 نقطة فور انضمامه</p>
                         </div>
                     </div>
                 </div>
@@ -162,153 +158,155 @@
         <!-- Progress Section -->
         <div class="progress-section">
             <div class="progress-header">
-                <h4><i class="fas fa-trophy"></i> Rank Progress</h4>
-                <div class="next-rank" id="nextRank">Next: Pro (200 points)</div>
+                <h4><i class="fas fa-trophy"></i> تقدم الرتبة</h4>
+                <div class="next-rank" id="nextRank">التالي: محترف (200 نقطة)</div>
             </div>
             <div class="progress-bar">
                 <div class="progress-fill" id="progressFill"></div>
             </div>
             <div class="progress-stats">
                 <div class="progress-stat">
-                    <span>Current:</span>
-                    <span id="currentPoints">0</span>
+                    <span>الحالي:</span>
+                    <span id="currentPoints">100</span>
                 </div>
                 <div class="progress-stat">
-                    <span>Target:</span>
+                    <span>الهدف:</span>
                     <span id="targetPoints">200</span>
                 </div>
                 <div class="progress-stat">
-                    <span>Remaining:</span>
-                    <span id="remainingPoints">200</span>
+                    <span>المتبقي:</span>
+                    <span id="remainingPoints">100</span>
                 </div>
             </div>
         </div>
 
-        <!-- Demo Controls (Hidden in Telegram) -->
-        <div class="demo-controls" id="demoControls">
-            <button class="demo-btn" onclick="simulateReferral()">
-                <i class="fas fa-user-plus"></i> Simulate Referral (+25)
-            </button>
-            <button class="demo-btn" onclick="addDemoPoints()">
-                <i class="fas fa-coins"></i> Add 100 Points
-            </button>
-            <button class="demo-btn reset" onclick="resetData()">
-                <i class="fas fa-redo"></i> Reset Data
-            </button>
+        <!-- Daily Bonus Section -->
+        <div class="bonus-section">
+            <h3><i class="fas fa-calendar-star"></i> مكافآت يومية</h3>
+            <div class="bonus-grid">
+                <div class="bonus-item">
+                    <div class="bonus-icon">🎁</div>
+                    <div class="bonus-info">
+                        <div class="bonus-title">تسجيل يومي</div>
+                        <div class="bonus-amount">+10 نقطة</div>
+                    </div>
+                </div>
+                <div class="bonus-item">
+                    <div class="bonus-icon">👥</div>
+                    <div class="bonus-info">
+                        <div class="bonus-title">إحالة جديدة</div>
+                        <div class="bonus-amount">+25 نقطة</div>
+                    </div>
+                </div>
+                <div class="bonus-item">
+                    <div class="bonus-icon">⚡</div>
+                    <div class="bonus-info">
+                        <div class="bonus-title">نشاط مستمر</div>
+                        <div class="bonus-amount">+5 نقاط</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Footer -->
         <footer class="app-footer">
             <div class="footer-links">
-                <a href="#" class="footer-link" onclick="showInfo()">
-                    <i class="fas fa-question-circle"></i> Help
+                <a href="javascript:void(0)" class="footer-link" onclick="showHelp()">
+                    <i class="fas fa-question-circle"></i> مساعدة
                 </a>
-                <a href="#" class="footer-link" onclick="showStats()">
-                    <i class="fas fa-chart-bar"></i> Stats
+                <a href="javascript:void(0)" class="footer-link" onclick="showStatistics()">
+                    <i class="fas fa-chart-bar"></i> إحصائيات
                 </a>
-                <a href="#" class="footer-link" onclick="refreshApp()">
-                    <i class="fas fa-sync-alt"></i> Refresh
+                <a href="javascript:void(0)" class="footer-link" onclick="refreshPage()">
+                    <i class="fas fa-sync-alt"></i> تحديث
                 </a>
             </div>
             <div class="footer-copyright">
-                <p>Powered by @VIPMainingPROBot • VIP Mining Mini App © 2024</p>
-                <p id="connectionStatus">🔵 Connecting...</p>
+                <p>مدعوم بـ @VIPMainingPROBot • تعدين VIP © 2024</p>
+                <p id="connectionStatus">🔵 جارِ الاتصال...</p>
             </div>
         </footer>
-    </div>
-
-    <!-- Toast Notification -->
-    <div class="toast" id="toast">
-        <div class="toast-content">
-            <i class="fas fa-check-circle"></i>
-            <span class="toast-message">Notification</span>
-        </div>
     </div>
 
     <!-- App JavaScript -->
     <script src="app.js"></script>
     
-    <!-- Demo Functions (For Testing) -->
+    <!-- Helper Functions -->
     <script>
-        // Demo functions for testing
-        function simulateReferral() {
-            if (window.userData) {
-                window.userData.referrals += 1;
-                window.userData.balance += 25;
-                window.userData.totalEarned += 25;
-                updateUI();
-                showMessage('🎉 Simulated referral! +25 points', 'success');
+        // وظائف المساعدة
+        function showHelp() {
+            const helpMessage = `
+                <div style="text-align: right; line-height: 1.8;">
+                    <h3 style="color: #3b82f6; margin-bottom: 15px;">🧭 دليل استخدام التطبيق</h3>
+                    
+                    <p><strong>⛏️ التعدين:</strong></p>
+                    <p>• اضغط على زر "ابدأ التعدين" كل 5 ثوانٍ</p>
+                    <p>• كل نقرة = +1 إلى +5 نقاط (حسب رتبتك)</p>
+                    
+                    <p><strong>👥 نظام الإحالة:</strong></p>
+                    <p>• انسخ رابط الإحالة وشاركه</p>
+                    <p>• كل صديق ينضم = +25 نقطة لك</p>
+                    
+                    <p><strong>🏆 نظام الرتب:</strong></p>
+                    <p>• مبتدئ: 0-199 نقطة</p>
+                    <p>• محترف: 200-499 نقطة</p>
+                    <p>• خبير: 500-999 نقطة</p>
+                    <p>• فائب: 1000+ نقطة</p>
+                    
+                    <p><strong>💾 الحفظ التلقائي:</strong></p>
+                    <p>• بياناتك تحفظ تلقائياً</p>
+                    <p>• تعود عند إعادة فتح التطبيق</p>
+                </div>
+            `;
+            
+            if (window.showMessage) {
+                window.showMessage('فتح دليل المساعدة', 'info');
+                setTimeout(() => {
+                    alert(helpMessage);
+                }, 500);
+            } else {
+                alert(helpMessage);
             }
         }
         
-        function addDemoPoints() {
+        function showStatistics() {
             if (window.userData) {
-                window.userData.balance += 100;
-                window.userData.totalEarned += 100;
-                updateUI();
-                showMessage('💰 +100 demo points added', 'success');
+                const stats = `
+                    📊 <strong>إحصائيات حسابك</strong>
+                    
+                    💰 الرصيد: ${window.userData.balance} نقطة
+                    👥 الإحالات: ${window.userData.referrals}
+                    📈 الإجمالي: ${window.userData.totalEarned} نقطة
+                    🏆 الرتبة: ${window.userData.rank}
+                    🎯 أرباح الإحالة: ${window.userData.referralEarnings} نقطة
+                    
+                    ⏳ آخر تعدين: ${window.userData.lastMineTime ? 'قبل قليل' : 'لم يبدأ بعد'}
+                `;
+                
+                if (window.showMessage) {
+                    window.showMessage('فتح الإحصائيات', 'info');
+                    setTimeout(() => {
+                        alert(stats);
+                    }, 500);
+                } else {
+                    alert(stats);
+                }
             }
         }
         
-        function resetData() {
-            if (confirm('Reset all data to default?')) {
-                localStorage.clear();
+        function refreshPage() {
+            if (confirm('هل تريد تحديث الصفحة؟ ستحتفظ بياناتك.')) {
                 location.reload();
             }
         }
         
-        function showInfo() {
-            alert('VIP Mining Mini App\n\n• Click "Mine Now" to earn points\n• Share referral link for bonus points\n• Rank up for better rewards\n\nData is saved automatically!');
-        }
-        
-        function showStats() {
-            if (window.userData) {
-                alert(`User Statistics:\n\n• Balance: ${window.userData.balance} points\n• Referrals: ${window.userData.referrals}\n• Total Earned: ${window.userData.totalEarned}\n• Rank: ${window.userData.rank}\n\nKeep mining to rank up!`);
-            }
-        }
-        
-        function refreshApp() {
-            location.reload();
-        }
-        
-        // Global function to update UI (for demo controls)
-        function updateUI() {
-            if (window.updateUI) {
-                window.updateUI();
-            }
-        }
-        
-        // Global function to show messages
-        function showMessage(text, type) {
-            if (window.showToast) {
-                window.showToast(text, type);
-            } else {
-                alert(text);
-            }
-        }
-        
-        // Hide demo controls in Telegram
+        // إخفاء عناصر غير ضرورية في Telegram
         document.addEventListener('DOMContentLoaded', function() {
             if (window.Telegram && Telegram.WebApp) {
-                document.getElementById('demoControls').style.display = 'none';
+                // إضافة كلاس لـ Telegram
+                document.body.classList.add('tg');
             }
         });
     </script>
-    
-    <!-- Firebase Configuration Script -->
-    <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyCuZwYapa7LBRg4OOzcHLWFBpfSrjEVQ0U",
-            authDomain: "vip-mining.firebaseapp.com",
-            projectId: "vip-mining",
-            storageBucket: "vip-mining.firebasestorage.app",
-            messagingSenderId: "205041694428",
-            appId: "1:205041694428:web:5b90ab2cc31b118d8be619"
-        };
-        
-        // Make config globally available
-        window.firebaseConfig = firebaseConfig;
-    </script>
 </body>
-</html>
+                    </html>
