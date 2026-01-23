@@ -1,312 +1,425 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تعدين VIP - تطبيق تلغرام مصغر</title>
+    <title>VIP Mining - Premium Telegram Mini App</title>
     
     <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
-    <!-- Font Awesome Icons -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- CSS Styles -->
+    <!-- CSS -->
     <link rel="stylesheet" href="style.css">
     
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛏️</text></svg>">
+    
+    <!-- Meta Tags -->
+    <meta name="description" content="Earn crypto points daily! VIP Mining - The ultimate Telegram Mini App for mining rewards.">
+    <meta property="og:title" content="VIP Mining - Earn Crypto Points">
+    <meta property="og:description" content="Start mining now and earn real rewards!">
+    <meta property="og:image" content="https://img.icons8.com/color/96/000000/bitcoin--v1.png">
 </head>
 <body>
-    <div class="container">
-        <!-- Header Section -->
-        <header class="app-header">
-            <div class="logo">
-                <i class="fas fa-gem"></i>
-                <h1>تعدين VIP</h1>
+    <!-- App Container -->
+    <div class="app-container">
+        
+        <!-- Premium Header -->
+        <header class="premium-header">
+            <div class="header-content">
+                <div class="logo-title">
+                    <div class="app-logo">
+                        <i class="fas fa-gem animated-logo"></i>
+                    </div>
+                    <div class="app-title">
+                        <h1>VIP Mining</h1>
+                        <p class="app-subtitle">Premium Crypto Earnings</p>
+                    </div>
+                </div>
+                <div class="user-profile" id="userProfile">
+                    <div class="profile-avatar" id="userAvatar">U</div>
+                    <div class="profile-info">
+                        <div class="profile-name" id="username">Loading...</div>
+                        <div class="profile-id" id="userId">ID: ---</div>
+                    </div>
+                    <div class="online-status" id="onlineStatus"></div>
+                </div>
             </div>
-            <div class="user-section" id="userSection">
-                <div class="user-avatar" id="userAvatar">م</div>
-                <div class="user-info">
-                    <div class="username" id="username">جارِ التحميل...</div>
-                    <div class="user-id" id="userId">المعرف: ---</div>
+            
+            <!-- VIP Status Bar -->
+            <div class="vip-status-bar">
+                <div class="status-item">
+                    <i class="fas fa-bolt"></i>
+                    <span>Live Mining</span>
+                </div>
+                <div class="status-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Secure</span>
+                </div>
+                <div class="status-item">
+                    <i class="fas fa-rocket"></i>
+                    <span>Instant Rewards</span>
                 </div>
             </div>
         </header>
 
-        <!-- Balance Card -->
-        <div class="balance-card">
-            <div class="balance-header">
-                <span><i class="fas fa-wallet"></i> رصيدك الحالي</span>
-                <span class="rank-badge" id="rankBadge">مبتدئ</span>
-            </div>
-            <div class="balance-amount" id="balance">100</div>
-            <div class="balance-sub">نقطة تعدين</div>
-            <div class="balance-stats">
-                <div class="stat-item">
-                    <i class="fas fa-users"></i>
-                    <span id="referrals">0 إحالة</span>
+        <!-- Main Dashboard -->
+        <main class="dashboard">
+            
+            <!-- Earnings Card -->
+            <div class="earnings-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-coins"></i> Total Earnings</h2>
+                    <div class="card-badge" id="rankBadge">Beginner</div>
                 </div>
-                <div class="stat-item">
-                    <i class="fas fa-chart-line"></i>
-                    <span id="totalEarned">100 الإجمالي</span>
+                <div class="earnings-display">
+                    <div class="main-balance">
+                        <div class="balance-label">Available Balance</div>
+                        <div class="balance-amount" id="balance">0</div>
+                        <div class="balance-unit">MINING POINTS</div>
+                    </div>
+                    <div class="earnings-stats">
+                        <div class="stat">
+                            <div class="stat-icon"><i class="fas fa-users"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="referrals">0</div>
+                                <div class="stat-label">Referrals</div>
+                            </div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="totalEarned">0</div>
+                                <div class="stat-label">Total Earned</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="earnings-graph">
+                    <div class="graph-bar" style="width: 25%;"></div>
                 </div>
             </div>
-        </div>
 
-        <!-- Mining Section -->
-        <div class="mining-section">
-            <div class="mining-header">
-                <h3><i class="fas fa-hard-hat"></i> محطة التعدين</h3>
-                <div class="mining-power" id="miningPower">
-                    <i class="fas fa-bolt"></i> القوة: 10/س
+            <!-- Mining Control -->
+            <div class="mining-control">
+                <div class="control-header">
+                    <h3><i class="fas fa-hard-hat"></i> Mining Station</h3>
+                    <div class="mining-stats">
+                        <div class="mining-stat">
+                            <i class="fas fa-bolt"></i>
+                            <span id="miningPower">10/h</span>
+                        </div>
+                        <div class="mining-stat">
+                            <i class="fas fa-clock"></i>
+                            <span id="cooldownTimer">Ready</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="mining-button" id="mineBtn">
+                    <div class="button-content">
+                        <div class="mining-icon">
+                            <i class="fas fa-hammer"></i>
+                        </div>
+                        <div class="mining-info">
+                            <div class="mining-action">Start Mining</div>
+                            <div class="mining-reward">+<span id="rewardAmount">1</span> Points</div>
+                        </div>
+                    </div>
+                    <div class="button-pulse"></div>
+                </button>
+                
+                <div class="mining-tips">
+                    <i class="fas fa-lightbulb"></i>
+                    <p>Mine every 5 seconds for maximum earnings. Higher ranks = bigger rewards!</p>
                 </div>
             </div>
-            <button class="mine-btn" id="mineBtn">
-                <div class="mine-icon">
-                    <i class="fas fa-hammer"></i>
-                </div>
-                <div class="mine-text">
-                    <div class="mine-title">ابدأ التعدين</div>
-                    <div class="mine-reward">+<span id="rewardAmount">1</span> نقطة</div>
-                </div>
-                <div class="mine-cooldown" id="cooldownTimer"></div>
-            </button>
-            <div class="mining-tip">
-                <i class="fas fa-lightbulb"></i> اضغط كل 5 ثوانٍ لأقصى أرباح
-            </div>
-        </div>
 
-        <!-- Referral System -->
-        <div class="referral-section">
-            <div class="section-header">
-                <h3><i class="fas fa-share-alt"></i> برنامج الإحالة</h3>
-                <div class="referral-bonus">
-                    <i class="fas fa-gift"></i> +25 نقطة لكل إحالة
+            <!-- Referral System -->
+            <div class="referral-system">
+                <div class="system-header">
+                    <h3><i class="fas fa-share-alt"></i> Referral Program</h3>
+                    <div class="referral-bonus-tag">
+                        <i class="fas fa-gift"></i>
+                        <span>+25 Points Each</span>
+                    </div>
                 </div>
+                
+                <div class="referral-performance">
+                    <div class="performance-card">
+                        <div class="performance-value" id="refCount">0</div>
+                        <div class="performance-label">Total Referrals</div>
+                    </div>
+                    <div class="performance-card">
+                        <div class="performance-value" id="refEarned">0</div>
+                        <div class="performance-label">Bonus Earned</div>
+                    </div>
+                    <div class="performance-card">
+                        <div class="performance-value" id="refRank">Beginner</div>
+                        <div class="performance-label">Your Rank</div>
+                    </div>
+                </div>
+
+                <!-- REFERRAL LINK SOLUTION -->
+                <div class="referral-link-section">
+                    <div class="section-title">
+                        <i class="fas fa-link"></i>
+                        <span>Your Personal Referral Link</span>
+                    </div>
+                    
+                    <div class="link-container">
+                        <div class="link-input-group">
+                            <div class="input-prefix">
+                                <i class="fas fa-external-link-alt"></i>
+                            </div>
+                            <input type="text" 
+                                   class="referral-link-input" 
+                                   id="referralLink" 
+                                   value="Generating your unique link..." 
+                                   readonly
+                                   onclick="this.select()">
+                            <button class="copy-button" id="copyBtn" title="Copy to clipboard">
+                                <i class="far fa-copy"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- SHARE BUTTONS -->
+                        <div class="share-buttons">
+                            <button class="share-btn telegram-share" id="telegramShareBtn">
+                                <i class="fab fa-telegram"></i>
+                                <span>Share on Telegram</span>
+                            </button>
+                            <button class="share-btn app-share" id="appShareBtn">
+                                <i class="fas fa-share-square"></i>
+                                <span>Copy App Link</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="referral-instructions">
+                        <h4><i class="fas fa-graduation-cap"></i> How It Works</h4>
+                        <div class="instructions-grid">
+                            <div class="instruction">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h5>Share Your Link</h5>
+                                    <p>Copy your unique link and share it with friends</p>
+                                </div>
+                            </div>
+                            <div class="instruction">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h5>Friend Joins App</h5>
+                                    <p>They click the link and open the VIP Mining App</p>
+                                </div>
+                            </div>
+                            <div class="instruction">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h5>Get Instant Rewards</h5>
+                                    <p>You receive +25 points automatically when they join</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress & Ranking -->
+            <div class="progress-ranking">
+                <div class="ranking-header">
+                    <h3><i class="fas fa-trophy"></i> Rank Progress</h3>
+                    <div class="next-rank-info" id="nextRank">Next: Pro (200 points)</div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-track">
+                        <div class="progress-fill" id="progressFill"></div>
+                        <div class="progress-marker" id="progressMarker"></div>
+                    </div>
+                    <div class="progress-labels">
+                        <span class="current-label" id="currentLabel">Beginner</span>
+                        <span class="target-label" id="targetLabel">Pro</span>
+                    </div>
+                </div>
+                
+                <div class="rank-details">
+                    <div class="detail-card">
+                        <div class="detail-icon"><i class="fas fa-bullseye"></i></div>
+                        <div class="detail-content">
+                            <div class="detail-title">Current Points</div>
+                            <div class="detail-value" id="currentPoints">0</div>
+                        </div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-icon"><i class="fas fa-flag-checkered"></i></div>
+                        <div class="detail-content">
+                            <div class="detail-title">Points Needed</div>
+                            <div class="detail-value" id="remainingPoints">200</div>
+                        </div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-icon"><i class="fas fa-crown"></i></div>
+                        <div class="detail-content">
+                            <div class="detail-title">Next Reward</div>
+                            <div class="detail-value">+2 Points</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Grid -->
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                    <div class="feature-title">Secure</div>
+                    <div class="feature-desc">Bank-level security</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-bolt"></i></div>
+                    <div class="feature-title">Fast</div>
+                    <div class="feature-desc">Instant withdrawals</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-globe"></i></div>
+                    <div class="feature-title">Global</div>
+                    <div class="feature-desc">Available worldwide</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-headset"></i></div>
+                    <div class="feature-title">24/7 Support</div>
+                    <div class="feature-desc">Always here to help</div>
+                </div>
+            </div>
+        </main>
+
+        <!-- App Footer -->
+        <footer class="app-footer">
+            <div class="footer-nav">
+                <button class="nav-btn" onclick="showHelp()">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Help</span>
+                </button>
+                <button class="nav-btn" onclick="showStats()">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Stats</span>
+                </button>
+                <button class="nav-btn" onclick="refreshApp()">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Refresh</span>
+                </button>
+                <button class="nav-btn" onclick="showSettings()">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </button>
             </div>
             
-            <div class="referral-stats">
-                <div class="ref-stat">
-                    <div class="ref-stat-value" id="refCount">0</div>
-                    <div class="ref-stat-label">إجمالي الإحالات</div>
+            <div class="footer-info">
+                <div class="app-version">VIP Mining v2.0</div>
+                <div class="connection-status" id="connectionStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Connecting...</span>
                 </div>
-                <div class="ref-stat">
-                    <div class="ref-stat-value" id="refEarned">0</div>
-                    <div class="ref-stat-label">النقاط المكتسبة</div>
-                </div>
-                <div class="ref-stat">
-                    <div class="ref-stat-value" id="refRank">مبتدئ</div>
-                    <div class="ref-stat-label">رتبتك</div>
-                </div>
-            </div>
-
-            <!-- Referral Link -->
-            <div class="referral-link-container">
-                <div class="input-group">
-                    <div class="input-icon">
-                        <i class="fas fa-link"></i>
-                    </div>
-                    <input type="text" 
-                           class="referral-input" 
-                           id="referralLink" 
-                           value="جارِ إنشاء رابط الإحالة..." 
-                           readonly>
-                    <button class="copy-btn" id="copyBtn">
-                        <i class="far fa-copy"></i>
-                    </button>
-                </div>
-                <div class="referral-actions">
-                    <button class="action-btn" id="shareBtn">
-                        <i class="fab fa-telegram"></i> شارك على تلغرام
-                    </button>
-                    <button class="action-btn secondary" id="whatsappBtn">
-                        <i class="fab fa-whatsapp"></i> شارك على واتساب
-                    </button>
-                </div>
-            </div>
-
-            <!-- How it Works -->
-            <div class="referral-info">
-                <h4><i class="fas fa-info-circle"></i> كيف يعمل نظام الإحالة؟</h4>
-                <div class="info-steps">
-                    <div class="step">
-                        <div class="step-number">1</div>
-                        <div class="step-content">
-                            <strong>شارك رابطك الفريد</strong>
-                            <p>انسخ وشارك الرابط أعلاه مع أصدقائك</p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">2</div>
-                        <div class="step-content">
-                            <strong>ينضم صديقك عبر تلغرام</strong>
-                            <p>يجب أن يضغط على الرابط وينضم عبر @VIPMainingPROBot</p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">3</div>
-                        <div class="step-content">
-                            <strong>احصل على مكافآت تلقائية</strong>
-                            <p>تحصل على +25 نقطة فور انضمامه</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Progress Section -->
-        <div class="progress-section">
-            <div class="progress-header">
-                <h4><i class="fas fa-trophy"></i> تقدم الرتبة</h4>
-                <div class="next-rank" id="nextRank">التالي: محترف (200 نقطة)</div>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
-            </div>
-            <div class="progress-stats">
-                <div class="progress-stat">
-                    <span>الحالي:</span>
-                    <span id="currentPoints">100</span>
-                </div>
-                <div class="progress-stat">
-                    <span>الهدف:</span>
-                    <span id="targetPoints">200</span>
-                </div>
-                <div class="progress-stat">
-                    <span>المتبقي:</span>
-                    <span id="remainingPoints">100</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Daily Bonus Section -->
-        <div class="bonus-section">
-            <h3><i class="fas fa-calendar-star"></i> مكافآت يومية</h3>
-            <div class="bonus-grid">
-                <div class="bonus-item">
-                    <div class="bonus-icon">🎁</div>
-                    <div class="bonus-info">
-                        <div class="bonus-title">تسجيل يومي</div>
-                        <div class="bonus-amount">+10 نقطة</div>
-                    </div>
-                </div>
-                <div class="bonus-item">
-                    <div class="bonus-icon">👥</div>
-                    <div class="bonus-info">
-                        <div class="bonus-title">إحالة جديدة</div>
-                        <div class="bonus-amount">+25 نقطة</div>
-                    </div>
-                </div>
-                <div class="bonus-item">
-                    <div class="bonus-icon">⚡</div>
-                    <div class="bonus-info">
-                        <div class="bonus-title">نشاط مستمر</div>
-                        <div class="bonus-amount">+5 نقاط</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <footer class="app-footer">
-            <div class="footer-links">
-                <a href="javascript:void(0)" class="footer-link" onclick="showHelp()">
-                    <i class="fas fa-question-circle"></i> مساعدة
-                </a>
-                <a href="javascript:void(0)" class="footer-link" onclick="showStatistics()">
-                    <i class="fas fa-chart-bar"></i> إحصائيات
-                </a>
-                <a href="javascript:void(0)" class="footer-link" onclick="refreshPage()">
-                    <i class="fas fa-sync-alt"></i> تحديث
-                </a>
-            </div>
-            <div class="footer-copyright">
-                <p>مدعوم بـ @VIPMainingPROBot • تعدين VIP © 2024</p>
-                <p id="connectionStatus">🔵 جارِ الاتصال...</p>
+                <div class="copyright">© 2024 VIP Mining. All rights reserved.</div>
             </div>
         </footer>
     </div>
 
-    <!-- App JavaScript -->
+    <!-- Notification Toast -->
+    <div class="notification-toast" id="notificationToast">
+        <div class="toast-content">
+            <i class="fas fa-check-circle toast-icon"></i>
+            <span class="toast-message" id="toastMessage">Notification</span>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <div class="loading-text">Loading VIP Mining...</div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
     <script src="app.js"></script>
     
-    <!-- Helper Functions -->
+    <!-- Helper Script -->
     <script>
-        // وظائف المساعدة
+        // Helper functions
         function showHelp() {
-            const helpMessage = `
-                <div style="text-align: right; line-height: 1.8;">
-                    <h3 style="color: #3b82f6; margin-bottom: 15px;">🧭 دليل استخدام التطبيق</h3>
-                    
-                    <p><strong>⛏️ التعدين:</strong></p>
-                    <p>• اضغط على زر "ابدأ التعدين" كل 5 ثوانٍ</p>
-                    <p>• كل نقرة = +1 إلى +5 نقاط (حسب رتبتك)</p>
-                    
-                    <p><strong>👥 نظام الإحالة:</strong></p>
-                    <p>• انسخ رابط الإحالة وشاركه</p>
-                    <p>• كل صديق ينضم = +25 نقطة لك</p>
-                    
-                    <p><strong>🏆 نظام الرتب:</strong></p>
-                    <p>• مبتدئ: 0-199 نقطة</p>
-                    <p>• محترف: 200-499 نقطة</p>
-                    <p>• خبير: 500-999 نقطة</p>
-                    <p>• فائب: 1000+ نقطة</p>
-                    
-                    <p><strong>💾 الحفظ التلقائي:</strong></p>
-                    <p>• بياناتك تحفظ تلقائياً</p>
-                    <p>• تعود عند إعادة فتح التطبيق</p>
+            const helpContent = `
+                <div class="help-modal">
+                    <h3>🎮 VIP Mining Guide</h3>
+                    <div class="help-section">
+                        <h4><i class="fas fa-coins"></i> Mining System</h4>
+                        <p>• Click "Start Mining" every 5 seconds</p>
+                        <p>• Earn 1-5 points per click (based on rank)</p>
+                        <p>• Higher ranks = Bigger rewards</p>
+                    </div>
+                    <div class="help-section">
+                        <h4><i class="fas fa-share-alt"></i> Referral Program</h4>
+                        <p>• Share your unique referral link</p>
+                        <p>• Get +25 points for each friend who joins</p>
+                        <p>• No limit on referrals!</p>
+                    </div>
+                    <div class="help-section">
+                        <h4><i class="fas fa-trophy"></i> Ranking System</h4>
+                        <p>• Beginner: 0-199 points (1 point/click)</p>
+                        <p>• Pro: 200-499 points (2 points/click)</p>
+                        <p>• Expert: 500-999 points (3 points/click)</p>
+                        <p>• VIP: 1000+ points (5 points/click)</p>
+                    </div>
                 </div>
             `;
             
-            if (window.showMessage) {
-                window.showMessage('فتح دليل المساعدة', 'info');
-                setTimeout(() => {
-                    alert(helpMessage);
-                }, 500);
-            } else {
-                alert(helpMessage);
-            }
+            showNotification('Opening Help Guide', 'info');
+            setTimeout(() => {
+                alert('Help Guide:\n\n1. Mine every 5 seconds\n2. Share link for +25 points\n3. Rank up for better rewards\n4. Data saves automatically');
+            }, 300);
         }
         
-        function showStatistics() {
+        function showStats() {
             if (window.userData) {
-                const stats = `
-                    📊 <strong>إحصائيات حسابك</strong>
-                    
-                    💰 الرصيد: ${window.userData.balance} نقطة
-                    👥 الإحالات: ${window.userData.referrals}
-                    📈 الإجمالي: ${window.userData.totalEarned} نقطة
-                    🏆 الرتبة: ${window.userData.rank}
-                    🎯 أرباح الإحالة: ${window.userData.referralEarnings} نقطة
-                    
-                    ⏳ آخر تعدين: ${window.userData.lastMineTime ? 'قبل قليل' : 'لم يبدأ بعد'}
-                `;
-                
-                if (window.showMessage) {
-                    window.showMessage('فتح الإحصائيات', 'info');
-                    setTimeout(() => {
-                        alert(stats);
-                    }, 500);
-                } else {
-                    alert(stats);
-                }
+                showNotification('Loading Statistics...', 'info');
+                setTimeout(() => {
+                    alert(`📊 Your Statistics:\n\n• Balance: ${window.userData.balance} points\n• Referrals: ${window.userData.referrals}\n• Total Earned: ${window.userData.totalEarned}\n• Rank: ${window.userData.rank}\n• Referral Earnings: ${window.userData.referralEarnings} points`);
+                }, 300);
             }
         }
         
-        function refreshPage() {
-            if (confirm('هل تريد تحديث الصفحة؟ ستحتفظ بياناتك.')) {
+        function refreshApp() {
+            if (confirm('Refresh application?\nYour data is saved automatically.')) {
                 location.reload();
             }
         }
         
-        // إخفاء عناصر غير ضرورية في Telegram
-        document.addEventListener('DOMContentLoaded', function() {
-            if (window.Telegram && Telegram.WebApp) {
-                // إضافة كلاس لـ Telegram
-                document.body.classList.add('tg');
+        function showSettings() {
+            showNotification('Settings Panel Coming Soon', 'info');
+        }
+        
+        function showNotification(message, type = 'info') {
+            if (window.showToast) {
+                window.showToast(message, type);
             }
+        }
+        
+        // Initialize when ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hide loading after 2 seconds
+            setTimeout(() => {
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                if (loadingOverlay) {
+                    loadingOverlay.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingOverlay.style.display = 'none';
+                    }, 300);
+                }
+            }, 2000);
         });
     </script>
 </body>
-                    </html>
+</html>
