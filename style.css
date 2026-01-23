@@ -3,21 +3,28 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     color: #f8fafc;
     line-height: 1.6;
     min-height: 100vh;
     padding: 20px;
+    transition: all 0.3s ease;
 }
 
 .container {
     max-width: 450px;
     margin: 0 auto;
     padding-bottom: 30px;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* ====== HEADER ====== */
@@ -31,6 +38,12 @@ body {
     border-radius: 20px;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: slideDown 0.5s ease;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .logo {
@@ -45,6 +58,13 @@ body {
     background: rgba(251, 191, 36, 0.1);
     padding: 10px;
     border-radius: 12px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
 }
 
 .logo h1 {
@@ -71,6 +91,12 @@ body {
     justify-content: center;
     font-weight: bold;
     font-size: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    transition: transform 0.3s;
+}
+
+.user-avatar:hover {
+    transform: scale(1.05);
 }
 
 .user-info {
@@ -81,6 +107,7 @@ body {
 .username {
     font-weight: 600;
     font-size: 14px;
+    color: #f8fafc;
 }
 
 .user-id {
@@ -98,6 +125,12 @@ body {
     border: 1px solid rgba(59, 130, 246, 0.2);
     position: relative;
     overflow: hidden;
+    animation: slideUp 0.6s ease;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .balance-card::before {
@@ -133,6 +166,11 @@ body {
     font-size: 12px;
     font-weight: 600;
     border: 1px solid rgba(34, 197, 94, 0.3);
+    transition: all 0.3s;
+}
+
+.rank-badge:hover {
+    transform: scale(1.05);
 }
 
 .balance-amount {
@@ -142,6 +180,12 @@ body {
     text-align: center;
     margin: 10px 0;
     text-shadow: 0 0 30px rgba(251, 191, 36, 0.3);
+    animation: glow 2s infinite alternate;
+}
+
+@keyframes glow {
+    from { text-shadow: 0 0 20px rgba(251, 191, 36, 0.3); }
+    to { text-shadow: 0 0 30px rgba(251, 191, 36, 0.5); }
 }
 
 .balance-sub {
@@ -164,6 +208,11 @@ body {
     gap: 8px;
     color: #cbd5e0;
     font-size: 14px;
+    transition: transform 0.3s;
+}
+
+.stat-item:hover {
+    transform: translateY(-2px);
 }
 
 .stat-item i {
@@ -177,6 +226,7 @@ body {
     padding: 25px;
     margin-bottom: 25px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: slideUp 0.7s ease;
 }
 
 .mining-header {
@@ -191,6 +241,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
+    color: #f8fafc;
 }
 
 .mining-power {
@@ -219,6 +270,19 @@ body {
     cursor: pointer;
     transition: all 0.3s;
     margin-bottom: 15px;
+    position: relative;
+    overflow: hidden;
+}
+
+.mine-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
 }
 
 .mine-btn:hover:not(:disabled) {
@@ -226,9 +290,17 @@ body {
     box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
 }
 
+.mine-btn:hover:not(:disabled)::before {
+    left: 100%;
+}
+
 .mine-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+}
+
+.mine-btn:active:not(:disabled) {
+    transform: scale(0.98);
 }
 
 .mine-icon {
@@ -236,6 +308,11 @@ body {
     background: rgba(255, 255, 255, 0.2);
     padding: 12px;
     border-radius: 12px;
+    transition: transform 0.3s;
+}
+
+.mine-btn:hover:not(:disabled) .mine-icon {
+    transform: rotate(15deg);
 }
 
 .mine-text {
@@ -252,6 +329,7 @@ body {
 .mine-reward {
     font-size: 20px;
     font-weight: 700;
+    color: #fbbf24;
 }
 
 .mine-cooldown {
@@ -261,6 +339,8 @@ body {
     border-radius: 10px;
     font-size: 12px;
     font-family: monospace;
+    min-width: 40px;
+    text-align: center;
 }
 
 .mining-tip {
@@ -272,6 +352,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
+    animation: pulse 3s infinite;
 }
 
 /* ====== REFERRAL SECTION ====== */
@@ -281,6 +362,7 @@ body {
     padding: 25px;
     margin-bottom: 25px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: slideUp 0.8s ease;
 }
 
 .section-header {
@@ -295,6 +377,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
+    color: #f8fafc;
 }
 
 .referral-bonus {
@@ -320,6 +403,12 @@ body {
     padding: 15px;
     border-radius: 12px;
     text-align: center;
+    transition: transform 0.3s, background 0.3s;
+}
+
+.ref-stat:hover {
+    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .ref-stat-value {
@@ -345,6 +434,12 @@ body {
     border-radius: 12px;
     overflow: hidden;
     margin-bottom: 15px;
+    transition: border-color 0.3s;
+}
+
+.input-group:focus-within {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
 .input-icon {
@@ -364,6 +459,12 @@ body {
     font-size: 14px;
     outline: none;
     font-family: monospace;
+    width: 100%;
+}
+
+.referral-input::selection {
+    background: rgba(59, 130, 246, 0.5);
+    color: white;
 }
 
 .copy-btn {
@@ -372,11 +473,19 @@ body {
     padding: 0 20px;
     color: #60a5fa;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
 }
 
 .copy-btn:hover {
     background: rgba(59, 130, 246, 0.3);
+}
+
+.copy-btn:active {
+    transform: scale(0.95);
 }
 
 .referral-actions {
@@ -406,6 +515,7 @@ body {
 
 .action-btn:hover {
     transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
 }
 
 .action-btn.secondary {
@@ -431,6 +541,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
+    color: #f8fafc;
 }
 
 .info-steps {
@@ -442,6 +553,7 @@ body {
 .step {
     display: flex;
     gap: 15px;
+    align-items: flex-start;
 }
 
 .step-number {
@@ -456,6 +568,11 @@ body {
     font-weight: bold;
     font-size: 14px;
     flex-shrink: 0;
+    transition: transform 0.3s;
+}
+
+.step:hover .step-number {
+    transform: scale(1.1);
 }
 
 .step-content {
@@ -472,6 +589,7 @@ body {
 .step-content p {
     color: #94a3b8;
     font-size: 13px;
+    line-height: 1.5;
 }
 
 /* ====== PROGRESS SECTION ====== */
@@ -481,6 +599,7 @@ body {
     padding: 25px;
     margin-bottom: 25px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: slideUp 0.9s ease;
 }
 
 .progress-header {
@@ -495,6 +614,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
+    color: #f8fafc;
 }
 
 .next-rank {
@@ -511,6 +631,7 @@ body {
     border-radius: 5px;
     overflow: hidden;
     margin-bottom: 20px;
+    position: relative;
 }
 
 .progress-fill {
@@ -519,6 +640,24 @@ body {
     border-radius: 5px;
     width: 0%;
     transition: width 0.5s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 20px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(400%); }
 }
 
 .progress-stats {
@@ -532,6 +671,11 @@ body {
     padding: 12px;
     border-radius: 10px;
     text-align: center;
+    transition: transform 0.3s;
+}
+
+.progress-stat:hover {
+    transform: translateY(-2px);
 }
 
 .progress-stat span:first-child {
@@ -547,11 +691,54 @@ body {
     font-size: 14px;
 }
 
+/* ====== DEMO CONTROLS ====== */
+.demo-controls {
+    background: rgba(15, 23, 42, 0.9);
+    border-radius: 15px;
+    padding: 15px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 2px dashed #8b5cf6;
+    animation: slideUp 1s ease;
+}
+
+.demo-btn {
+    background: linear-gradient(135deg, #3b82f6, #6366f1);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s;
+}
+
+.demo-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+}
+
+.demo-btn.reset {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.demo-btn.reset:hover {
+    box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+}
+
 /* ====== FOOTER ====== */
 .app-footer {
     text-align: center;
     padding-top: 25px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
+    animation: slideUp 1.1s ease;
 }
 
 .footer-links {
@@ -568,11 +755,15 @@ body {
     display: flex;
     align-items: center;
     gap: 6px;
-    transition: color 0.3s;
+    transition: all 0.3s;
+    padding: 8px 12px;
+    border-radius: 8px;
 }
 
 .footer-link:hover {
     color: #60a5fa;
+    background: rgba(59, 130, 246, 0.1);
+    transform: translateY(-2px);
 }
 
 .footer-copyright {
@@ -584,13 +775,20 @@ body {
     margin: 5px 0;
 }
 
+#connectionStatus {
+    font-size: 12px;
+    margin-top: 5px;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
 /* ====== TOAST NOTIFICATION ====== */
 .toast {
     position: fixed;
     bottom: 30px;
     left: 50%;
     transform: translateX(-50%) translateY(100px);
-    background: rgba(34, 197, 94, 0.9);
+    background: #10b981;
     color: white;
     padding: 15px 25px;
     border-radius: 10px;
@@ -601,6 +799,9 @@ body {
     opacity: 0;
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
+    max-width: 90%;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
 }
 
 .toast.show {
@@ -608,18 +809,41 @@ body {
     transform: translateX(-50%) translateY(0);
 }
 
+.toast-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .toast-content i {
     font-size: 18px;
 }
 
-/* ====== RESPONSIVE ====== */
+.toast-message {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* ====== RESPONSIVE DESIGN ====== */
 @media (max-width: 480px) {
-    .container {
+    body {
         padding: 15px;
+    }
+    
+    .container {
+        padding-bottom: 20px;
     }
     
     .app-header {
         padding: 15px;
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .user-section {
+        justify-content: center;
+        width: 100%;
     }
     
     .balance-amount {
@@ -640,4 +864,94 @@ body {
         flex-wrap: wrap;
         gap: 15px;
     }
+    
+    .input-group {
+        flex-direction: column;
+    }
+    
+    .copy-btn {
+        padding: 10px;
+        width: 100%;
+    }
 }
+
+@media (max-width: 380px) {
+    .app-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .user-section {
+        justify-content: center;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .referral-bonus {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ====== LOADING ANIMATION ====== */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #3b82f6;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ====== SCROLLBAR ====== */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(30, 41, 59, 0.5);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #4f93ff, #9d78ff);
+}
+
+/* ====== SELECTION ====== */
+::selection {
+    background: rgba(59, 130, 246, 0.5);
+    color: white;
+}
+
+/* ====== FOCUS STATES ====== */
+button:focus, 
+input:focus, 
+textarea:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* ====== PRINT STYLES ====== */
+@media print {
+    .demo-controls,
+    .action-btn,
+    .copy-btn,
+    .mine-btn {
+        display: none !important;
+    }
+        }
