@@ -221,13 +221,13 @@
         <!-- Footer -->
         <footer class="app-footer">
             <div class="footer-links">
-                <a href="javascript:void(0)" class="footer-link" onclick="showHelp()">
+                <a href="javascript:void(0)" class="footer-link" id="helpBtn">
                     <i class="fas fa-question-circle"></i> Help
                 </a>
-                <a href="javascript:void(0)" class="footer-link" onclick="showStatistics()">
+                <a href="javascript:void(0)" class="footer-link" id="statsBtn">
                     <i class="fas fa-chart-bar"></i> Statistics
                 </a>
-                <a href="javascript:void(0)" class="footer-link" onclick="refreshPage()">
+                <a href="javascript:void(0)" class="footer-link" id="refreshBtn">
                     <i class="fas fa-sync-alt"></i> Refresh
                 </a>
             </div>
@@ -243,26 +243,90 @@
     
     <!-- Helper Functions -->
     <script>
+        // انتظر حتى يتم تحميل app.js أولاً
+        document.addEventListener('DOMContentLoaded', function() {
+            // الانتظار قليلاً للتأكد من تحميل app.js
+            setTimeout(function() {
+                // إعداد أزرار التحكم
+                setupControlButtons();
+                
+                // التحقق من الإحالة في URL
+                checkUrlForReferral();
+            }, 1000);
+        });
+        
+        function setupControlButtons() {
+            // زر المساعدة
+            const helpBtn = document.getElementById('helpBtn');
+            if (helpBtn) {
+                helpBtn.addEventListener('click', showHelp);
+            }
+            
+            // زر الإحصائيات
+            const statsBtn = document.getElementById('statsBtn');
+            if (statsBtn) {
+                statsBtn.addEventListener('click', showStatistics);
+            }
+            
+            // زر التحديث
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', refreshPage);
+            }
+        }
+        
+        function checkUrlForReferral() {
+            // التحقق من وجود كود إحالة في URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const referrerCode = urlParams.get('startapp') || 
+                               urlParams.get('ref') || 
+                               urlParams.get('start');
+            
+            if (referrerCode) {
+                console.log("🔗 URL referral code detected:", referrerCode);
+                
+                // حفظ في localStorage للمعالجة لاحقاً
+                localStorage.setItem('pending_referral', referrerCode);
+                
+                // إذا كان التطبيق جاهزاً، معالجة الإحالة فوراً
+                if (window.userData && window.userData.userId && window.processReferral) {
+                    setTimeout(function() {
+                        window.processReferral(referrerCode);
+                    }, 1500);
+                }
+            }
+        }
+        
         function showHelp() {
             const helpMessage = `
                 <div style="text-align: left; line-height: 1.8; padding: 20px;">
-                    <h3 style="color: #3b82f6; margin-bottom: 15px;">🧭 How Referrals Work</h3>
+                    <h3 style="color: #3b82f6; margin-bottom: 15px;">🧭 How VIP Mining Works</h3>
                     
-                    <p><strong>🔗 Your Referral Link:</strong></p>
-                    <p><code>https://t.me/VIPMainingPROBot/PRO?startapp=YOUR_CODE</code></p>
+                    <p><strong>⛏️ Mining Points:</strong></p>
+                    <p>• Click the Mine button every 5 seconds</p>
+                    <p>• Earn points based on your rank</p>
+                    <p>• Higher ranks = more points per click</p>
                     
-                    <p><strong>✅ When friend clicks:</strong></p>
-                    <p>1. Telegram Mini App opens directly</p>
-                    <p>2. App reads referral code automatically</p>
-                    <p>3. You get +25 points instantly</p>
+                    <p><strong>👥 Referral System:</strong></p>
+                    <p>1. Share your unique referral link</p>
+                    <p>2. When friend joins, both get +25 points</p>
+                    <p>3. Track your referrals in statistics</p>
                     
-                    <p><strong>⚠️ Important:</strong></p>
-                    <p>• Link must open the Mini App, not just bot chat</p>
-                    <p>• Use the copy button below your referral link</p>
-                    <p>• Share via Telegram for best results</p>
+                    <p><strong>🏆 Ranking System:</strong></p>
+                    <p>• Beginner: 1 point/click</p>
+                    <p>• Professional: 2 points/click</p>
+                    <p>• Expert: 3 points/click</p>
+                    <p>• VIP: 5 points/click</p>
+                    <p>• Legend: 10 points/click</p>
+                    
+                    <p><strong>💾 Data Saving:</strong></p>
+                    <p>• Your progress saves automatically</p>
+                    <p>• Works offline (local storage)</p>
+                    <p>• Syncs with cloud when online</p>
                 </div>
             `;
             
+            // استخدام دالة showMessage من app.js إذا كانت موجودة
             if (window.showMessage) {
                 window.showMessage('Opening help guide', 'info');
                 setTimeout(() => {
@@ -275,17 +339,22 @@
         
         function showStatistics() {
             if (window.userData) {
+                const lastMineTime = window.userData.lastMineTime ? 
+                    new Date(window.userData.lastMineTime).toLocaleTimeString() : 
+                    'Not started';
+                
                 const stats = `
                     📊 <strong>Your Statistics</strong>
-                    
+                    ------------------------------------
                     💰 Balance: ${window.userData.balance} points
                     👥 Referrals: ${window.userData.referrals}
-                    📈 Total: ${window.userData.totalEarned} points
+                    📈 Total Earned: ${window.userData.totalEarned} points
                     🏆 Rank: ${window.userData.rank}
                     🎯 Referral Earnings: ${window.userData.referralEarnings} points
-                    🔗 Your Code: ${window.userData.referralCode || 'Not set'}
-                    
-                    ⏳ Last Mine: ${window.userData.lastMineTime ? 'Recently' : 'Not started'}
+                    🔗 Your Code: ${window.userData.referralCode || 'Generating...'}
+                    ⏳ Last Mine: ${lastMineTime}
+                    ------------------------------------
+                    💾 Storage: ${localStorage.getItem('vip_mining_' + window.userData.userId) ? 'Active' : 'Not saved'}
                 `;
                 
                 if (window.showMessage) {
@@ -297,27 +366,15 @@
                     alert(stats);
                 }
             } else {
-                alert("Please wait for app to load...");
+                alert("📱 Loading app data... Please wait a moment.");
             }
         }
         
         function refreshPage() {
-            if (confirm('Refresh page? Your progress is saved.')) {
+            if (confirm('🔄 Refresh page?\n\nYour progress is automatically saved. Refresh only if the app is not responding.')) {
                 location.reload();
             }
         }
-        
-        // Check for referral on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add referral check from URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const referrerCode = urlParams.get('startapp');
-            
-            if (referrerCode) {
-                console.log("URL referral code detected:", referrerCode);
-                localStorage.setItem('pending_referral', referrerCode);
-            }
-        });
     </script>
 </body>
 </html>
