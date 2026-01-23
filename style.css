@@ -12,8 +12,8 @@ body {
     line-height: 1.6;
     min-height: 100vh;
     padding: 20px;
-    direction: ltr; /* Changed from rtl */
-    text-align: left; /* Changed from right */
+    direction: ltr;
+    text-align: left;
 }
 
 .container {
@@ -79,19 +79,21 @@ body {
 .user-info {
     display: flex;
     flex-direction: column;
-    text-align: left; /* Added */
+    text-align: left;
 }
 
 .username {
     font-weight: 600;
-    font-size: 14px;
-    color: #f8fafc;
+    font-size: 16px;
+    color: #fbbf24;
+    margin-bottom: 3px;
 }
 
 .user-id {
-    font-size: 12px;
+    font-size: 13px;
     color: #94a3b8;
     font-family: monospace;
+    opacity: 0.8;
 }
 
 /* ====== Balance Card ====== */
@@ -236,11 +238,17 @@ body {
     cursor: pointer;
     transition: all 0.3s;
     margin-bottom: 15px;
+    position: relative;
+    z-index: 10;
 }
 
 .mine-btn:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+}
+
+.mine-btn:active:not(:disabled) {
+    transform: scale(0.98);
 }
 
 .mine-btn:disabled {
@@ -391,11 +399,14 @@ body {
     outline: none;
     font-family: monospace;
     width: 100%;
-    text-align: left; /* Changed from right */
+    text-align: left;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
 }
 
 .copy-btn {
-    background: linear-gradient(135deg, #3b82f6, #6366f1); /* Improved */
+    background: linear-gradient(135deg, #3b82f6, #6366f1);
     border: none;
     padding: 0 20px;
     color: white;
@@ -404,11 +415,11 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 70px; /* Increased */
+    min-width: 70px;
 }
 
 .copy-btn:hover {
-    background: linear-gradient(135deg, #4f93ff, #7c7dff); /* Improved */
+    background: linear-gradient(135deg, #4f93ff, #7c7dff);
 }
 
 .referral-actions {
@@ -656,9 +667,9 @@ body {
 .app-footer {
     text-align: center;
     padding: 20px;
-    background: rgba(15, 23, 42, 0.8); /* Added */
-    border-radius: 15px; /* Added */
-    margin-top: 10px; /* Added */
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 15px;
+    margin-top: 10px;
 }
 
 .footer-links {
@@ -702,8 +713,8 @@ body {
 .message {
     position: fixed;
     top: 20px;
-    left: 50%; /* Changed from right: 50% */
-    transform: translateX(-50%) translateY(-100px); /* Changed from translateX(50%) */
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
     background: #10b981;
     color: white;
     padding: 12px 24px;
@@ -720,7 +731,7 @@ body {
 
 .message.show {
     opacity: 1;
-    transform: translateX(-50%) translateY(0); /* Fixed */
+    transform: translateX(-50%) translateY(0);
 }
 
 /* Message variants */
@@ -825,4 +836,4 @@ body {
     .ref-stat-value {
         font-size: 20px;
     }
-    }
+}
