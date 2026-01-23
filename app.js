@@ -52,11 +52,11 @@ let userData = {
     firstName: 'User'
 };
 
-// Configuration
+// Configuration - UPDATED REFERRAL REWARDS
 const CONFIG = {
     MINE_COOLDOWN: 5000,
-    REFERRAL_REWARD: 25,
-    REFERRER_REWARD: 10,
+    REFERRAL_REWARD: 25,      // مكافأة المحال
+    REFERRER_REWARD: 25,      // مكافأة المحيل (تم التحديث من 10 إلى 25)
     
     RANKS: [
         { name: 'Beginner', min: 0, max: 199, reward: 1, power: '10/hour' },
@@ -114,7 +114,8 @@ function cacheElements() {
         'rewardAmount', 'referralLink', 'copyBtn', 'miningPower',
         'refCount', 'refEarned', 'refRank', 'progressFill',
         'nextRank', 'currentPoints', 'targetPoints', 'remainingPoints',
-        'connectionStatus', 'cooldownTimer', 'shareBtn', 'whatsappBtn'
+        'connectionStatus', 'cooldownTimer', 'shareBtn', 'whatsappBtn',
+        'telegramBtn' // تمت إضافة زر تيليجرام
     ];
     
     elementIds.forEach(id => {
@@ -221,7 +222,7 @@ function updateReferralLink() {
 }
 
 // ============================================
-// Storage System
+// Storage System - INSTANT SAVE
 // ============================================
 
 async function loadUserData() {
@@ -249,15 +250,15 @@ async function loadUserData() {
             await loadUserFromFirebase();
         }
         
-        // Save to ensure consistency
-        saveUserData();
+        // Save instantly to ensure consistency
+        saveUserDataInstantly();
         
     } catch (error) {
         console.error("❌ Load error:", error);
     }
 }
 
-function saveUserData() {
+function saveUserDataInstantly() {
     try {
         const storageKey = `vip_mining_${userData.userId}`;
         const dataToSave = {
@@ -277,19 +278,19 @@ function saveUserData() {
         
         localStorage.setItem(storageKey, JSON.stringify(dataToSave));
         
-        // Save to Firebase
+        // Save to Firebase instantly
         if (db) {
-            saveUserToFirebase();
+            saveUserToFirebaseInstantly();
         }
         
-        console.log("💾 Data saved");
+        console.log("💾 Data saved instantly");
     } catch (error) {
         console.error("❌ Save error:", error);
     }
 }
 
 // ============================================
-// Firebase Integration
+// Firebase Integration - INSTANT SAVE
 // ============================================
 
 async function syncUserWithFirebase() {
@@ -321,7 +322,11 @@ async function syncUserWithFirebase() {
                 lastActive: firebase.firestore.FieldValue.serverTimestamp(),
                 username: userData.username,
                 firstName: userData.firstName,
-                balance: userData.balance
+                balance: userData.balance,
+                totalEarned: userData.totalEarned,
+                rank: userData.rank,
+                referrals: userData.referrals,
+                referralEarnings: userData.referralEarnings
             });
         }
     } catch (error) {
@@ -357,7 +362,7 @@ async function loadUserFromFirebase() {
     }
 }
 
-function saveUserToFirebase() {
+function saveUserToFirebaseInstantly() {
     if (!db) return;
     
     try {
@@ -375,9 +380,10 @@ function saveUserToFirebase() {
             totalEarned: userData.totalEarned,
             rank: userData.rank,
             lastMineTime: userData.lastMineTime,
-            lastActive: firebase.firestore.FieldValue.serverTimestamp()
+            lastActive: firebase.firestore.FieldValue.serverTimestamp(),
+            lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true }).then(() => {
-            console.log("🔥 Saved to Firebase");
+            console.log("🔥 Saved to Firebase instantly");
         }).catch(error => {
             console.error("❌ Firebase save error:", error);
         });
@@ -388,7 +394,7 @@ function saveUserToFirebase() {
 }
 
 // ============================================
-// Referral Processing
+// Referral Processing - UPDATED REWARDS
 // ============================================
 
 function checkForReferral() {
@@ -452,7 +458,11 @@ async function processReferral(referralCode) {
                     return;
                 }
                 
-                // Update referrer's data
+                // ✅ UPDATE 1: مكافأة المحال (المستخدم الجديد) - 25 نقطة
+                userData.balance += CONFIG.REFERRAL_REWARD;
+                userData.totalEarned += CONFIG.REFERRAL_REWARD;
+                
+                // ✅ UPDATE 2: مكافأة المحيل - 25 نقطة (بدلاً من 10)
                 await referrerDoc.ref.update({
                     referrals: firebase.firestore.FieldValue.increment(1),
                     referralEarnings: firebase.firestore.FieldValue.increment(CONFIG.REFERRER_REWARD),
@@ -465,36 +475,38 @@ async function processReferral(referralCode) {
                 
                 // Update locally
                 userData.referrals += 1;
-                userData.balance += CONFIG.REFERRER_REWARD;
-                userData.totalEarned += CONFIG.REFERRER_REWARD;
                 userData.referralEarnings += CONFIG.REFERRER_REWARD;
                 
-                // Save data
-                saveUserData();
+                // ✅ UPDATE 3: حفظ فوري
+                saveUserDataInstantly();
                 updateUI();
                 
-                // Show success message
-                showMessage(`🎉 Referral successful! +${CONFIG.REFERRER_REWARD} points`, 'success');
+                // Show success message with both rewards
+                showMessage(`🎉 Referral successful! You got +${CONFIG.REFERRAL_REWARD} points and referrer got +${CONFIG.REFERRER_REWARD} points`, 'success');
                 
                 // Log referral event
                 await logReferralEvent(referrerData.userId, userData.userId, referralCode);
                 
-                console.log("✅ Referral processed successfully");
+                console.log("✅ Referral processed successfully with new rewards");
                 return true;
             }
         }
         
         // Fallback to local storage if Firebase not available
         userData.referredBy = referralCode;
-        userData.balance += CONFIG.REFERRER_REWARD;
-        userData.totalEarned += CONFIG.REFERRER_REWARD;
+        // ✅ UPDATE 4: كلا المكافآت في الحالة المحلية
+        userData.balance += CONFIG.REFERRAL_REWARD + CONFIG.REFERRER_REWARD;
+        userData.totalEarned += CONFIG.REFERRAL_REWARD + CONFIG.REFERRER_REWARD;
         userData.referralEarnings += CONFIG.REFERRER_REWARD;
         
-        saveUserData();
+        // ✅ UPDATE 5: حفظ فوري
+        saveUserDataInstantly();
         updateUI();
-        showMessage(`🎉 Referral recorded! +${CONFIG.REFERRER_REWARD} points`, 'success');
         
-        console.log("📝 Referral recorded (local storage)");
+        const totalBonus = CONFIG.REFERRAL_REWARD + CONFIG.REFERRER_REWARD;
+        showMessage(`🎉 Referral recorded! +${totalBonus} total points`, 'success');
+        
+        console.log("📝 Referral recorded (local storage) with new rewards");
         return true;
         
     } catch (error) {
@@ -512,18 +524,20 @@ async function logReferralEvent(referrerId, referredId, referralCode) {
             referrerId: referrerId,
             referredId: referredId,
             referralCode: referralCode,
-            reward: CONFIG.REFERRER_REWARD,
+            newUserReward: CONFIG.REFERRAL_REWARD, // مكافأة المحال
+            referrerReward: CONFIG.REFERRER_REWARD, // مكافأة المحيل
+            totalReward: CONFIG.REFERRAL_REWARD + CONFIG.REFERRER_REWARD,
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
             status: 'completed'
         });
-        console.log("📝 Referral logged in Firebase");
+        console.log("📝 Referral logged in Firebase with new rewards");
     } catch (error) {
         console.error("❌ Referral logging error:", error);
     }
 }
 
 // ============================================
-// Mining System
+// Mining System - INSTANT SAVE
 // ============================================
 
 function minePoints() {
@@ -550,7 +564,8 @@ function minePoints() {
     userData.totalEarned += reward;
     userData.lastMineTime = now;
     
-    saveUserData();
+    // ✅ UPDATE 6: حفظ فوري بعد التعدين
+    saveUserDataInstantly();
     updateUI();
     animateMineButton(reward);
     
@@ -602,7 +617,7 @@ function animateMineButton(reward) {
 }
 
 // ============================================
-// Event Listeners
+// Event Listeners - PROFESSIONAL SHARING
 // ============================================
 
 function setupEventListeners() {
@@ -631,6 +646,12 @@ function setupEventListeners() {
         elements.whatsappBtn.addEventListener('click', shareOnWhatsApp);
         console.log("✅ WhatsApp share button added");
     }
+    
+    // Share via direct Telegram
+    if (elements.telegramBtn) {
+        elements.telegramBtn.addEventListener('click', shareViaDirectTelegram);
+        console.log("✅ Direct Telegram share button added");
+    }
 }
 
 function copyReferralLink() {
@@ -654,16 +675,43 @@ function copyReferralLink() {
 
 function shareOnTelegram() {
     const refLink = generateReferralLink();
-    const shareText = `🚀 Join VIP Mining!\n\n⛏️ Mine points every 5 seconds\n👥 Get +25 bonus points with my link\n\n${refLink}\n\n@VIPMainingPROBot`;
+    const shareText = `🚀 *Join VIP Mining PRO!*\n\n` +
+                     `⛏️ *Mine points every 5 seconds*\n` +
+                     `👥 *Get +25 BONUS points with my link*\n` +
+                     `💰 *Earn 25 points for each referral*\n\n` +
+                     `👉 ${refLink}\n\n` +
+                     `💎 *Start earning now!* @VIPMainingPROBot`;
+    
     const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(shareText)}`;
     
     window.open(shareUrl, '_blank');
     showMessage('📱 Opening Telegram...', 'info');
 }
 
+function shareViaDirectTelegram() {
+    const refLink = generateReferralLink();
+    const shareText = `🚀 Join VIP Mining PRO!\n\n⛏️ Mine points every 5 seconds\n👥 Get +25 BONUS points with my link\n💰 Earn 25 points for each referral\n\n${refLink}\n\n💎 Start earning now! @VIPMainingPROBot`;
+    
+    // طريقة احترافية أكثر لمشاركة تيليجرام
+    if (tg) {
+        tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(shareText)}`);
+    } else {
+        window.open(`https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(shareText)}`, '_blank');
+    }
+    
+    showMessage('📱 Sharing via Telegram...', 'info');
+}
+
 function shareOnWhatsApp() {
     const refLink = generateReferralLink();
-    const shareText = `Join VIP Mining and earn free points! 🪙\n\nReferral link: ${refLink}`;
+    const shareText = `🚀 *VIP Mining PRO* 🪙\n\n` +
+                     `Join and earn FREE points!\n` +
+                     `⛏️ Mine every 5 seconds\n` +
+                     `🎁 +25 BONUS with my link\n` +
+                     `👥 Earn 25 per referral\n\n` +
+                     `${refLink}\n\n` +
+                     `Start now and level up! 🏆`;
+    
     const shareUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
     
     window.open(shareUrl, '_blank');
@@ -671,27 +719,20 @@ function shareOnWhatsApp() {
 }
 
 // ============================================
-// UI Updates
+// UI Updates - PROFESSIONAL LOOK
 // ============================================
 
 function updateUI() {
-    // Update numbers
-    if (elements.balance) {
-        elements.balance.textContent = userData.balance.toLocaleString();
-    }
+    // Update numbers with animation
+    animateNumberUpdate(elements.balance, userData.balance.toLocaleString(), '💰 ');
+    animateNumberUpdate(elements.referrals, `${userData.referrals} Referrals`, '👥 ');
+    animateNumberUpdate(elements.totalEarned, `${userData.totalEarned.toLocaleString()} Total`, '📈 ');
     
-    if (elements.referrals) {
-        elements.referrals.textContent = `${userData.referrals} Referrals`;
-    }
-    
-    if (elements.totalEarned) {
-        elements.totalEarned.textContent = `${userData.totalEarned.toLocaleString()} Total`;
-    }
-    
-    // Update rank
+    // Update rank with badge effect
     const currentRank = CONFIG.RANKS.find(r => r.name === userData.rank) || CONFIG.RANKS[0];
     if (elements.rankBadge) {
         elements.rankBadge.textContent = userData.rank;
+        updateRankBadgeStyle(userData.rank);
     }
     
     // Update mining info
@@ -700,27 +741,61 @@ function updateUI() {
     }
     
     if (elements.miningPower) {
-        elements.miningPower.innerHTML = `<i class="fas fa-bolt"></i> Power: ${currentRank.power}`;
+        elements.miningPower.innerHTML = `<i class="fas fa-bolt"></i> Mining Power: ${currentRank.power}`;
     }
     
-    // Update referral statistics
+    // Update referral statistics with professional styling
     if (elements.refCount) {
-        elements.refCount.textContent = userData.referrals;
+        elements.refCount.innerHTML = `<span class="stat-number">${userData.referrals}</span><span class="stat-label">Referrals</span>`;
     }
     
     if (elements.refEarned) {
-        elements.refEarned.textContent = userData.referralEarnings.toLocaleString();
+        elements.refEarned.innerHTML = `<span class="stat-number">${userData.referralEarnings.toLocaleString()}</span><span class="stat-label">Referral Earnings</span>`;
     }
     
     if (elements.refRank) {
-        elements.refRank.textContent = userData.rank;
+        elements.refRank.innerHTML = `<span class="stat-number">${userData.rank}</span><span class="stat-label">Current Rank</span>`;
     }
     
-    // Update progress bar
+    // Update progress bar with smooth animation
     updateProgress();
     
     // Update referral link
     updateReferralLink();
+}
+
+function animateNumberUpdate(element, newValue, prefix = '') {
+    if (!element) return;
+    
+    const oldValue = element.textContent.replace(prefix, '');
+    if (oldValue !== newValue.replace(prefix, '')) {
+        element.style.transform = 'scale(1.1)';
+        element.style.color = '#10b981';
+        
+        setTimeout(() => {
+            element.textContent = prefix + newValue;
+            element.style.transform = 'scale(1)';
+            setTimeout(() => {
+                element.style.color = '';
+            }, 500);
+        }, 200);
+    }
+}
+
+function updateRankBadgeStyle(rank) {
+    const badge = elements.rankBadge;
+    if (!badge) return;
+    
+    const rankColors = {
+        'Beginner': 'linear-gradient(135deg, #6b7280, #9ca3af)',
+        'Professional': 'linear-gradient(135deg, #3b82f6, #60a5fa)',
+        'Expert': 'linear-gradient(135deg, #8b5cf6, #a78bfa)',
+        'VIP': 'linear-gradient(135deg, #f59e0b, #fbbf24)',
+        'Legend': 'linear-gradient(135deg, #ef4444, #f87171)'
+    };
+    
+    badge.style.background = rankColors[rank] || rankColors['Beginner'];
+    badge.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
 }
 
 function updateProgress() {
@@ -733,27 +808,32 @@ function updateProgress() {
         
         if (elements.progressFill) {
             elements.progressFill.style.width = `${clampedProgress}%`;
+            elements.progressFill.style.transition = 'width 0.5s ease-in-out';
         }
         
         if (elements.nextRank) {
-            elements.nextRank.textContent = `Next: ${nextRank.name} (${nextRank.min.toLocaleString()} points)`;
+            elements.nextRank.innerHTML = `Next Rank: <strong>${nextRank.name}</strong> (${nextRank.min.toLocaleString()} pts)`;
         }
         
         if (elements.currentPoints) {
-            elements.currentPoints.textContent = userData.totalEarned.toLocaleString();
+            elements.currentPoints.innerHTML = `<strong>${userData.totalEarned.toLocaleString()}</strong> points`;
         }
         
         if (elements.targetPoints) {
-            elements.targetPoints.textContent = nextRank.min.toLocaleString();
+            elements.targetPoints.innerHTML = `<strong>${nextRank.min.toLocaleString()}</strong> target`;
         }
         
         if (elements.remainingPoints) {
-            elements.remainingPoints.textContent = Math.max(0, nextRank.min - userData.totalEarned).toLocaleString();
+            const remaining = Math.max(0, nextRank.min - userData.totalEarned);
+            elements.remainingPoints.innerHTML = `<strong>${remaining.toLocaleString()}</strong> to go`;
         }
     } else {
-        if (elements.progressFill) elements.progressFill.style.width = '100%';
-        if (elements.nextRank) elements.nextRank.textContent = 'Highest Rank! 🏆';
-        if (elements.remainingPoints) elements.remainingPoints.textContent = '0';
+        if (elements.progressFill) {
+            elements.progressFill.style.width = '100%';
+            elements.progressFill.style.background = 'linear-gradient(135deg, #10b981, #34d399)';
+        }
+        if (elements.nextRank) elements.nextRank.innerHTML = '🏆 <strong>MAX RANK ACHIEVED!</strong>';
+        if (elements.remainingPoints) elements.remainingPoints.innerHTML = '🎯 <strong>GOAL COMPLETED!</strong>';
     }
 }
 
@@ -766,89 +846,122 @@ function checkRankUp() {
     if (newRank && newRank.name !== userData.rank) {
         const oldRank = userData.rank;
         userData.rank = newRank.name;
-        saveUserData();
+        
+        // ✅ UPDATE 7: حفظ فوري بعد الترقي
+        saveUserDataInstantly();
         updateUI();
-        showMessage(`🏆 Rank Up! ${oldRank} → ${newRank.name}`, 'success');
+        
+        showMessage(`🏆 RANK UP! ${oldRank} → ${newRank.name}`, 'success');
+        
+        // إشعار خاص بالترقي
+        const rankUpMessage = `🎉 *CONGRATULATIONS!*\n\n` +
+                             `You've been promoted to *${newRank.name}*!\n` +
+                             `🎁 New mining reward: *${newRank.reward} points*\n` +
+                             `⚡ Mining power: *${newRank.power}*\n\n` +
+                             `Keep mining to reach the next rank!`;
+        
+        showMessage(rankUpMessage, 'success');
     }
 }
 
 function updateConnectionStatus() {
     if (elements.connectionStatus) {
         if (db) {
-            elements.connectionStatus.textContent = '🟢 Connected to Firebase';
-            elements.connectionStatus.style.color = '#22c55e';
+            elements.connectionStatus.innerHTML = '<i class="fas fa-wifi"></i> 🟢 Connected to Cloud';
+            elements.connectionStatus.style.color = '#10b981';
+            elements.connectionStatus.style.fontWeight = '600';
         } else {
-            elements.connectionStatus.textContent = '🟡 Local Storage Only';
+            elements.connectionStatus.innerHTML = '<i class="fas fa-database"></i> 🟡 Local Storage Mode';
             elements.connectionStatus.style.color = '#f59e0b';
+            elements.connectionStatus.style.fontWeight = '600';
         }
     }
 }
 
 // ============================================
-// Utility Functions
+// Professional Utility Functions
 // ============================================
 
 function showMessage(text, type = 'info') {
     console.log(`💬 ${type.toUpperCase()}: ${text}`);
     
+    // إنشاء ID فريد للرسالة
+    const messageId = 'msg_' + Date.now();
+    
     const messageDiv = document.createElement('div');
+    messageDiv.id = messageId;
     messageDiv.className = `message ${type}`;
+    
+    const icons = {
+        'success': 'fa-check-circle',
+        'error': 'fa-times-circle',
+        'warning': 'fa-exclamation-triangle',
+        'info': 'fa-info-circle'
+    };
+    
     messageDiv.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : 
-                         type === 'error' ? 'exclamation-circle' : 
-                         type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
-        <span>${text}</span>
+        <div class="message-icon">
+            <i class="fas ${icons[type] || 'fa-info-circle'}"></i>
+        </div>
+        <div class="message-content">
+            ${text.replace(/\n/g, '<br>')}
+        </div>
+        <div class="message-close" onclick="document.getElementById('${messageId}').remove()">
+            <i class="fas fa-times"></i>
+        </div>
     `;
     
     messageDiv.style.cssText = `
         position: fixed;
         top: 20px;
-        left: 50%;
-        transform: translateX(-50%) translateY(-100px);
+        right: 20px;
+        min-width: 300px;
+        max-width: 400px;
         background: ${type === 'success' ? '#10b981' : 
                      type === 'error' ? '#ef4444' : 
                      type === 'warning' ? '#f59e0b' : '#3b82f6'};
         color: white;
-        padding: 12px 24px;
-        border-radius: 10px;
+        padding: 15px 20px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
-        gap: 10px;
-        z-index: 1000;
+        gap: 15px;
+        z-index: 10000;
         opacity: 0;
-        transition: all 0.3s ease;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        transform: translateX(100px);
+        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         font-weight: 500;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.1);
     `;
     
     document.body.appendChild(messageDiv);
     
+    // إظهار الرسالة مع تأثير
     setTimeout(() => {
         messageDiv.style.opacity = '1';
-        messageDiv.style.transform = 'translateX(-50%) translateY(0)';
+        messageDiv.style.transform = 'translateX(0)';
     }, 10);
     
+    // إخفاء الرسالة تلقائياً بعد 4 ثواني
     setTimeout(() => {
         messageDiv.style.opacity = '0';
-        messageDiv.style.transform = 'translateX(-50%) translateY(-100px)';
+        messageDiv.style.transform = 'translateX(100px)';
         setTimeout(() => {
             if (messageDiv.parentNode) {
                 messageDiv.parentNode.removeChild(messageDiv);
             }
-        }, 300);
-    }, 3000);
+        }, 400);
+    }, 4000);
 }
 
 // ============================================
-// Application Startup
+// Application Startup - PROFESSIONAL INIT
 // ============================================
 
-// Auto-save every 30 seconds
-setInterval(() => {
-    if (userData.userId) {
-        saveUserData();
-    }
-}, 30000);
+// ✅ UPDATE 8: إزالة auto-save كل 30 ثانية واستبداله بالحفظ الفوري
+// No more 30-second auto-save interval - all saves are instant now
 
 // Check cooldown timer every second
 setInterval(() => {
@@ -858,23 +971,89 @@ setInterval(() => {
             const secondsLeft = Math.ceil((CONFIG.MINE_COOLDOWN - timeSinceLastMine) / 1000);
             if (elements.cooldownTimer) {
                 elements.cooldownTimer.textContent = `${secondsLeft}s`;
+                elements.cooldownTimer.style.color = secondsLeft <= 2 ? '#10b981' : '#f59e0b';
             }
         } else {
             if (elements.cooldownTimer) {
-                elements.cooldownTimer.textContent = '';
+                elements.cooldownTimer.textContent = 'READY';
+                elements.cooldownTimer.style.color = '#10b981';
             }
         }
     }
 }, 1000);
 
-// Initialize app
+// Initialize app with professional loading
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initApp);
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(initApp, 500); // تأخير بسيط لمظهر أكثر احترافية
+    });
 } else {
-    initApp();
+    setTimeout(initApp, 500);
 }
 
 // Export for debugging
 window.userData = userData;
 window.showMessage = showMessage;
 window.generateReferralLink = generateReferralLink;
+window.saveUserDataInstantly = saveUserDataInstantly;
+
+console.log("🎮 VIP Mining PRO Loaded with Enhanced Features");
+console.log("📊 Config: Referral Reward = 25, Referrer Reward = 25");
+console.log("💾 Storage: Instant save mode activated");
+
+// ============================================
+// Professional CSS Inline (Optional enhancement)
+// ============================================
+const professionalStyles = `
+<style>
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: block;
+        line-height: 1;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: #6b7280;
+        font-weight: 500;
+        display: block;
+        margin-top: 5px;
+    }
+    
+    .message-icon {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    
+    .message-content {
+        flex: 1;
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+    
+    .message-close {
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+        padding: 5px;
+        border-radius: 50%;
+    }
+    
+    .message-close:hover {
+        opacity: 1;
+        background: rgba(255,255,255,0.1);
+    }
+    
+    #cooldownTimer {
+        font-weight: 700;
+        transition: color 0.3s;
+    }
+</style>
+`;
+
+// إضافة الأنماط المحسنة
+document.head.insertAdjacentHTML('beforeend', professionalStyles);
