@@ -144,18 +144,24 @@
                     <div class="step">
                         <div class="step-number">2</div>
                         <div class="step-content">
-                            <strong>Friend Joins via Telegram</strong>
-                            <p>They must click the link and join via @VIPMainingPROBot</p>
+                            <strong>Friend Opens Mini App</strong>
+                            <p>They click the link and app opens directly in Telegram</p>
                         </div>
                     </div>
                     <div class="step">
                         <div class="step-number">3</div>
                         <div class="step-content">
                             <strong>Get Automatic Rewards</strong>
-                            <p>You receive +25 points immediately when they join</p>
+                            <p>You receive +25 points immediately</p>
                         </div>
                     </div>
                 </div>
+            </div>
+            
+            <!-- Referral Note -->
+            <div class="referral-note">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>Important: Link opens the Mini App directly, not just the bot!</span>
             </div>
         </div>
 
@@ -237,34 +243,23 @@
     
     <!-- Helper Functions -->
     <script>
-        // Helper Functions
         function showHelp() {
             const helpMessage = `
                 <div style="text-align: left; line-height: 1.8; padding: 20px;">
-                    <h3 style="color: #3b82f6; margin-bottom: 15px;">🧭 App Usage Guide</h3>
+                    <h3 style="color: #3b82f6; margin-bottom: 15px;">🧭 How Referrals Work</h3>
                     
-                    <p><strong>⛏️ Mining:</strong></p>
-                    <p>• Click "Start Mining" button every 5 seconds</p>
-                    <p>• Each click = +1 to +5 points (based on your rank)</p>
+                    <p><strong>🔗 Your Referral Link:</strong></p>
+                    <p><code>https://t.me/VIPMainingPROBot/PRO?startapp=YOUR_CODE</code></p>
                     
-                    <p><strong>👥 Referral System:</strong></p>
-                    <p>• Copy your referral link and share it</p>
-                    <p>• Each friend who joins = +25 points for you</p>
+                    <p><strong>✅ When friend clicks:</strong></p>
+                    <p>1. Telegram Mini App opens directly</p>
+                    <p>2. App reads referral code automatically</p>
+                    <p>3. You get +25 points instantly</p>
                     
-                    <p><strong>🏆 Rank System:</strong></p>
-                    <p>• Beginner: 0-199 points</p>
-                    <p>• Professional: 200-499 points</p>
-                    <p>• Expert: 500-999 points</p>
-                    <p>• VIP: 1000-9999 points</p>
-                    <p>• Legend: 10000+ points</p>
-                    
-                    <p><strong>💾 Auto Save:</strong></p>
-                    <p>• Your data saves automatically</p>
-                    <p>• Returns when you reopen the app</p>
-                    
-                    <p><strong>🔥 Firebase:</strong></p>
-                    <p>• Data syncs with cloud storage</p>
-                    <p>• Referrals work across devices</p>
+                    <p><strong>⚠️ Important:</strong></p>
+                    <p>• Link must open the Mini App, not just bot chat</p>
+                    <p>• Use the copy button below your referral link</p>
+                    <p>• Share via Telegram for best results</p>
                 </div>
             `;
             
@@ -281,17 +276,16 @@
         function showStatistics() {
             if (window.userData) {
                 const stats = `
-                    📊 <strong>Your Account Statistics</strong>
+                    📊 <strong>Your Statistics</strong>
                     
                     💰 Balance: ${window.userData.balance} points
                     👥 Referrals: ${window.userData.referrals}
-                    📈 Total Earned: ${window.userData.totalEarned} points
+                    📈 Total: ${window.userData.totalEarned} points
                     🏆 Rank: ${window.userData.rank}
                     🎯 Referral Earnings: ${window.userData.referralEarnings} points
-                    🔗 Referral Code: ${window.userData.referralCode || 'Not set'}
+                    🔗 Your Code: ${window.userData.referralCode || 'Not set'}
                     
                     ⏳ Last Mine: ${window.userData.lastMineTime ? 'Recently' : 'Not started'}
-                    🔥 Firebase: ${window.db ? 'Connected' : 'Not connected'}
                 `;
                 
                 if (window.showMessage) {
@@ -303,41 +297,27 @@
                     alert(stats);
                 }
             } else {
-                alert("Statistics not available yet. Please wait for app to load.");
+                alert("Please wait for app to load...");
             }
         }
         
         function refreshPage() {
-            if (confirm('Do you want to refresh the page? Your data will be saved.')) {
+            if (confirm('Refresh page? Your progress is saved.')) {
                 location.reload();
             }
         }
         
-        // Add Telegram class if in Telegram
+        // Check for referral on page load
         document.addEventListener('DOMContentLoaded', function() {
-            if (window.Telegram && Telegram.WebApp) {
-                document.body.classList.add('tg');
-                console.log("Running in Telegram WebApp");
+            // Add referral check from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const referrerCode = urlParams.get('startapp');
+            
+            if (referrerCode) {
+                console.log("URL referral code detected:", referrerCode);
+                localStorage.setItem('pending_referral', referrerCode);
             }
         });
-        
-        // Check for referral on page load
-        function checkForReferralOnLoad() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const referrerId = urlParams.get('ref');
-            
-            if (referrerId) {
-                console.log("🔍 Found referral code in URL:", referrerId);
-                localStorage.setItem('pending_referral', referrerId);
-                
-                if (window.showMessage) {
-                    window.showMessage('Referral code detected!', 'info');
-                }
-            }
-        }
-        
-        // Check for referral on page load
-        checkForReferralOnLoad();
     </script>
 </body>
 </html>
