@@ -3,56 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIP Mining - Mini App</title>
+    <title>VIP Mining - Professional Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>⛏️ VIP Mining</h1>
-            <p id="userInfo">Loading...</p>
+        <!-- Header Section -->
+        <header class="app-header">
+            <div class="logo">
+                <i class="fas fa-gem"></i>
+                <h1>VIP Mining</h1>
+            </div>
+            <div class="user-section" id="userSection">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <div class="user-info">
+                    <div class="username" id="username">Guest User</div>
+                    <div class="user-id" id="userId">ID: Not connected</div>
+                </div>
+            </div>
         </header>
-        
-        <main>
-            <div class="balance-card">
-                <div class="balance-label">Your Balance</div>
-                <div class="balance-amount" id="balance">0</div>
-                <div class="balance-sub" id="rank">Rank: Beginner</div>
+
+        <!-- Balance Card -->
+        <div class="balance-card">
+            <div class="balance-header">
+                <span><i class="fas fa-wallet"></i> Current Balance</span>
+                <span class="rank-badge" id="rankBadge">Beginner</span>
             </div>
-            
-            <div class="stats-grid">
-                <div class="stat">
-                    <div class="stat-value" id="referrals">0</div>
-                    <div class="stat-label">Referrals</div>
+            <div class="balance-amount" id="balance">0</div>
+            <div class="balance-sub">Mining Points</div>
+            <div class="balance-stats">
+                <div class="stat-item">
+                    <i class="fas fa-users"></i>
+                    <span id="referrals">0 Referrals</span>
                 </div>
-                <div class="stat">
-                    <div class="stat-value" id="totalEarned">0</div>
-                    <div class="stat-label">Total Earned</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value" id="miningPower">10/h</div>
-                    <div class="stat-label">Mining Power</div>
+                <div class="stat-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span id="totalEarned">0 Total</span>
                 </div>
             </div>
-            
-            <button class="btn-primary" id="mineBtn">
-                ⛏️ Mine Now (+<span id="rewardAmount">1</span>)
+        </div>
+
+        <!-- Mining Section -->
+        <div class="mining-section">
+            <div class="mining-header">
+                <h3><i class="fas fa-hard-hat"></i> Mining Station</h3>
+                <div class="mining-power" id="miningPower">
+                    <i class="fas fa-bolt"></i> Power: 10/h
+                </div>
+            </div>
+            <button class="mine-btn" id="mineBtn">
+                <div class="mine-icon">
+                    <i class="fas fa-hammer"></i>
+                </div>
+                <div class="mine-text">
+                    <div class="mine-title">Mine Now</div>
+                    <div class="mine-reward">+<span id="rewardAmount">1</span> Points</div>
+                </div>
+                <div class="mine-cooldown" id="cooldownTimer"></div>
             </button>
-            
-            <div class="referral-section">
-                <h3>🔗 Your Referral Link</h3>
-                <div class="referral-link" id="referralLink">Generating...</div>
-                <button class="btn-secondary" id="copyBtn">📋 Copy Link</button>
-                <p class="info-text">Earn 25 points for each friend who joins!</p>
+            <div class="mining-tip">
+                <i class="fas fa-lightbulb"></i> Mine every 5 seconds for maximum earnings
             </div>
-        </main>
-        
-        <footer>
-            <p>VIP Mining Mini App © 2024</p>
+        </div>
+
+        <!-- Referral System - التركيز الأساسي -->
+        <div class="referral-section">
+            <div class="section-header">
+                <h3><i class="fas fa-share-alt"></i> Referral Program</h3>
+                <div class="referral-bonus">
+                    <i class="fas fa-gift"></i> +25 Points per referral
+                </div>
+            </div>
+            
+            <div class="referral-stats">
+                <div class="ref-stat">
+                    <div class="ref-stat-value" id="refCount">0</div>
+                    <div class="ref-stat-label">Total Referrals</div>
+                </div>
+                <div class="ref-stat">
+                    <div class="ref-stat-value" id="refEarned">0</div>
+                    <div class="ref-stat-label">Points Earned</div>
+                </div>
+                <div class="ref-stat">
+                    <div class="ref-stat-value" id="refRank">-</div>
+                    <div class="ref-stat-label">Your Rank</div>
+                </div>
+            </div>
+
+            <!-- رابط الإحالة الرئيسي -->
+            <div class="referral-link-container">
+                <div class="input-group">
+                    <div class="input-icon">
+                        <i class="fas fa-link"></i>
+                    </div>
+                    <input type="text" 
+                           class="referral-input" 
+                           id="referralInput" 
+                           value="Loading referral link..." 
+                           readonly>
+                    <button class="copy-btn" id="copyBtn">
+                        <i class="far fa-copy"></i>
+                    </button>
+                </div>
+                <div class="referral-actions">
+                    <button class="action-btn" id="shareBtn">
+                        <i class="fab fa-telegram"></i> Share on Telegram
+                    </button>
+                    <button class="action-btn secondary" id="whatsappBtn">
+                        <i class="fab fa-whatsapp"></i> Share on WhatsApp
+                    </button>
+                </div>
+            </div>
+
+            <!-- كيف يعمل نظام الإحالة -->
+            <div class="referral-info">
+                <h4><i class="fas fa-info-circle"></i> How Referral System Works</h4>
+                <div class="info-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <strong>Share your unique link</strong>
+                            <p>Copy and share the link above with friends</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <strong>Friend joins via Telegram</strong>
+                            <p>They must click the link and join via @VIPMainingPROBot</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <strong>Earn automatic rewards</strong>
+                            <p>You get +25 points instantly when they join</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="progress-section">
+            <div class="progress-header">
+                <h4><i class="fas fa-trophy"></i> Rank Progress</h4>
+                <div class="next-rank" id="nextRank">Next: Pro (200 points)</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-stats">
+                <div class="progress-stat">
+                    <span>Current:</span>
+                    <span id="currentPoints">0</span>
+                </div>
+                <div class="progress-stat">
+                    <span>Target:</span>
+                    <span id="targetPoints">200</span>
+                </div>
+                <div class="progress-stat">
+                    <span>Remaining:</span>
+                    <span id="remainingPoints">200</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-links">
+                <a href="#" class="footer-link">
+                    <i class="fas fa-question-circle"></i> Help
+                </a>
+                <a href="#" class="footer-link">
+                    <i class="fas fa-chart-bar"></i> Stats
+                </a>
+                <a href="#" class="footer-link">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+            </div>
+            <div class="footer-copyright">
+                <p>Powered by @VIPMainingPROBot • VIP Mining Mini App © 2024</p>
+            </div>
         </footer>
     </div>
-    
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <div class="toast-content">
+            <i class="fas fa-check-circle"></i>
+            <span class="toast-message">Copied to clipboard!</span>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
