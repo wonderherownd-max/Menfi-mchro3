@@ -1,18 +1,10 @@
 // ============================================
-// VIP Mining Mini App - FINAL WORKING VERSION
+// VIP Mining Mini App - Main Application Logic
 // ============================================
 
-// Telegram WebApp
+// Global Variables
 let tg = null;
-try {
-    tg = window.Telegram.WebApp;
-    tg.ready();
-    tg.expand();
-} catch (e) {
-    console.log("Not in Telegram environment");
-}
-
-// User data - starts with 100 points
+let firebaseApp, db;
 let userData = {
     balance: 100,
     referrals: 0,
@@ -23,44 +15,14 @@ let userData = {
     referralEarnings: 0,
     lastMineTime: 0,
     referralCode: null,
-    referredBy: null
+    referredBy: null,
+    firstName: 'User'
 };
 
-// DOM Elements
-const elements = {
-    balance: document.getElementById('balance'),
-    referrals: document.getElementById('referrals'),
-    totalEarned: document.getElementById('totalEarned'),
-    rank: document.getElementById('rank'),
-    rankBadge: document.getElementById('rankBadge'),
-    userInfo: document.getElementById('userInfo'),
-    username: document.getElementById('username'),
-    userId: document.getElementById('userId'),
-    userAvatar: document.getElementById('userAvatar'),
-    mineBtn: document.getElementById('mineBtn'),
-    rewardAmount: document.getElementById('rewardAmount'),
-    referralLink: document.getElementById('referralLink'),
-    copyBtn: document.getElementById('copyBtn'),
-    miningPower: document.getElementById('miningPower'),
-    refCount: document.getElementById('refCount'),
-    refEarned: document.getElementById('refEarned'),
-    refRank: document.getElementById('refRank'),
-    progressFill: document.getElementById('progressFill'),
-    nextRank: document.getElementById('nextRank'),
-    currentPoints: document.getElementById('currentPoints'),
-    targetPoints: document.getElementById('targetPoints'),
-    remainingPoints: document.getElementById('remainingPoints'),
-    connectionStatus: document.getElementById('connectionStatus'),
-    cooldownTimer: document.getElementById('cooldownTimer'),
-    referralBalance: document.getElementById('referralBalance'),
-    totalReferrals: document.getElementById('totalReferrals')
-};
-
-// Configuration
 const CONFIG = {
-    MINE_COOLDOWN: 5000, // 5 seconds
-    REFERRAL_REWARD: 25, // Referral reward points
-    REFERRER_REWARD: 10, // Points for referrer when someone uses their code
+    MINE_COOLDOWN: 5000,
+    REFERRAL_REWARD: 25,
+    REFERRER_REWARD: 10,
     
     RANKS: [
         { name: 'Beginner', min: 0, max: 199, reward: 1, power: '10/hour' },
@@ -68,37 +30,33 @@ const CONFIG = {
         { name: 'Expert', min: 500, max: 999, reward: 3, power: '50/hour' },
         { name: 'VIP', min: 1000, max: 9999, reward: 5, power: '100/hour' },
         { name: 'Legend', min: 10000, max: Infinity, reward: 10, power: '200/hour' }
-    ],
-    
-    FIREBASE_CONFIG: {
-        apiKey: "AIzaSyCuzWYapa7LBRg40OzcHLWFBpfSrjEVQoU",
-        authDomain: "vip-mining.firebaseapp.com",
-        projectId: "vip-mining",
-        storageBucket: "vip-mining.firebasestorage.app",
-        messagingSenderId: "205041694428",
-        appId: "1:205041694428:web:5b9a0ab2cc31b118d8be619"
-    }
+    ]
 };
 
-// Firebase initialization
-let firebaseApp, db;
-if (typeof firebase !== 'undefined') {
-    firebaseApp = firebase.initializeApp(CONFIG.FIREBASE_CONFIG);
-    db = firebase.firestore();
-}
+// DOM Elements Cache
+const elements = {};
 
 // ============================================
-// Initialize Application
+// Application Initialization
 // ============================================
 
 async function initApp() {
-    console.log("🚀 Starting VIP Mining App...");
+    console.log("🚀 Initializing VIP Mining App...");
     
     try {
+        // Initialize Telegram
+        initTelegram();
+        
+        // Initialize Firebase
+        initFirebase();
+        
+        // Cache DOM elements
+        cacheElements();
+        
         // Setup user
         await setupUser();
         
-        // Load user data (localStorage first, then sync with Firebase if available)
+        // Load user data
         await loadUserData();
         
         // Setup event listeners
@@ -108,76 +66,111 @@ async function initApp() {
         updateUI();
         
         // Update connection status
-        if (elements.connectionStatus) {
-            elements.connectionStatus.textContent = '🟢 Connected';
-            elements.connectionStatus.style.color = '#10b981';
-        }
+        updateConnectionStatus();
         
-        console.log("✅ App ready");
+        // Check for referrals
+        checkForReferral();
+        
+        console.log("✅ App initialized successfully");
         
     } catch (error) {
-        console.error("❌ Error:", error);
-        showMessage('An error occurred, retrying...', 'error');
-        setTimeout(initApp, 2000);
+        console.error("❌ Initialization error:", error);
+        showMessage('Error starting app. Please refresh.', 'error');
     }
 }
 
+function initTelegram() {
+    try {
+        tg = window.Telegram.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+            console.log("✅ Telegram WebApp initialized");
+        }
+    } catch (e) {
+        console.log("⚠️ Not in Telegram environment");
+    }
+}
+
+function initFirebase() {
+    const firebaseConfig = {
+        apiKey: "AIzaSyCuzWYapa7LBRg40OzcHLWFBpfSrjEVQoU",
+        authDomain: "vip-mining.firebaseapp.com",
+        projectId: "vip-mining",
+        storageBucket: "vip-mining.firebasestorage.app",
+        messagingSenderId: "205041694428",
+        appId: "1:205041694428:web:5b9a0ab2cc31b118d8be619"
+    };
+    
+    if (typeof firebase !== 'undefined') {
+        try {
+            firebaseApp = firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            console.log("✅ Firebase initialized");
+        } catch (error) {
+            console.error("❌ Firebase initialization error:", error);
+        }
+    }
+}
+
+function cacheElements() {
+    const elementIds = [
+        'balance', 'referrals', 'totalEarned', 'rankBadge',
+        'username', 'userId', 'userAvatar', 'mineBtn',
+        'rewardAmount', 'referralLink', 'copyBtn', 'miningPower',
+        'refCount', 'refEarned', 'refRank', 'progressFill',
+        'nextRank', 'currentPoints', 'targetPoints', 'remainingPoints',
+        'connectionStatus', 'cooldownTimer', 'shareBtn', 'whatsappBtn'
+    ];
+    
+    elementIds.forEach(id => {
+        elements[id] = document.getElementById(id);
+        if (!elements[id]) {
+            console.warn(`⚠️ Element not found: ${id}`);
+        }
+    });
+}
+
+// ============================================
+// User Management
+// ============================================
+
 async function setupUser() {
-    // Check Telegram WebApp
+    console.log("👤 Setting up user...");
+    
+    let telegramUser = null;
     if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-        const tgUser = tg.initDataUnsafe.user;
-        userData.userId = tgUser.id.toString();
-        userData.username = tgUser.username ? `@${tgUser.username}` : `User${tgUser.id.toString().slice(-4)}`;
-        userData.firstName = tgUser.first_name || 'User';
-        
-        // Check for referral parameter
-        const startParam = tg.initDataUnsafe.start_param;
-        if (startParam) {
-            await processReferral(startParam);
-        }
-        
-        // Generate referral code if not exists
-        if (!userData.referralCode) {
-            userData.referralCode = generateReferralCode(userData.userId);
-        }
-        
-        // Update UI
-        if (elements.username) elements.username.textContent = userData.username;
-        if (elements.userId) elements.userId.textContent = `ID: ${userData.userId}`;
-        if (elements.userInfo) elements.userInfo.textContent = `Welcome, ${userData.firstName}`;
-        if (elements.userAvatar) {
-            elements.userAvatar.textContent = userData.firstName.charAt(0).toUpperCase();
-            elements.userAvatar.style.background = 'linear-gradient(135deg, #3b82f6, #8b5cf6)';
-        }
-        
-        // Hide demo controls if exists
-        const demoControls = document.getElementById('demoControls');
-        if (demoControls) demoControls.style.display = 'none';
-        
-        // Sync with Firebase if available
-        if (db) {
-            await syncUserWithFirebase();
-        }
-        
+        telegramUser = tg.initDataUnsafe.user;
+        console.log("📱 Telegram user found:", telegramUser);
+    }
+    
+    if (telegramUser) {
+        userData.userId = telegramUser.id.toString();
+        userData.username = telegramUser.username ? `@${telegramUser.username}` : 
+                           telegramUser.first_name ? telegramUser.first_name : 
+                           `User${telegramUser.id.toString().slice(-4)}`;
+        userData.firstName = telegramUser.first_name || 'User';
     } else {
-        // Normal user mode (not in Telegram)
-        userData.userId = 'user_' + Date.now();
-        userData.username = 'New User';
+        const savedUserId = localStorage.getItem('vip_mining_user_id');
+        userData.userId = savedUserId || 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        userData.username = 'User';
         userData.firstName = 'User';
-        userData.referralCode = generateReferralCode(userData.userId);
         
-        // Update UI
-        if (elements.username) elements.username.textContent = userData.username;
-        if (elements.userId) elements.userId.textContent = 'ID: ' + userData.userId.slice(-8);
-        if (elements.userInfo) elements.userInfo.textContent = 'Welcome to VIP Mining';
-        if (elements.userAvatar) {
-            elements.userAvatar.textContent = 'U';
-            elements.userAvatar.style.background = 'linear-gradient(135deg, #10b981, #34d399)';
+        if (!savedUserId) {
+            localStorage.setItem('vip_mining_user_id', userData.userId);
         }
     }
     
-    // Update referral link
-    updateReferralLink();
+    if (!userData.referralCode) {
+        userData.referralCode = generateReferralCode(userData.userId);
+        console.log("🔗 Generated referral code:", userData.referralCode);
+    }
+    
+    updateUserUI();
+    
+    if (db) {
+        await syncUserWithFirebase();
+    }
 }
 
 function generateReferralCode(userId) {
@@ -190,18 +183,34 @@ function generateReferralCode(userId) {
     return `${userId.slice(-3)}${randomPart}`.toUpperCase();
 }
 
+function updateUserUI() {
+    console.log("🎨 Updating user UI...");
+    
+    if (elements.username) {
+        elements.username.textContent = userData.username;
+    }
+    
+    if (elements.userId) {
+        elements.userId.textContent = `ID: ${userData.userId.slice(-8)}`;
+    }
+    
+    if (elements.userAvatar) {
+        const firstChar = userData.firstName.charAt(0).toUpperCase();
+        elements.userAvatar.textContent = firstChar;
+        elements.userAvatar.style.background = 'linear-gradient(135deg, #3b82f6, #8b5cf6)';
+    }
+    
+    updateReferralLink();
+}
+
 function updateReferralLink() {
-    const refLink = generateReferralLink();
+    if (!userData.referralCode) return;
+    
+    const refLink = `https://t.me/VIPMainingPROBot?start=${userData.referralCode}`;
+    
     if (elements.referralLink) {
         elements.referralLink.value = refLink;
     }
-}
-
-function generateReferralLink() {
-    if (userData.referralCode) {
-        return `https://t.me/VIPMainingPROBot?start=${userData.referralCode}`;
-    }
-    return 'https://t.me/VIPMainingPROBot';
 }
 
 // ============================================
@@ -225,23 +234,17 @@ async function loadUserData() {
                 referralCode: data.referralCode || userData.referralCode,
                 referredBy: data.referredBy || null
             });
-            console.log("📂 Loaded saved data");
+            console.log("📂 Loaded local data");
         }
         
-        // Load from Firebase if available
         if (db) {
             await loadUserFromFirebase();
         }
         
-        // Save to ensure consistency
         saveUserData();
         
     } catch (error) {
         console.error("❌ Load error:", error);
-        // Default values
-        userData.balance = 100;
-        userData.totalEarned = 100;
-        userData.referralCode = generateReferralCode(userData.userId);
     }
 }
 
@@ -259,12 +262,12 @@ function saveUserData() {
             referredBy: userData.referredBy,
             userId: userData.userId,
             username: userData.username,
+            firstName: userData.firstName,
             saveTime: Date.now()
         };
         
         localStorage.setItem(storageKey, JSON.stringify(dataToSave));
         
-        // Save to Firebase if available
         if (db) {
             saveUserToFirebase();
         }
@@ -287,11 +290,10 @@ async function syncUserWithFirebase() {
         const userSnap = await userRef.get();
         
         if (!userSnap.exists) {
-            // Create new user in Firebase
             await userRef.set({
                 userId: userData.userId,
                 username: userData.username,
-                firstName: userData.firstName || '',
+                firstName: userData.firstName,
                 referralCode: userData.referralCode,
                 referredBy: userData.referredBy || null,
                 balance: userData.balance,
@@ -305,9 +307,11 @@ async function syncUserWithFirebase() {
             });
             console.log("🔥 Created user in Firebase");
         } else {
-            // Update last active time
             await userRef.update({
-                lastActive: firebase.firestore.FieldValue.serverTimestamp()
+                lastActive: firebase.firestore.FieldValue.serverTimestamp(),
+                username: userData.username,
+                firstName: userData.firstName,
+                balance: userData.balance
             });
         }
     } catch (error) {
@@ -325,7 +329,6 @@ async function loadUserFromFirebase() {
         if (userSnap.exists) {
             const firebaseData = userSnap.data();
             
-            // Merge Firebase data (prioritize Firebase for some fields)
             userData.balance = firebaseData.balance || userData.balance;
             userData.referrals = firebaseData.referrals || userData.referrals;
             userData.referralEarnings = firebaseData.referralEarnings || userData.referralEarnings;
@@ -333,7 +336,6 @@ async function loadUserFromFirebase() {
             userData.rank = firebaseData.rank || userData.rank;
             userData.referredBy = firebaseData.referredBy || userData.referredBy;
             
-            // Update referral code if not set
             if (!userData.referralCode && firebaseData.referralCode) {
                 userData.referralCode = firebaseData.referralCode;
             }
@@ -354,7 +356,7 @@ function saveUserToFirebase() {
         userRef.set({
             userId: userData.userId,
             username: userData.username,
-            firstName: userData.firstName || '',
+            firstName: userData.firstName,
             referralCode: userData.referralCode,
             referredBy: userData.referredBy,
             balance: userData.balance,
@@ -364,92 +366,14 @@ function saveUserToFirebase() {
             rank: userData.rank,
             lastMineTime: userData.lastMineTime,
             lastActive: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
+        }, { merge: true }).then(() => {
+            console.log("🔥 Saved to Firebase");
+        }).catch(error => {
+            console.error("❌ Firebase save error:", error);
+        });
         
     } catch (error) {
         console.error("❌ Firebase save error:", error);
-    }
-}
-
-async function processReferral(referralCode) {
-    if (!referralCode || referralCode === userData.referralCode) {
-        return false;
-    }
-    
-    // Check if already referred
-    if (userData.referredBy) {
-        console.log("⚠️ User already referred by:", userData.referredBy);
-        return false;
-    }
-    
-    try {
-        if (db) {
-            // Find referrer in Firebase
-            const usersRef = db.collection('users');
-            const querySnapshot = await usersRef.where('referralCode', '==', referralCode).get();
-            
-            if (!querySnapshot.empty) {
-                const referrerDoc = querySnapshot.docs[0];
-                const referrerData = referrerDoc.data();
-                
-                // Update referrer's data
-                await referrerDoc.ref.update({
-                    referrals: firebase.firestore.FieldValue.increment(1),
-                    referralEarnings: firebase.firestore.FieldValue.increment(CONFIG.REFERRER_REWARD)
-                });
-                
-                // Update current user
-                userData.referredBy = referralCode;
-                
-                // Update referrer's data locally if it's the same user
-                if (referrerData.userId === userData.userId) {
-                    console.log("⚠️ Cannot refer yourself");
-                    return false;
-                }
-                
-                // Add reward to referrer (async)
-                setTimeout(async () => {
-                    if (db) {
-                        await referrerDoc.ref.update({
-                            balance: firebase.firestore.FieldValue.increment(CONFIG.REFERRER_REWARD),
-                            totalEarned: firebase.firestore.FieldValue.increment(CONFIG.REFERRER_REWARD)
-                        });
-                    }
-                }, 1000);
-                
-                // Log referral event
-                await logReferralEvent(referrerData.userId, userData.userId, referralCode);
-                
-                console.log("✅ Referral processed successfully");
-                return true;
-            }
-        } else {
-            // Fallback to localStorage if Firebase not available
-            userData.referredBy = referralCode;
-            console.log("📝 Referral recorded (local storage only)");
-        }
-        
-        return false;
-    } catch (error) {
-        console.error("❌ Referral processing error:", error);
-        return false;
-    }
-}
-
-async function logReferralEvent(referrerId, referredId, referralCode) {
-    if (!db) return;
-    
-    try {
-        await db.collection('referrals').add({
-            referrerId: referrerId,
-            referredId: referredId,
-            referralCode: referralCode,
-            reward: CONFIG.REFERRER_REWARD,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            status: 'completed'
-        });
-    } catch (error) {
-        console.error("❌ Referral logging error:", error);
     }
 }
 
@@ -458,36 +382,34 @@ async function logReferralEvent(referrerId, referredId, referralCode) {
 // ============================================
 
 function minePoints() {
+    console.log("⛏️ Mining points...");
+    
+    if (!userData.userId) {
+        showMessage('Please wait for user setup to complete', 'error');
+        return;
+    }
+    
     const now = Date.now();
     const timeSinceLastMine = now - userData.lastMineTime;
     
-    // Check cooldown
     if (timeSinceLastMine < CONFIG.MINE_COOLDOWN) {
         const secondsLeft = Math.ceil((CONFIG.MINE_COOLDOWN - timeSinceLastMine) / 1000);
         showMessage(`⏳ Wait ${secondsLeft} seconds`, 'warning');
         return;
     }
     
-    // Determine reward based on rank
     const currentRank = CONFIG.RANKS.find(r => r.name === userData.rank) || CONFIG.RANKS[0];
     const reward = currentRank.reward;
     
-    // Update user data
     userData.balance += reward;
     userData.totalEarned += reward;
     userData.lastMineTime = now;
     
-    // Save and update
     saveUserData();
     updateUI();
-    
-    // Button animation
     animateMineButton(reward);
     
-    // Success message
     showMessage(`⛏️ +${reward} points!`, 'success');
-    
-    // Check for rank upgrade
     checkRankUp();
 }
 
@@ -496,23 +418,27 @@ function animateMineButton(reward) {
     if (!btn) return;
     
     const originalHTML = btn.innerHTML;
-    const originalText = btn.querySelector('.mine-text').innerHTML;
     
-    // Change button text
-    btn.querySelector('.mine-text').innerHTML = `
-        <div class="mine-title">Mined!</div>
-        <div class="mine-reward">+${reward} points</div>
+    btn.innerHTML = `
+        <div class="mine-icon">
+            <i class="fas fa-hammer"></i>
+        </div>
+        <div class="mine-text">
+            <div class="mine-title">Mined!</div>
+            <div class="mine-reward">+${reward} points</div>
+        </div>
+        <div class="mine-cooldown" id="cooldownTimer">5s</div>
     `;
     
     btn.disabled = true;
     btn.style.opacity = '0.7';
     
-    // Countdown
     let secondsLeft = 5;
     
     const updateTimer = () => {
-        if (elements.cooldownTimer) {
-            elements.cooldownTimer.textContent = `${secondsLeft}s`;
+        const timerElement = btn.querySelector('.mine-cooldown');
+        if (timerElement) {
+            timerElement.textContent = `${secondsLeft}s`;
         }
         
         secondsLeft--;
@@ -520,13 +446,10 @@ function animateMineButton(reward) {
         if (secondsLeft >= 0) {
             setTimeout(updateTimer, 1000);
         } else {
-            // Restore button
             btn.disabled = false;
             btn.style.opacity = '1';
-            btn.querySelector('.mine-text').innerHTML = originalText;
-            if (elements.cooldownTimer) {
-                elements.cooldownTimer.textContent = '';
-            }
+            btn.innerHTML = originalHTML;
+            btn.addEventListener('click', minePoints);
         }
     };
     
@@ -538,61 +461,89 @@ function animateMineButton(reward) {
 // ============================================
 
 function setupEventListeners() {
-    // Mine button
+    console.log("🎯 Setting up event listeners...");
+    
     if (elements.mineBtn) {
         elements.mineBtn.addEventListener('click', minePoints);
+        console.log("✅ Mine button listener added");
     }
     
-    // Copy referral link
     if (elements.copyBtn) {
-        elements.copyBtn.addEventListener('click', () => {
-            const refLink = generateReferralLink();
-            navigator.clipboard.writeText(refLink)
-                .then(() => {
-                    showMessage('✅ Link copied', 'success');
-                    elements.copyBtn.innerHTML = '<i class="fas fa-check"></i>';
-                    setTimeout(() => {
-                        elements.copyBtn.innerHTML = '<i class="far fa-copy"></i>';
-                    }, 2000);
-                })
-                .catch(err => {
-                    console.error('Copy error:', err);
-                    showMessage('❌ Failed to copy', 'error');
-                });
-        });
+        elements.copyBtn.addEventListener('click', copyReferralLink);
+        console.log("✅ Copy button listener added");
     }
     
-    // Share on Telegram
-    const shareBtn = document.getElementById('shareBtn');
-    if (shareBtn) {
-        shareBtn.addEventListener('click', () => {
-            const refLink = generateReferralLink();
-            const shareText = `Join me on VIP Mining and earn free points! 🪙\n\nUse my referral link to get extra rewards:\n${refLink}\n\n@VIPMainingPROBot`;
-            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(shareText)}`;
-            window.open(shareUrl, '_blank');
-            showMessage('📱 Opening Telegram...', 'info');
-        });
+    if (elements.shareBtn) {
+        elements.shareBtn.addEventListener('click', shareOnTelegram);
+        console.log("✅ Share button listener added");
     }
     
-    // Share on WhatsApp
-    const whatsappBtn = document.getElementById('whatsappBtn');
-    if (whatsappBtn) {
-        whatsappBtn.addEventListener('click', () => {
-            const refLink = generateReferralLink();
-            const shareText = `Join me on VIP Mining and earn free points! 🪙\n\nReferral link: ${refLink}`;
-            const shareUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
-            window.open(shareUrl, '_blank');
-            showMessage('💚 Opening WhatsApp...', 'info');
+    if (elements.whatsappBtn) {
+        elements.whatsappBtn.addEventListener('click', shareOnWhatsApp);
+        console.log("✅ WhatsApp button listener added");
+    }
+}
+
+function copyReferralLink() {
+    const refLink = elements.referralLink ? elements.referralLink.value : 
+                   `https://t.me/VIPMainingPROBot?start=${userData.referralCode}`;
+    
+    navigator.clipboard.writeText(refLink)
+        .then(() => {
+            showMessage('✅ Link copied', 'success');
+            if (elements.copyBtn) {
+                elements.copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    elements.copyBtn.innerHTML = '<i class="far fa-copy"></i>';
+                }, 2000);
+            }
+        })
+        .catch(err => {
+            console.error('Copy error:', err);
+            showMessage('❌ Failed to copy', 'error');
         });
+}
+
+function shareOnTelegram() {
+    const refLink = elements.referralLink ? elements.referralLink.value : 
+                   `https://t.me/VIPMainingPROBot?start=${userData.referralCode}`;
+    
+    const shareText = `Join me on VIP Mining and earn free points! 🪙\n\nUse my referral link to get extra rewards:\n${refLink}\n\n@VIPMainingPROBot`;
+    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(shareText)}`;
+    
+    window.open(shareUrl, '_blank');
+    showMessage('📱 Opening Telegram...', 'info');
+}
+
+function shareOnWhatsApp() {
+    const refLink = elements.referralLink ? elements.referralLink.value : 
+                   `https://t.me/VIPMainingPROBot?start=${userData.referralCode}`;
+    
+    const shareText = `Join me on VIP Mining and earn free points! 🪙\n\nReferral link: ${refLink}`;
+    const shareUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+    
+    window.open(shareUrl, '_blank');
+    showMessage('💚 Opening WhatsApp...', 'info');
+}
+
+function checkForReferral() {
+    // Check URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const referrerCode = urlParams.get('ref') || urlParams.get('start');
+    
+    // Check Telegram start parameter
+    if (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param) {
+        const telegramRef = tg.initDataUnsafe.start_param;
+        if (telegramRef && telegramRef !== userData.referralCode) {
+            console.log("Telegram referral detected:", telegramRef);
+            processReferral(telegramRef);
+        }
     }
     
-    // Refresh button
-    const refreshBtn = document.getElementById('refreshBtn');
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', () => {
-            updateUI();
-            showMessage('🔄 Data refreshed', 'info');
-        });
+    // Check URL parameter
+    if (referrerCode && referrerCode !== userData.referralCode) {
+        console.log("URL referral detected:", referrerCode);
+        processReferral(referrerCode);
     }
 }
 
@@ -601,26 +552,48 @@ function setupEventListeners() {
 // ============================================
 
 function updateUI() {
+    console.log("🔄 Updating UI...");
+    
     // Update numbers
-    if (elements.balance) elements.balance.textContent = userData.balance.toLocaleString();
-    if (elements.referrals) elements.referrals.textContent = userData.referrals;
-    if (elements.totalEarned) elements.totalEarned.textContent = userData.totalEarned.toLocaleString();
+    if (elements.balance) {
+        elements.balance.textContent = userData.balance.toLocaleString();
+    }
+    
+    if (elements.referrals) {
+        elements.referrals.textContent = `${userData.referrals} Referrals`;
+    }
+    
+    if (elements.totalEarned) {
+        elements.totalEarned.textContent = `${userData.totalEarned.toLocaleString()} Total`;
+    }
     
     // Update rank
     const currentRank = CONFIG.RANKS.find(r => r.name === userData.rank) || CONFIG.RANKS[0];
-    if (elements.rank) elements.rank.textContent = `Rank: ${userData.rank}`;
-    if (elements.rankBadge) elements.rankBadge.textContent = userData.rank;
-    if (elements.refRank) elements.refRank.textContent = userData.rank;
+    if (elements.rankBadge) {
+        elements.rankBadge.textContent = userData.rank;
+    }
     
     // Update mining info
-    if (elements.rewardAmount) elements.rewardAmount.textContent = currentRank.reward;
-    if (elements.miningPower) elements.miningPower.innerHTML = `<i class="fas fa-bolt"></i> Power: ${currentRank.power}`;
+    if (elements.rewardAmount) {
+        elements.rewardAmount.textContent = currentRank.reward;
+    }
+    
+    if (elements.miningPower) {
+        elements.miningPower.innerHTML = `<i class="fas fa-bolt"></i> Power: ${currentRank.power}`;
+    }
     
     // Update referral statistics
-    if (elements.refCount) elements.refCount.textContent = userData.referrals;
-    if (elements.refEarned) elements.refEarned.textContent = userData.referralEarnings.toLocaleString();
-    if (elements.referralBalance) elements.referralBalance.textContent = userData.referralEarnings.toLocaleString();
-    if (elements.totalReferrals) elements.totalReferrals.textContent = userData.referrals;
+    if (elements.refCount) {
+        elements.refCount.textContent = userData.referrals;
+    }
+    
+    if (elements.refEarned) {
+        elements.refEarned.textContent = userData.referralEarnings.toLocaleString();
+    }
+    
+    if (elements.refRank) {
+        elements.refRank.textContent = userData.rank;
+    }
     
     // Update progress bar
     updateProgress();
@@ -657,7 +630,6 @@ function updateProgress() {
             elements.remainingPoints.textContent = Math.max(0, nextRank.min - userData.totalEarned).toLocaleString();
         }
     } else {
-        // Reached highest rank
         if (elements.progressFill) elements.progressFill.style.width = '100%';
         if (elements.nextRank) elements.nextRank.textContent = 'Highest Rank! 🏆';
         if (elements.remainingPoints) elements.remainingPoints.textContent = '0';
@@ -679,13 +651,26 @@ function checkRankUp() {
     }
 }
 
+function updateConnectionStatus() {
+    if (elements.connectionStatus) {
+        if (db) {
+            elements.connectionStatus.textContent = '🟢 Connected to Firebase';
+            elements.connectionStatus.style.color = '#22c55e';
+        } else {
+            elements.connectionStatus.textContent = '🟡 Local Storage Only';
+            elements.connectionStatus.style.color = '#f59e0b';
+        }
+    }
+}
+
 // ============================================
 // Utility Functions
 // ============================================
 
 function showMessage(text, type = 'info') {
-    // Create message element
-    let messageDiv = document.createElement('div');
+    console.log(`💬 ${type.toUpperCase()}: ${text}`);
+    
+    const messageDiv = document.createElement('div');
     messageDiv.className = `message ${type}`;
     messageDiv.innerHTML = `
         <i class="fas fa-${type === 'success' ? 'check-circle' : 
@@ -694,7 +679,6 @@ function showMessage(text, type = 'info') {
         <span>${text}</span>
     `;
     
-    // Add styles
     messageDiv.style.cssText = `
         position: fixed;
         top: 20px;
@@ -718,13 +702,11 @@ function showMessage(text, type = 'info') {
     
     document.body.appendChild(messageDiv);
     
-    // Show message
     setTimeout(() => {
         messageDiv.style.opacity = '1';
         messageDiv.style.transform = 'translateX(-50%) translateY(0)';
     }, 10);
     
-    // Auto hide after 3 seconds
     setTimeout(() => {
         messageDiv.style.opacity = '0';
         messageDiv.style.transform = 'translateX(-50%) translateY(-100px)';
@@ -747,7 +729,7 @@ setInterval(() => {
     }
 }, 30000);
 
-// Check timer every second
+// Check cooldown timer every second
 setInterval(() => {
     if (userData.lastMineTime > 0) {
         const timeSinceLastMine = Date.now() - userData.lastMineTime;
@@ -764,14 +746,15 @@ setInterval(() => {
     }
 }, 1000);
 
-// Start app when page loads
-document.addEventListener('DOMContentLoaded', initApp);
-
-// Check if page is already loaded
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    setTimeout(initApp, 100);
+// Initialize app when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
 }
 
 // Export for debugging
 window.appData = userData;
 window.appConfig = CONFIG;
+window.appElements = elements;
+window.showMessage = showMessage;
