@@ -1,5 +1,5 @@
 // ============================================
-// VIP Mining Mini App - Working Version
+// VIP Mining Mini App - FINAL WORKING VERSION
 // ============================================
 
 // Telegram WebApp
@@ -9,20 +9,22 @@ try {
     tg.ready();
     tg.expand();
 } catch (e) {
-    console.log("⚠️ Not in Telegram, running in browser mode");
+    console.log("Not in Telegram");
 }
 
-// User data - مع بيانات افتراضية
+// بيانات المستخدم - تبدأ من 100 نقطة
 let userData = {
     balance: 100,
     referrals: 0,
     totalEarned: 100,
     rank: 'Beginner',
     userId: null,
-    username: 'Guest'
+    username: 'مستخدم',
+    referralEarnings: 0,
+    lastMineTime: 0
 };
 
-// DOM Elements
+// عناصر الصفحة
 const elements = {
     balance: document.getElementById('balance'),
     referrals: document.getElementById('referrals'),
@@ -46,95 +48,94 @@ const elements = {
     currentPoints: document.getElementById('currentPoints'),
     targetPoints: document.getElementById('targetPoints'),
     remainingPoints: document.getElementById('remainingPoints'),
-    connectionStatus: document.getElementById('connectionStatus')
+    connectionStatus: document.getElementById('connectionStatus'),
+    cooldownTimer: document.getElementById('cooldownTimer')
 };
 
-// Configuration
+// الإعدادات
 const CONFIG = {
-    MINE_COOLDOWN: 5000,
-    REFERRAL_REWARD: 25,
+    MINE_COOLDOWN: 5000, // 5 ثواني
+    REFERRAL_REWARD: 25, // مكافأة الإحالة
     
     RANKS: [
-        { name: 'Beginner', min: 0, max: 199, reward: 1, power: '10/h' },
-        { name: 'Pro', min: 200, max: 499, reward: 2, power: '25/h' },
-        { name: 'Expert', min: 500, max: 999, reward: 3, power: '50/h' },
-        { name: 'VIP', min: 1000, max: 9999, reward: 5, power: '100/h' }
+        { name: 'مبتدئ', min: 0, max: 199, reward: 1, power: '10/س' },
+        { name: 'محترف', min: 200, max: 499, reward: 2, power: '25/س' },
+        { name: 'خبير', min: 500, max: 999, reward: 3, power: '50/س' },
+        { name: 'فائب', min: 1000, max: 9999, reward: 5, power: '100/س' }
     ]
 };
 
 // ============================================
-// INITIALIZATION
+// بدء التطبيق
 // ============================================
 
 function initApp() {
-    console.log("🚀 Starting VIP Mining App...");
+    console.log("🚀 بدء تطبيق VIP Mining...");
     
     try {
-        // Setup user from Telegram or Demo
+        // تحديد المستخدم
         setupUser();
         
-        // Load saved data
+        // تحميل البيانات المحفوظة
         loadUserData();
         
-        // Setup event listeners
+        // إعداد أزرار التحكم
         setupEventListeners();
         
-        // Update UI
+        // تحديث الواجهة
         updateUI();
         
-        // Show success
-        showToast('✅ App loaded successfully!', 'success');
+        // تحديث حالة الاتصال
         if (elements.connectionStatus) {
-            elements.connectionStatus.textContent = '🟢 Connected';
+            elements.connectionStatus.textContent = '🟢 متصل';
             elements.connectionStatus.style.color = '#10b981';
         }
         
-        console.log("✅ App initialized successfully");
+        console.log("✅ التطبيق جاهز للعمل");
         
     } catch (error) {
-        console.error("❌ Init error:", error);
-        showToast('⚠️ App loaded in demo mode', 'warning');
-        if (elements.connectionStatus) {
-            elements.connectionStatus.textContent = '🟡 Demo Mode';
-            elements.connectionStatus.style.color = '#f59e0b';
-        }
+        console.error("❌ خطأ:", error);
+        showMessage('حدث خطأ، جاري إعادة المحاولة...', 'error');
+        setTimeout(initApp, 2000);
     }
 }
 
 function setupUser() {
-    // Check if we're in Telegram
+    // التحقق من Telegram
     if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-        // Telegram user
         const tgUser = tg.initDataUnsafe.user;
         userData.userId = tgUser.id.toString();
-        userData.username = tgUser.username ? `@${tgUser.username}` : `User${tgUser.id.toString().slice(-4)}`;
+        userData.username = tgUser.username ? `@${tgUser.username}` : `مستخدم${tgUser.id.toString().slice(-4)}`;
         
-        // Update UI
+        // تحديث الواجهة
         if (elements.username) elements.username.textContent = userData.username;
-        if (elements.userId) elements.userId.textContent = `ID: ${userData.userId}`;
-        if (elements.userInfo) elements.userInfo.textContent = `Welcome, ${userData.username}`;
-        if (elements.userAvatar) elements.userAvatar.textContent = userData.username.charAt(0).toUpperCase();
+        if (elements.userId) elements.userId.textContent = `المعرف: ${userData.userId}`;
+        if (elements.userInfo) elements.userInfo.textContent = `أهلاً، ${userData.username}`;
+        if (elements.userAvatar) {
+            elements.userAvatar.textContent = userData.username.charAt(0).toUpperCase();
+            elements.userAvatar.style.background = 'linear-gradient(135deg, #3b82f6, #8b5cf6)';
+        }
         
-        // Hide demo controls
+        // إخفاء عناصر التجربة
         const demoControls = document.getElementById('demoControls');
         if (demoControls) demoControls.style.display = 'none';
         
     } else {
-        // Demo mode
-        userData.userId = 'demo_' + Math.random().toString(36).substr(2, 8);
-        userData.username = 'Demo User';
+        // وضع المستخدم العادي (ليس تجريبي)
+        userData.userId = 'user_' + Date.now();
+        userData.username = 'مستخدم جديد';
         
-        // Update UI for demo
-        if (elements.username) elements.username.textContent = 'Demo User';
-        if (elements.userId) elements.userId.textContent = 'ID: DEMO_USER';
-        if (elements.userInfo) elements.userInfo.textContent = 'Demo Mode - Sign in via Telegram';
+        // تحديث الواجهة
+        if (elements.username) elements.username.textContent = userData.username;
+        if (elements.userId) elements.userId.textContent = 'المعرف: ' + userData.userId.slice(-8);
+        if (elements.userInfo) elements.userInfo.textContent = 'أهلاً بك في VIP Mining';
         if (elements.userAvatar) {
-            elements.userAvatar.textContent = 'D';
-            elements.userAvatar.style.background = 'linear-gradient(135deg, #8B5CF6, #EC4899)';
+            elements.userAvatar.textContent = 'م';
+            elements.userAvatar.style.background = 'linear-gradient(135deg, #10b981, #34d399)';
         }
     }
     
-    // Generate referral link
+    // إنشاء رابط الإحالة
     const refLink = generateReferralLink();
     if (elements.referralLink) elements.referralLink.value = refLink;
 }
@@ -147,7 +148,7 @@ function generateReferralLink() {
 }
 
 // ============================================
-// DATA STORAGE
+// نظام التخزين
 // ============================================
 
 function loadUserData() {
@@ -160,60 +161,77 @@ function loadUserData() {
             userData.balance = data.balance || 100;
             userData.referrals = data.referrals || 0;
             userData.totalEarned = data.totalEarned || 100;
-            userData.rank = data.rank || 'Beginner';
-            console.log("📂 Loaded saved data");
+            userData.rank = data.rank || 'مبتدئ';
+            userData.referralEarnings = data.referralEarnings || 0;
+            userData.lastMineTime = data.lastMineTime || 0;
+            console.log("📂 تم تحميل البيانات المحفوظة");
+        } else {
+            // حفظ بيانات جديدة
+            saveUserData();
         }
     } catch (error) {
-        console.error("❌ Load error:", error);
+        console.error("❌ خطأ في التحميل:", error);
+        userData.balance = 100;
+        userData.totalEarned = 100;
     }
 }
 
 function saveUserData() {
     try {
         const storageKey = `vip_mining_${userData.userId}`;
-        localStorage.setItem(storageKey, JSON.stringify(userData));
-        console.log("💾 Saved user data");
+        const dataToSave = {
+            balance: userData.balance,
+            referrals: userData.referrals,
+            totalEarned: userData.totalEarned,
+            rank: userData.rank,
+            referralEarnings: userData.referralEarnings,
+            lastMineTime: userData.lastMineTime,
+            saveTime: Date.now()
+        };
+        
+        localStorage.setItem(storageKey, JSON.stringify(dataToSave));
+        console.log("💾 تم حفظ البيانات");
     } catch (error) {
-        console.error("❌ Save error:", error);
+        console.error("❌ خطأ في الحفظ:", error);
     }
 }
 
 // ============================================
-// MINING SYSTEM
+// نظام التعدين
 // ============================================
-
-let lastMineTime = 0;
-let mineCooldown = 5000; // 5 seconds
 
 function minePoints() {
     const now = Date.now();
-    const timeSinceLastMine = now - lastMineTime;
+    const timeSinceLastMine = now - userData.lastMineTime;
     
-    // Check cooldown
-    if (timeSinceLastMine < mineCooldown) {
-        const secondsLeft = Math.ceil((mineCooldown - timeSinceLastMine) / 1000);
-        showToast(`⏳ Please wait ${secondsLeft}s`, 'warning');
+    // التحقق من وقت الانتظار
+    if (timeSinceLastMine < CONFIG.MINE_COOLDOWN) {
+        const secondsLeft = Math.ceil((CONFIG.MINE_COOLDOWN - timeSinceLastMine) / 1000);
+        showMessage(`⏳ انتظر ${secondsLeft} ثانية`, 'warning');
         return;
     }
     
-    // Get reward amount based on rank
+    // تحديد المكافأة حسب الرتبة
     const currentRank = CONFIG.RANKS.find(r => r.name === userData.rank) || CONFIG.RANKS[0];
     const reward = currentRank.reward;
     
-    // Update user data
+    // تحديث بيانات المستخدم
     userData.balance += reward;
     userData.totalEarned += reward;
-    lastMineTime = now;
+    userData.lastMineTime = now;
     
-    // Save and update
+    // حفظ وتحديث
     saveUserData();
     updateUI();
     
-    // Animate button
+    // تأثير الزر
     animateMineButton(reward);
     
-    // Show success message
-    showToast(`⛏️ +${reward} points mined!`, 'success');
+    // رسالة النجاح
+    showMessage(`⛏️ +${reward} نقطة!`, 'success');
+    
+    // التحقق من ترقية الرتبة
+    checkRankUp();
 }
 
 function animateMineButton(reward) {
@@ -221,124 +239,155 @@ function animateMineButton(reward) {
     if (!btn) return;
     
     const originalHTML = btn.innerHTML;
+    const originalText = btn.querySelector('.mine-text').innerHTML;
     
-    // Change button text
-    btn.innerHTML = `
-        <div class="mine-icon">
-            <i class="fas fa-check"></i>
-        </div>
-        <div class="mine-text">
-            <div class="mine-title">Mined!</div>
-            <div class="mine-reward">+${reward} Points</div>
-        </div>
-        <div class="mine-cooldown">5s</div>
+    // تغيير نص الزر
+    btn.querySelector('.mine-text').innerHTML = `
+        <div class="mine-title">تم التعدين!</div>
+        <div class="mine-reward">+${reward} نقطة</div>
     `;
     
     btn.disabled = true;
+    btn.style.opacity = '0.7';
     
-    // Countdown timer
+    // عد تنازلي
     let secondsLeft = 5;
-    const timerInterval = setInterval(() => {
-        secondsLeft--;
-        const cooldownElement = btn.querySelector('.mine-cooldown');
-        if (cooldownElement) {
-            cooldownElement.textContent = `${secondsLeft}s`;
+    
+    const updateTimer = () => {
+        if (elements.cooldownTimer) {
+            elements.cooldownTimer.textContent = `${secondsLeft}ث`;
         }
         
-        if (secondsLeft <= 0) {
-            clearInterval(timerInterval);
+        secondsLeft--;
+        
+        if (secondsLeft >= 0) {
+            setTimeout(updateTimer, 1000);
+        } else {
+            // إعادة الزر لحالته الأصلية
             btn.disabled = false;
-            btn.innerHTML = originalHTML;
+            btn.style.opacity = '1';
+            btn.querySelector('.mine-text').innerHTML = originalText;
+            if (elements.cooldownTimer) {
+                elements.cooldownTimer.textContent = '';
+            }
         }
-    }, 1000);
+    };
+    
+    updateTimer();
 }
 
 // ============================================
-// EVENT LISTENERS
+// نظام الإحالة
 // ============================================
 
+function handleReferral(referrerId) {
+    if (!referrerId || referrerId === userData.userId) return;
+    
+    // زيادة إحالات المحيل
+    userData.referrals += 1;
+    userData.balance += CONFIG.REFERRAL_REWARD;
+    userData.totalEarned += CONFIG.REFERRAL_REWARD;
+    userData.referralEarnings += CONFIG.REFERRAL_REWARD;
+    
+    // حفظ وتحديث
+    saveUserData();
+    updateUI();
+    
+    // رسالة النجاح
+    showMessage(`🎉 إحالة جديدة! +${CONFIG.REFERRAL_REWARD} نقطة`, 'success');
+}
+
 function setupEventListeners() {
-    // Mining button
+    // زر التعدين
     if (elements.mineBtn) {
         elements.mineBtn.addEventListener('click', minePoints);
     }
     
-    // Copy referral link
+    // نسخ رابط الإحالة
     if (elements.copyBtn) {
         elements.copyBtn.addEventListener('click', () => {
             const refLink = generateReferralLink();
             navigator.clipboard.writeText(refLink)
                 .then(() => {
-                    showToast('✅ Link copied to clipboard!', 'success');
+                    showMessage('✅ تم نسخ الرابط', 'success');
                     elements.copyBtn.innerHTML = '<i class="fas fa-check"></i>';
                     setTimeout(() => {
                         elements.copyBtn.innerHTML = '<i class="far fa-copy"></i>';
                     }, 2000);
                 })
                 .catch(err => {
-                    console.error('Copy failed:', err);
-                    showToast('❌ Copy failed', 'error');
+                    console.error('خطأ في النسخ:', err);
+                    showMessage('❌ فشل النسخ', 'error');
                 });
         });
     }
     
-    // Share on Telegram
+    // مشاركة على Telegram
     const shareBtn = document.getElementById('shareBtn');
     if (shareBtn) {
         shareBtn.addEventListener('click', () => {
             const refLink = generateReferralLink();
-            const shareText = `Join me on VIP Mining! Earn free points using my link: ${refLink}`;
+            const shareText = `انضم إلي في VIP Mining واحصل على نقاط مجانية! 🪙\n\nاستخدم رابط الإحالة الخاص بي لتحصل على مكافآت إضافية:\n${refLink}\n\n@VIPMainingPROBot`;
             const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(shareText)}`;
             window.open(shareUrl, '_blank');
-            showToast('📱 Opening Telegram...', 'info');
+            showMessage('📱 جارٍ فتح Telegram...', 'info');
         });
     }
     
-    // Share on WhatsApp
+    // مشاركة على WhatsApp
     const whatsappBtn = document.getElementById('whatsappBtn');
     if (whatsappBtn) {
         whatsappBtn.addEventListener('click', () => {
             const refLink = generateReferralLink();
-            const shareText = `Join me on VIP Mining! Earn free points using my link: ${refLink}`;
+            const shareText = `انضم إلي في VIP Mining واحصل على نقاط مجانية! 🪙\n\nرابط الإحالة: ${refLink}`;
             const shareUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
             window.open(shareUrl, '_blank');
-            showToast('💚 Opening WhatsApp...', 'info');
+            showMessage('💚 جارٍ فتح WhatsApp...', 'info');
         });
+    }
+    
+    // التحقق من الإحالة عند التحميل
+    checkForReferral();
+}
+
+function checkForReferral() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const referrerId = urlParams.get('ref');
+    
+    if (referrerId && referrerId !== userData.userId) {
+        // تأخير بسيط للتأكد من تحميل البيانات أولاً
+        setTimeout(() => {
+            handleReferral(referrerId);
+        }, 1000);
     }
 }
 
 // ============================================
-// UI UPDATES
+// تحديث الواجهة
 // ============================================
 
 function updateUI() {
-    // Update basic info
+    // تحديث الأرقام
     if (elements.balance) elements.balance.textContent = userData.balance;
     if (elements.referrals) elements.referrals.textContent = userData.referrals;
     if (elements.totalEarned) elements.totalEarned.textContent = userData.totalEarned;
     
-    // Update rank
+    // تحديث الرتبة
     const currentRank = CONFIG.RANKS.find(r => r.name === userData.rank) || CONFIG.RANKS[0];
-    if (elements.rank) elements.rank.textContent = `Rank: ${userData.rank}`;
+    if (elements.rank) elements.rank.textContent = `الرتبة: ${userData.rank}`;
     if (elements.rankBadge) elements.rankBadge.textContent = userData.rank;
     if (elements.refRank) elements.refRank.textContent = userData.rank;
     
-    // Update mining info
+    // تحديث معلومات التعدين
     if (elements.rewardAmount) elements.rewardAmount.textContent = currentRank.reward;
-    if (elements.miningPower) elements.miningPower.innerHTML = `<i class="fas fa-bolt"></i> Power: ${currentRank.power}`;
+    if (elements.miningPower) elements.miningPower.innerHTML = `<i class="fas fa-bolt"></i> القوة: ${currentRank.power}`;
     
-    // Update referral stats
+    // تحديث إحصائيات الإحالة
     if (elements.refCount) elements.refCount.textContent = userData.referrals;
-    if (elements.refEarned) {
-        const refEarnings = userData.referrals * CONFIG.REFERRAL_REWARD;
-        elements.refEarned.textContent = refEarnings;
-    }
+    if (elements.refEarned) elements.refEarned.textContent = userData.referralEarnings;
     
-    // Update progress
+    // تحديث شريط التقدم
     updateProgress();
-    
-    // Check rank up
-    checkRankUp();
 }
 
 function updateProgress() {
@@ -354,7 +403,7 @@ function updateProgress() {
         }
         
         if (elements.nextRank) {
-            elements.nextRank.textContent = `Next: ${nextRank.name} (${nextRank.min} points)`;
+            elements.nextRank.textContent = `التالي: ${nextRank.name} (${nextRank.min} نقطة)`;
         }
         
         if (elements.currentPoints) {
@@ -368,6 +417,10 @@ function updateProgress() {
         if (elements.remainingPoints) {
             elements.remainingPoints.textContent = Math.max(0, nextRank.min - userData.totalEarned);
         }
+    } else {
+        // وصل لأعلى رتبة
+        if (elements.progressFill) elements.progressFill.style.width = '100%';
+        if (elements.nextRank) elements.nextRank.textContent = 'أعلى رتبة! 🏆';
     }
 }
 
@@ -380,76 +433,101 @@ function checkRankUp() {
     if (newRank && newRank.name !== userData.rank) {
         const oldRank = userData.rank;
         userData.rank = newRank.name;
-        updateUI();
         saveUserData();
-        showToast(`🏆 Rank Up! ${oldRank} → ${newRank.name}`, 'success');
+        updateUI();
+        showMessage(`🏆 ترقية رتبة! ${oldRank} → ${newRank.name}`, 'success');
     }
 }
 
 // ============================================
-// UTILITIES
+// الأدوات المساعدة
 // ============================================
 
-function showToast(message, type = 'info') {
-    // Create toast element
-    let toast = document.getElementById('toast');
-    
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'toast';
-        toast.className = 'toast';
-        document.body.appendChild(toast);
-    }
-    
-    // Set content
-    toast.innerHTML = `
-        <div class="toast-content">
-            <i class="fas fa-${type === 'success' ? 'check-circle' : 
-                             type === 'error' ? 'exclamation-circle' : 
-                             type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
-            <span class="toast-message">${message}</span>
-        </div>
+function showMessage(text, type = 'info') {
+    // إنشاء عنصر الرسالة
+    let messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}`;
+    messageDiv.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 
+                         type === 'error' ? 'exclamation-circle' : 
+                         type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+        <span>${text}</span>
     `;
     
-    // Set color
-    const colors = {
-        success: '#10b981',
-        error: '#ef4444',
-        warning: '#f59e0b',
-        info: '#3b82f6'
-    };
+    // إضافة الأنماط
+    messageDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-100px);
+        background: ${type === 'success' ? '#10b981' : 
+                     type === 'error' ? '#ef4444' : 
+                     type === 'warning' ? '#f59e0b' : '#3b82f6'};
+        color: white;
+        padding: 12px 24px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        z-index: 1000;
+        opacity: 0;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        font-weight: 500;
+    `;
     
-    toast.style.background = colors[type] || colors.info;
+    document.body.appendChild(messageDiv);
     
-    // Show toast
-    toast.classList.add('show');
-    
-    // Auto hide
+    // إظهار الرسالة
     setTimeout(() => {
-        toast.classList.remove('show');
+        messageDiv.style.opacity = '1';
+        messageDiv.style.transform = 'translateX(-50%) translateY(0)';
+    }, 10);
+    
+    // إخفاء تلقائي بعد 3 ثواني
+    setTimeout(() => {
+        messageDiv.style.opacity = '0';
+        messageDiv.style.transform = 'translateX(-50%) translateY(-100px)';
+        setTimeout(() => {
+            if (messageDiv.parentNode) {
+                messageDiv.parentNode.removeChild(messageDiv);
+            }
+        }, 300);
     }, 3000);
 }
 
 // ============================================
-// START THE APP
+// بدء التطبيق
 // ============================================
 
-// Make functions globally available for demo buttons
-window.userData = userData;
-window.updateUI = updateUI;
-window.showToast = showToast;
-
-// Auto-save every 30 seconds
+// الحفظ التلقائي كل 30 ثانية
 setInterval(() => {
     if (userData.userId) {
         saveUserData();
     }
 }, 30000);
 
-// Initialize when page loads
+// التحقق من المؤقت كل ثانية
+setInterval(() => {
+    if (userData.lastMineTime > 0) {
+        const timeSinceLastMine = Date.now() - userData.lastMineTime;
+        if (timeSinceLastMine < CONFIG.MINE_COOLDOWN) {
+            const secondsLeft = Math.ceil((CONFIG.MINE_COOLDOWN - timeSinceLastMine) / 1000);
+            if (elements.cooldownTimer) {
+                elements.cooldownTimer.textContent = `${secondsLeft}ث`;
+            }
+        } else {
+            if (elements.cooldownTimer) {
+                elements.cooldownTimer.textContent = '';
+            }
+        }
+    }
+}, 1000);
+
+// بدء التطبيق عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', initApp);
 
-// Also initialize if already loaded
+// التحقق إذا كانت الصفحة محملة مسبقاً
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
     setTimeout(initApp, 100);
             }
