@@ -457,7 +457,7 @@ function saveUserToFirebase() {
 }
 
 // ============================================
-// Referral Processing
+// Referral Processing - FIXED VERSION
 // ============================================
 
 function checkForReferral() {
@@ -519,11 +519,11 @@ async function processReferral(referralCode) {
                     return;
                 }
                 
-                // Reward for referred user (new user)
+                // Reward for referred user (new user) - ONLY 25 points
                 userData.balance += CONFIG.REFERRAL_REWARD;
                 userData.totalEarned += CONFIG.REFERRAL_REWARD;
                 
-                // Reward for referrer
+                // Reward for referrer - 25 points
                 await referrerDoc.ref.update({
                     referrals: firebase.firestore.FieldValue.increment(1),
                     referralEarnings: firebase.firestore.FieldValue.increment(CONFIG.REFERRER_REWARD),
@@ -531,10 +531,10 @@ async function processReferral(referralCode) {
                     totalEarned: firebase.firestore.FieldValue.increment(CONFIG.REFERRER_REWARD)
                 });
                 
-                // Update current user
+                // Update current user - ONLY set referredBy, NO bonus or referral increment
                 userData.referredBy = referralCode;
-                userData.referrals += 1;
-                userData.referralEarnings += CONFIG.REFERRER_REWARD;
+                // ❌❌❌ لا نزيد userData.referrals هنا - هذا للمستخدم الجديد
+                // ❌❌❌ لا نزيد userData.referralEarnings هنا - هذه مكافأة للمُحيل
                 
                 // Immediate save
                 saveUserData();
@@ -551,15 +551,15 @@ async function processReferral(referralCode) {
         
         // Fallback to local storage
         userData.referredBy = referralCode;
-        userData.balance += CONFIG.REFERRAL_REWARD + CONFIG.REFERRER_REWARD;
-        userData.totalEarned += CONFIG.REFERRAL_REWARD + CONFIG.REFERRER_REWARD;
-        userData.referralEarnings += CONFIG.REFERRER_REWARD;
+        // For local storage fallback: new user gets 25 points
+        userData.balance += CONFIG.REFERRAL_REWARD; // فقط 25 نقطة للمستخدم الجديد
+        userData.totalEarned += CONFIG.REFERRAL_REWARD;
+        // ❌❌❌ لا نزيد referralEarnings هنا لأنها للمُحيل
         
         saveUserData();
         updateUI();
         
-        const totalBonus = CONFIG.REFERRAL_REWARD + CONFIG.REFERRER_REWARD;
-        showMessage(`🎉 Referral recorded! +${totalBonus} total points`, 'success');
+        showMessage(`🎉 Referral recorded! You got +${CONFIG.REFERRAL_REWARD} points`, 'success');
         
         console.log("📝 Referral recorded (local storage)");
         return true;
@@ -1133,8 +1133,7 @@ window.debugStorage = function() {
         console.log("No data saved for current user");
     }
     
-    // Show all vip_mining keys
-    console.log("\nAll VIP Mining keys in localStorage:");
+    // Show all vip_mining keys in localStorage
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key.includes('vip_mining')) {
