@@ -669,7 +669,7 @@ function animateMineButton(reward) {
             btn.style.opacity = '1';
             btn.innerHTML = originalHTML;
             // Reattach event listener
-            btn.addEventListener('click', minePoints);
+            reattachMineButton();
         }
     };
     
@@ -677,29 +677,37 @@ function animateMineButton(reward) {
 }
 
 // ============================================
-// Event Listeners - FIXED VERSION
+// Event Listeners - SIMPLIFIED VERSION
 // ============================================
 
 function setupEventListeners() {
     console.log("🎯 Setting up event listeners...");
     
-    // Remove old listeners first
+    // Mine button
     if (elements.mineBtn) {
-        elements.mineBtn.removeEventListener('click', minePoints);
         elements.mineBtn.addEventListener('click', minePoints);
+        console.log("✅ Mine button listener added");
     }
     
+    // Copy button
     if (elements.copyBtn) {
-        elements.copyBtn.removeEventListener('click', copyReferralLink);
         elements.copyBtn.addEventListener('click', copyReferralLink);
+        console.log("✅ Copy button listener added");
     }
     
+    // Share button
     if (elements.shareBtn) {
-        elements.shareBtn.removeEventListener('click', shareOnTelegram);
         elements.shareBtn.addEventListener('click', shareOnTelegram);
+        console.log("✅ Share button listener added");
     }
     
     console.log("✅ Event listeners setup complete");
+}
+
+function reattachMineButton() {
+    if (elements.mineBtn) {
+        elements.mineBtn.addEventListener('click', minePoints);
+    }
 }
 
 function copyReferralLink() {
@@ -862,89 +870,120 @@ function updateWalletBalanceDirect() {
 }
 
 // ============================================
-// 🔥 NEW: Fixed Navigation System
+// 🔥 ULTIMATE FIX: Navigation System
 // ============================================
 
-function reinitializeEventListeners() {
-    console.log("🔄 Reinitializing event listeners...");
-    
-    // Remove old listeners first
-    if (elements.mineBtn) {
-        elements.mineBtn.removeEventListener('click', minePoints);
-        elements.mineBtn.addEventListener('click', minePoints);
-    }
-    
-    if (elements.copyBtn) {
-        elements.copyBtn.removeEventListener('click', copyReferralLink);
-        elements.copyBtn.addEventListener('click', copyReferralLink);
-    }
-    
-    if (elements.shareBtn) {
-        elements.shareBtn.removeEventListener('click', shareOnTelegram);
-        elements.shareBtn.addEventListener('click', shareOnTelegram);
-    }
-    
-    console.log("✅ Event listeners reinitialized");
-}
-
 function switchPageFixed(pageName) {
-    console.log("🔄 Switching to page:", pageName);
+    console.log("🎯 ULTIMATE SWITCH to:", pageName);
     
-    // Hide all pages
-    document.querySelectorAll('.page').forEach(page => {
-        page.classList.remove('active');
-        page.classList.add('hidden');
+    // Hide all pages and container
+    const allPages = document.querySelectorAll('.page, .container');
+    allPages.forEach(element => {
+        element.classList.remove('active');
+        element.classList.add('hidden');
     });
     
-    // Remove active from all icons
+    // Remove active from all nav items
     document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.remove('active');
     });
     
     // Show requested page and activate icon
     if (pageName === 'home') {
-        document.querySelector('.container').classList.remove('hidden');
-        document.querySelector('.container').classList.add('active');
+        const homeContainer = document.querySelector('.container');
+        if (homeContainer) {
+            homeContainer.classList.remove('hidden');
+            homeContainer.classList.add('active');
+        }
         
-        // 🔥 CRITICAL FIX: Reinitialize event listeners when returning to home
-        reinitializeEventListeners();
+        // Activate home icon
+        document.querySelectorAll('.nav-item').forEach(item => {
+            const span = item.querySelector('span');
+            if (span && span.textContent.toLowerCase().includes('home')) {
+                item.classList.add('active');
+            }
+        });
+        
+        // Reattach event listeners after a short delay
+        setTimeout(() => {
+            reattachAllEventListeners();
+        }, 100);
         
         // Update UI
         updateUI();
         
-        // Activate home icon
-        const homeIcons = document.querySelectorAll('[onclick*="switchPage(\'home\')"], [onclick*="switchPageFixed(\'home\')"]');
-        if (homeIcons.length > 0) {
-            homeIcons[0].classList.add('active');
-        }
-        
     } else if (pageName === 'wallet') {
-        document.getElementById('walletPage').classList.remove('hidden');
-        document.getElementById('walletPage').classList.add('active');
+        const walletPage = document.getElementById('walletPage');
+        if (walletPage) {
+            walletPage.classList.remove('hidden');
+            walletPage.classList.add('active');
+        }
         
         // Activate wallet icon
-        const walletIcons = document.querySelectorAll('[onclick*="switchPage(\'wallet\')"], [onclick*="switchPageFixed(\'wallet\')"]');
-        if (walletIcons.length > 0) {
-            walletIcons[0].classList.add('active');
-        }
-        
-        document.querySelector('.container').classList.add('hidden');
+        document.querySelectorAll('.nav-item').forEach(item => {
+            const span = item.querySelector('span');
+            if (span && span.textContent.toLowerCase().includes('wallet')) {
+                item.classList.add('active');
+            }
+        });
         
         // Update wallet balance
         updateWalletBalanceDirect();
         
     } else if (pageName === 'earning') {
-        document.getElementById('earningPage').classList.remove('hidden');
-        document.getElementById('earningPage').classList.add('active');
-        
-        // Activate earning icon
-        const earningIcons = document.querySelectorAll('[onclick*="switchPage(\'earning\')"], [onclick*="switchPageFixed(\'earning\')"]');
-        if (earningIcons.length > 0) {
-            earningIcons[0].classList.add('active');
+        const earningPage = document.getElementById('earningPage');
+        if (earningPage) {
+            earningPage.classList.remove('hidden');
+            earningPage.classList.add('active');
         }
         
-        document.querySelector('.container').classList.add('hidden');
+        // Activate earning icon
+        document.querySelectorAll('.nav-item').forEach(item => {
+            const span = item.querySelector('span');
+            if (span && span.textContent.toLowerCase().includes('earning')) {
+                item.classList.add('active');
+            }
+        });
     }
+}
+
+// Reattach ALL event listeners - SIMPLIFIED
+function reattachAllEventListeners() {
+    console.log("🔧 Reattaching all event listeners...");
+    
+    // Mine button
+    const mineBtn = document.getElementById('mineBtn');
+    if (mineBtn) {
+        // Remove old listener by cloning
+        const newMineBtn = mineBtn.cloneNode(true);
+        mineBtn.parentNode.replaceChild(newMineBtn, mineBtn);
+        
+        // Add fresh listener to new button
+        document.getElementById('mineBtn').addEventListener('click', minePoints);
+        console.log("✅ Mine button reattached");
+    }
+    
+    // Copy button
+    const copyBtn = document.getElementById('copyBtn');
+    if (copyBtn) {
+        const newCopyBtn = copyBtn.cloneNode(true);
+        copyBtn.parentNode.replaceChild(newCopyBtn, copyBtn);
+        
+        document.getElementById('copyBtn').addEventListener('click', copyReferralLink);
+        console.log("✅ Copy button reattached");
+    }
+    
+    // Share button
+    const shareBtn = document.getElementById('shareBtn');
+    if (shareBtn) {
+        const newShareBtn = shareBtn.cloneNode(true);
+        shareBtn.parentNode.replaceChild(newShareBtn, shareBtn);
+        
+        document.getElementById('shareBtn').addEventListener('click', shareOnTelegram);
+        console.log("✅ Share button reattached");
+    }
+    
+    console.log("✅ All event listeners reattached successfully");
 }
 
 // ============================================
@@ -1053,7 +1092,7 @@ window.processReferral = processReferral;
 window.saveUserData = saveUserData;
 window.updateWalletBalanceDirect = updateWalletBalanceDirect;
 window.switchPageFixed = switchPageFixed;
-window.reinitializeEventListeners = reinitializeEventListeners;
+window.reinitializeEventListeners = reattachAllEventListeners;
 
 // Debug function
 window.debugStorage = function() {
@@ -1082,4 +1121,4 @@ window.debugStorage = function() {
 };
 
 console.log("🎮 VIP Mining App loaded successfully");
-console.log("✅ Fixed navigation system ready");
+console.log("✅ ULTIMATE navigation system ready");
