@@ -994,65 +994,6 @@ function refreshPage() {
 }
 
 // ============================================
-// 🆕 نظام التنقل والقائمة السفلية - 2024-01-15
-// ============================================
-
-// وظيفة للتبديل بين الصفحات
-function switchPage(pageName) {
-    console.log("🔄 Switching to page:", pageName);
-    
-    // إخفاء جميع الصفحات
-    document.querySelectorAll('.page').forEach(page => {
-        page.classList.remove('active');
-        page.classList.add('hidden');
-    });
-    
-    // إزالة النشاط من جميع الأيقونات
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    
-    // إظهار الصفحة المطلوبة وتفعيل الأيقونة
-    if (pageName === 'home') {
-        // الصفحة الرئيسية موجودة بالفعل
-        document.querySelector('.container').classList.remove('hidden');
-        document.querySelector('.container').classList.add('active');
-        document.querySelector('[onclick="switchPage(\'home\')"]').classList.add('active');
-    } else if (pageName === 'wallet') {
-        document.getElementById('walletPage').classList.remove('hidden');
-        document.getElementById('walletPage').classList.add('active');
-        document.querySelector('[onclick="switchPage(\'wallet\')"]').classList.add('active');
-        document.querySelector('.container').classList.add('hidden');
-    } else if (pageName === 'earning') {
-        document.getElementById('earningPage').classList.remove('hidden');
-        document.getElementById('earningPage').classList.add('active');
-        document.querySelector('[onclick="switchPage(\'earning\')"]').classList.add('active');
-        document.querySelector('.container').classList.add('hidden');
-    }
-}
-
-// تهيئة التنقل عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', function() {
-    // تأكد أن الصفحة الرئيسية ظاهرة
-    setTimeout(() => {
-        if (document.querySelector('.container')) {
-            document.querySelector('.container').classList.add('active');
-        }
-        
-        // إضافة تأثيرات للأيقونات
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function() {
-                // تأثير بسيط عند النقر
-                this.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    this.style.transform = 'scale(1)';
-                }, 150);
-            });
-        });
-    }, 500);
-});
-
-// ============================================
 // Application Startup
 // ============================================
 
@@ -1095,6 +1036,72 @@ if (document.readyState === 'loading') {
     initApp();
 }
 
+// ============================================
+// 🆕 نظام التنقل - إضافات فقط (2024-01-15)
+// ============================================
+
+// وظيفة تحديث المحفظة عندما تتغير النقاط
+function updateWalletBalanceInPage() {
+    if (typeof window.updateWalletBalance === 'function') {
+        window.updateWalletBalance();
+    }
+}
+
+// تحديث المحفظة عندما تتغير النقاط
+function updateUI() {
+    // ... الكود الحالي يبقى كما هو ...
+    
+    // Update numbers
+    if (elements.balance) {
+        elements.balance.textContent = userData.balance.toLocaleString();
+    }
+    
+    if (elements.referrals) {
+        elements.referrals.textContent = `${userData.referrals} Referrals`;
+    }
+    
+    if (elements.totalEarned) {
+        elements.totalEarned.textContent = `${userData.totalEarned.toLocaleString()} Total`;
+    }
+    
+    // Update rank
+    const currentRank = CONFIG.RANKS.find(r => r.name === userData.rank) || CONFIG.RANKS[0];
+    if (elements.rankBadge) {
+        elements.rankBadge.textContent = userData.rank;
+    }
+    
+    // Update mining info
+    if (elements.rewardAmount) {
+        elements.rewardAmount.textContent = currentRank.reward;
+    }
+    
+    if (elements.miningPower) {
+        elements.miningPower.innerHTML = `<i class="fas fa-bolt"></i> Power: ${currentRank.power}`;
+    }
+    
+    // Update referral statistics
+    if (elements.refCount) {
+        elements.refCount.textContent = userData.referrals;
+    }
+    
+    if (elements.refEarned) {
+        elements.refEarned.textContent = userData.referralEarnings.toLocaleString();
+    }
+    
+    if (elements.refRank) {
+        elements.refRank.textContent = userData.rank;
+    }
+    
+    // Update progress bar
+    updateProgress();
+    
+    // Update referral link
+    updateReferralLink();
+    
+    // تحديث المحفظة إذا كانت مفتوحة
+    updateWalletBalanceInPage();
+}
+
 // Export for debugging and HTML access
 window.userData = userData;
 window.showMessage = showMessage;
@@ -1104,6 +1111,7 @@ window.saveUserData = saveUserData;
 window.showHelp = showHelp;
 window.showStatistics = showStatistics;
 window.refreshPage = refreshPage;
+window.updateWalletBalanceInPage = updateWalletBalanceInPage;
 
 // Debug function
 window.debugStorage = function() {
@@ -1132,33 +1140,7 @@ window.debugStorage = function() {
 };
 
 console.log("🎮 VIP Mining App loaded successfully");
+console.log("✅ Navigation system ready");
 // ============================================
 // 🏁 نهاية الإضافات الجديدة
 // ============================================
-// ============================================
-// 🆕 نظام التنقل - إضافات فقط (2024-01-15)
-// ============================================
-
-// وظيفة تحديث المحفظة عندما تتغير النقاط
-function updateWalletBalanceInPage() {
-    if (typeof window.updateWalletBalance === 'function') {
-        window.updateWalletBalance();
-    }
-}
-
-// تحديث المحفظة عندما تتغير النقاط
-// أضف هذا في دالة updateUI الموجودة
-function updateUI() {
-    // ... الكود الحالي يبقى كما هو ...
-    
-    // تحديث المحفظة إذا كانت مفتوحة
-    updateWalletBalanceInPage();
-    
-    // ... باقي الكود الحالي ...
-}
-
-// أضف في نهاية الملف (قبل آخر سطر)
-console.log("✅ Navigation module loaded");
-
-// تصدير للاستخدام في HTML
-window.updateWalletBalanceInPage = updateWalletBalanceInPage;
