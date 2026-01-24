@@ -37,7 +37,7 @@ if (typeof firebase !== 'undefined') {
     }
 }
 
-// User Data - مع إضافة flags للتحقق
+// User Data - with verification flags
 let userData = {
     balance: 100,
     referrals: 0,
@@ -83,10 +83,10 @@ async function initApp() {
         // Cache DOM elements
         cacheElements();
         
-        // Setup user أولاً
+        // Setup user first
         await setupUser();
         
-        // Load user data ثانياً
+        // Load user data second
         await loadUserData();
         
         // Setup event listeners
@@ -106,7 +106,7 @@ async function initApp() {
         
         console.log("✅ App ready! Balance:", userData.balance, "User ID:", userData.userId);
         
-        // إظهار رسالة الترحيب
+        // Show welcome message
         setTimeout(() => {
             showMessage(`💰 Welcome ${userData.username}! Balance: ${userData.balance} points`, 'success');
         }, 1000);
@@ -136,7 +136,7 @@ function cacheElements() {
 }
 
 // ============================================
-// User Management - الحل الجديد
+// User Management - New Solution
 // ============================================
 
 async function setupUser() {
@@ -232,7 +232,7 @@ function updateReferralLink() {
 }
 
 // ============================================
-// Storage System - الحل الحاسم
+// Storage System - Critical Solution
 // ============================================
 
 async function loadUserData() {
@@ -242,21 +242,21 @@ async function loadUserData() {
         const storageKey = `vip_mining_${userData.userId}`;
         console.log("🔍 Looking for key:", storageKey);
         
-        // تحميل من localStorage
+        // Load from localStorage
         const savedData = localStorage.getItem(storageKey);
         
         if (savedData) {
             console.log("✅ Found saved data");
             const parsedData = JSON.parse(savedData);
             
-            // 🔥 هذا هو الحل الحاسم: تحميل الرصيد أولاً
+            // 🔥 This is the critical solution: load balance first
             if (parsedData.balance !== undefined && parsedData.balance !== null) {
                 const loadedBalance = Number(parsedData.balance);
                 console.log("💰 Loading balance from storage:", loadedBalance);
                 userData.balance = loadedBalance;
             }
             
-            // تحميل باقي البيانات
+            // Load other data
             if (parsedData.totalEarned !== undefined) {
                 userData.totalEarned = Number(parsedData.totalEarned);
             }
@@ -289,11 +289,11 @@ async function loadUserData() {
             
         } else {
             console.log("📝 No saved data found, creating new user");
-            // حفظ البيانات الابتدائية فقط عند أول مرة
+            // Save initial data only on first time
             saveUserData();
         }
         
-        // تحميل من Firebase
+        // Load from Firebase
         if (db) {
             await loadUserFromFirebase();
         }
@@ -302,7 +302,7 @@ async function loadUserData() {
         
     } catch (error) {
         console.error("❌ Error loading user data:", error);
-        // في حالة الخطأ، احفظ البيانات الحالية
+        // In case of error, save current data
         saveUserData();
     }
 }
@@ -334,10 +334,10 @@ function saveUserData() {
         
         console.log("💾 Saving data - Balance:", userData.balance, "Key:", storageKey);
         
-        // حفظ في localStorage
+        // Save to localStorage
         localStorage.setItem(storageKey, JSON.stringify(dataToSave));
         
-        // التحقق من الحفظ
+        // Verify save
         const verifyData = localStorage.getItem(storageKey);
         if (verifyData) {
             const parsed = JSON.parse(verifyData);
@@ -346,7 +346,7 @@ function saveUserData() {
             console.error("❌ Failed to save to localStorage!");
         }
         
-        // حفظ في Firebase
+        // Save to Firebase
         if (db) {
             saveUserToFirebase();
         }
@@ -408,7 +408,7 @@ async function loadUserFromFirebase() {
         if (userSnap.exists) {
             const firebaseData = userSnap.data();
             
-            // أخذ القيمة الأعلى من Firebase والمحلية
+            // Take the higher value from Firebase and local
             if (firebaseData.balance !== undefined && firebaseData.balance > userData.balance) {
                 console.log("📈 Updating balance from Firebase:", firebaseData.balance);
                 userData.balance = firebaseData.balance;
@@ -519,11 +519,11 @@ async function processReferral(referralCode) {
                     return;
                 }
                 
-                // مكافأة المحال (المستخدم الجديد)
+                // Reward for referred user (new user)
                 userData.balance += CONFIG.REFERRAL_REWARD;
                 userData.totalEarned += CONFIG.REFERRAL_REWARD;
                 
-                // مكافأة المحيل
+                // Reward for referrer
                 await referrerDoc.ref.update({
                     referrals: firebase.firestore.FieldValue.increment(1),
                     referralEarnings: firebase.firestore.FieldValue.increment(CONFIG.REFERRER_REWARD),
@@ -531,12 +531,12 @@ async function processReferral(referralCode) {
                     totalEarned: firebase.firestore.FieldValue.increment(CONFIG.REFERRER_REWARD)
                 });
                 
-                // تحديث المستخدم الحالي
+                // Update current user
                 userData.referredBy = referralCode;
                 userData.referrals += 1;
                 userData.referralEarnings += CONFIG.REFERRER_REWARD;
                 
-                // حفظ فوري
+                // Immediate save
                 saveUserData();
                 updateUI();
                 
@@ -617,14 +617,14 @@ function minePoints() {
     
     console.log("📈 Before mining - Balance:", userData.balance);
     
-    // تحديث الرصيد
+    // Update balance
     userData.balance += reward;
     userData.totalEarned += reward;
     userData.lastMineTime = now;
     
     console.log("📈 After mining - Balance:", userData.balance);
     
-    // حفظ فوري
+    // Immediate save
     saveUserData();
     updateUI();
     animateMineButton(reward);
@@ -813,6 +813,9 @@ function updateUI() {
     
     // Update referral link
     updateReferralLink();
+    
+    // 🔥 NEW: Update wallet balance immediately
+    updateWalletBalanceDirect();
 }
 
 function updateProgress() {
@@ -873,6 +876,19 @@ function updateConnectionStatus() {
             elements.connectionStatus.textContent = '🟡 Local Storage Only';
             elements.connectionStatus.style.color = '#f59e0b';
         }
+    }
+}
+
+// ============================================
+// 🔥 NEW: Instant Wallet Update System
+// ============================================
+
+function updateWalletBalanceDirect() {
+    // Direct update of wallet balance
+    const walletPoints = document.getElementById('walletPoints');
+    if (walletPoints) {
+        walletPoints.textContent = userData.balance.toLocaleString();
+        console.log("💰 Wallet updated directly:", userData.balance);
     }
 }
 
@@ -994,65 +1010,6 @@ function refreshPage() {
 }
 
 // ============================================
-// 🆕 نظام التنقل والقائمة السفلية - 2024-01-15
-// ============================================
-
-// وظيفة للتبديل بين الصفحات
-function switchPage(pageName) {
-    console.log("🔄 Switching to page:", pageName);
-    
-    // إخفاء جميع الصفحات
-    document.querySelectorAll('.page').forEach(page => {
-        page.classList.remove('active');
-        page.classList.add('hidden');
-    });
-    
-    // إزالة النشاط من جميع الأيقونات
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    
-    // إظهار الصفحة المطلوبة وتفعيل الأيقونة
-    if (pageName === 'home') {
-        // الصفحة الرئيسية موجودة بالفعل
-        document.querySelector('.container').classList.remove('hidden');
-        document.querySelector('.container').classList.add('active');
-        document.querySelector('[onclick="switchPage(\'home\')"]').classList.add('active');
-    } else if (pageName === 'wallet') {
-        document.getElementById('walletPage').classList.remove('hidden');
-        document.getElementById('walletPage').classList.add('active');
-        document.querySelector('[onclick="switchPage(\'wallet\')"]').classList.add('active');
-        document.querySelector('.container').classList.add('hidden');
-    } else if (pageName === 'earning') {
-        document.getElementById('earningPage').classList.remove('hidden');
-        document.getElementById('earningPage').classList.add('active');
-        document.querySelector('[onclick="switchPage(\'earning\')"]').classList.add('active');
-        document.querySelector('.container').classList.add('hidden');
-    }
-}
-
-// تهيئة التنقل عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', function() {
-    // تأكد أن الصفحة الرئيسية ظاهرة
-    setTimeout(() => {
-        if (document.querySelector('.container')) {
-            document.querySelector('.container').classList.add('active');
-        }
-        
-        // إضافة تأثيرات للأيقونات
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function() {
-                // تأثير بسيط عند النقر
-                this.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    this.style.transform = 'scale(1)';
-                }, 150);
-            });
-        });
-    }, 500);
-});
-
-// ============================================
 // Application Startup
 // ============================================
 
@@ -1104,6 +1061,7 @@ window.saveUserData = saveUserData;
 window.showHelp = showHelp;
 window.showStatistics = showStatistics;
 window.refreshPage = refreshPage;
+window.updateWalletBalanceDirect = updateWalletBalanceDirect;
 
 // Debug function
 window.debugStorage = function() {
@@ -1132,6 +1090,3 @@ window.debugStorage = function() {
 };
 
 console.log("🎮 VIP Mining App loaded successfully");
-// ============================================
-// 🏁 نهاية الإضافات الجديدة
-// ============================================
