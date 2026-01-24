@@ -994,6 +994,65 @@ function refreshPage() {
 }
 
 // ============================================
+// 🆕 نظام التنقل والقائمة السفلية - 2024-01-15
+// ============================================
+
+// وظيفة للتبديل بين الصفحات
+function switchPage(pageName) {
+    console.log("🔄 Switching to page:", pageName);
+    
+    // إخفاء جميع الصفحات
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+        page.classList.add('hidden');
+    });
+    
+    // إزالة النشاط من جميع الأيقونات
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // إظهار الصفحة المطلوبة وتفعيل الأيقونة
+    if (pageName === 'home') {
+        // الصفحة الرئيسية موجودة بالفعل
+        document.querySelector('.container').classList.remove('hidden');
+        document.querySelector('.container').classList.add('active');
+        document.querySelector('[onclick="switchPage(\'home\')"]').classList.add('active');
+    } else if (pageName === 'wallet') {
+        document.getElementById('walletPage').classList.remove('hidden');
+        document.getElementById('walletPage').classList.add('active');
+        document.querySelector('[onclick="switchPage(\'wallet\')"]').classList.add('active');
+        document.querySelector('.container').classList.add('hidden');
+    } else if (pageName === 'earning') {
+        document.getElementById('earningPage').classList.remove('hidden');
+        document.getElementById('earningPage').classList.add('active');
+        document.querySelector('[onclick="switchPage(\'earning\')"]').classList.add('active');
+        document.querySelector('.container').classList.add('hidden');
+    }
+}
+
+// تهيئة التنقل عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    // تأكد أن الصفحة الرئيسية ظاهرة
+    setTimeout(() => {
+        if (document.querySelector('.container')) {
+            document.querySelector('.container').classList.add('active');
+        }
+        
+        // إضافة تأثيرات للأيقونات
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // تأثير بسيط عند النقر
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 150);
+            });
+        });
+    }, 500);
+});
+
+// ============================================
 // Application Startup
 // ============================================
 
@@ -1073,3 +1132,6 @@ window.debugStorage = function() {
 };
 
 console.log("🎮 VIP Mining App loaded successfully");
+// ============================================
+// 🏁 نهاية الإضافات الجديدة
+// ============================================
