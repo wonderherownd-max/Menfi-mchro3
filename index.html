@@ -240,7 +240,7 @@
     </div>
 
     <!-- =========================================== -->
-    <!-- الصفحات الجديدة -->
+    <!-- 🆕 الصفحات الجديدة - 2024-01-15 -->
     <!-- =========================================== -->
 
     <!-- صفحة المحفظة -->
@@ -249,47 +249,47 @@
             <div class="back-btn" onclick="switchPage('home')">
                 <i class="fas fa-arrow-left"></i>
             </div>
-            <h2><i class="fas fa-wallet"></i> Wallet</h2>
+            <h2><i class="fas fa-wallet"></i> المحفظة</h2>
         </div>
         
         <div class="wallet-content">
             <div class="wallet-balance">
                 <div class="balance-card">
-                    <h3><i class="fas fa-coins"></i> Points Balance</h3>
+                    <h3><i class="fas fa-coins"></i> رصيد النقاط</h3>
                     <div class="amount" id="walletPoints">100</div>
-                    <div class="currency">points</div>
+                    <div class="currency">نقطة</div>
                 </div>
                 
                 <div class="balance-card">
-                    <h3><i class="fab fa-bitcoin"></i> Satoshi Balance</h3>
+                    <h3><i class="fab fa-bitcoin"></i> رصيد الساتوشي</h3>
                     <div class="amount" id="walletSatoshi">0</div>
-                    <div class="currency">satoshi</div>
+                    <div class="currency">ساتوشي</div>
                 </div>
             </div>
             
             <div class="wallet-actions">
                 <div class="action-card" onclick="showComingSoon()">
                     <i class="fas fa-exchange-alt"></i>
-                    <h4>Convert Points</h4>
-                    <p>Convert points to satoshi</p>
+                    <h4>تحويل النقاط</h4>
+                    <p>تحويل النقاط إلى ساتوشي</p>
                 </div>
                 
                 <div class="action-card" onclick="showComingSoon()">
                     <i class="fas fa-paper-plane"></i>
-                    <h4>Withdraw Request</h4>
-                    <p>Withdraw balance to wallet</p>
+                    <h4>طلب سحب</h4>
+                    <p>سحب الرصيد إلى محفظتك</p>
                 </div>
                 
                 <div class="action-card" onclick="showComingSoon()">
                     <i class="fas fa-download"></i>
-                    <h4>Deposit Request</h4>
-                    <p>Deposit satoshi to account</p>
+                    <h4>طلب إيداع</h4>
+                    <p>إيداع ساتوشي إلى حسابك</p>
                 </div>
             </div>
             
             <div class="wallet-notice">
                 <i class="fas fa-info-circle"></i>
-                <p>🚀 Features under development! Coming soon.</p>
+                <p>🚀 الميزات قيد التطوير! سيتم إضافتها قريباً.</p>
             </div>
         </div>
     </div>
@@ -300,7 +300,7 @@
             <div class="back-btn" onclick="switchPage('home')">
                 <i class="fas fa-arrow-left"></i>
             </div>
-            <h2><i class="fas fa-chart-line"></i> Earning</h2>
+            <h2><i class="fas fa-chart-line"></i> الأرباح</h2>
         </div>
         
         <div class="earning-content">
@@ -308,25 +308,25 @@
                 <div class="rocket-animation">
                     🚀
                 </div>
-                <h3>Coming Soon!</h3>
-                <p>Working on new earning features</p>
+                <h3>قريباً!</h3>
+                <p>نعمل على ميزات جديدة لكسب المزيد</p>
                 
                 <div class="features-list">
                     <div class="feature-item">
                         <i class="fas fa-ad"></i>
-                        <span>Watch Ads</span>
+                        <span>مشاهدة إعلانات</span>
                     </div>
                     <div class="feature-item">
                         <i class="fas fa-tasks"></i>
-                        <span>Daily Tasks</span>
+                        <span>مهام يومية</span>
                     </div>
                     <div class="feature-item">
                         <i class="fas fa-gift"></i>
-                        <span>Exclusive Offers</span>
+                        <span>عروض حصرية</span>
                     </div>
                     <div class="feature-item">
                         <i class="fas fa-trophy"></i>
-                        <span>Contests & Rewards</span>
+                        <span>مسابقات وجوائز</span>
                     </div>
                 </div>
             </div>
@@ -334,21 +334,21 @@
     </div>
 
     <!-- =========================================== -->
-    <!-- القائمة السفلية الثابتة -->
+    <!-- 🆕 القائمة السفلية الثابتة -->
     <!-- =========================================== -->
 
     <div id="bottomNav" class="bottom-nav">
         <div class="nav-item active" onclick="switchPage('home')">
             <i class="fas fa-home"></i>
-            <span>Home</span>
+            <span>الرئيسية</span>
         </div>
         <div class="nav-item" onclick="switchPage('earning')">
             <i class="fas fa-chart-line"></i>
-            <span>Earning</span>
+            <span>الأرباح</span>
         </div>
         <div class="nav-item" onclick="switchPage('wallet')">
             <i class="fas fa-wallet"></i>
-            <span>Wallet</span>
+            <span>المحفظة</span>
         </div>
     </div>
 
@@ -357,41 +357,6 @@
     
     <!-- Helper Functions -->
     <script>
-        // وظيفة التبديل بين الصفحات - محسنة
-        function switchPage(pageName) {
-            console.log("🔄 Switching to page:", pageName);
-            
-            // إخفاء جميع الصفحات
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.remove('active');
-                page.classList.add('hidden');
-            });
-            
-            // إزالة النشاط من جميع الأيقونات
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            // إظهار الصفحة المطلوبة وتفعيل الأيقونة
-            if (pageName === 'home') {
-                document.querySelector('.container').classList.remove('hidden');
-                document.querySelector('.container').classList.add('active');
-                document.querySelector('[onclick="switchPage(\'home\')"]').classList.add('active');
-            } else if (pageName === 'wallet') {
-                document.getElementById('walletPage').classList.remove('hidden');
-                document.getElementById('walletPage').classList.add('active');
-                document.querySelector('[onclick="switchPage(\'wallet\')"]').classList.add('active');
-                document.querySelector('.container').classList.add('hidden');
-                // تحديث الرصيد في المحفظة
-                updateWalletBalance();
-            } else if (pageName === 'earning') {
-                document.getElementById('earningPage').classList.remove('hidden');
-                document.getElementById('earningPage').classList.add('active');
-                document.querySelector('[onclick="switchPage(\'earning\')"]').classList.add('active');
-                document.querySelector('.container').classList.add('hidden');
-            }
-        }
-
         // انتظر حتى يتم تحميل app.js أولاً
         document.addEventListener('DOMContentLoaded', function() {
             // الانتظار قليلاً للتأكد من تحميل app.js
@@ -404,9 +369,6 @@
                 
                 // تهيئة الصفحات
                 initializePages();
-                
-                // إعداد القائمة السفلية
-                setupBottomNav();
             }, 1000);
         });
         
@@ -454,25 +416,25 @@
         
         // وظيفة للصفحات الجديدة
         function initializePages() {
-            console.log("📱 Initializing pages...");
-            // الصفحة الرئيسية تظهر افتراضياً
+            // تحديث رصيد المحفظة عند فتحها
+            if (window.userData) {
+                updateWalletBalance();
+            }
         }
         
-        // تحديث رصيد المحفظة
         function updateWalletBalance() {
             // تحديث رصيد النقاط في صفحة المحفظة
             const walletPoints = document.getElementById('walletPoints');
-            if (walletPoints && window.userData && window.userData.balance !== undefined) {
+            if (walletPoints && window.userData) {
                 walletPoints.textContent = window.userData.balance.toLocaleString();
-                console.log("💰 Wallet points updated:", window.userData.balance);
             }
         }
         
         function showComingSoon() {
             if (window.showMessage) {
-                window.showMessage('🚀 This feature is under development!', 'info');
+                window.showMessage('🚀 هذه الميزة قيد التطوير!', 'info');
             } else {
-                alert('🚀 This feature is under development!');
+                alert('🚀 هذه الميزة قيد التطوير!');
             }
         }
         
@@ -498,13 +460,19 @@
                     <p>• VIP: 5 points/click</p>
                     <p>• Legend: 10 points/click</p>
                     
+                    <p><strong>💾 Data Saving:</strong></p>
+                    <p>• Your progress saves automatically</p>
+                    <p>• Works offline (local storage)</p>
+                    <p>• Syncs with cloud when online</p>
+                    
                     <p><strong>📱 Navigation:</strong></p>
-                    <p>🏠 Home: Mining and referral page</p>
-                    <p>💰 Earning: Upcoming tasks and offers</p>
-                    <p>💳 Wallet: Manage and transfer balance</p>
+                    <p>🏠 الرئيسية: صفحة التعدين والإحالة</p>
+                    <p>💰 الأرباح: مهام وعروض قادمة</p>
+                    <p>👛 المحفظة: إدارة وتحويل الرصيد</p>
                 </div>
             `;
             
+            // استخدام دالة showMessage من app.js إذا كانت موجودة
             if (window.showMessage) {
                 window.showMessage('Opening help guide', 'info');
                 setTimeout(() => {
@@ -531,7 +499,8 @@
                     🎯 Referral Earnings: ${window.userData.referralEarnings} points
                     🔗 Your Code: ${window.userData.referralCode || 'Generating...'}
                     ⏳ Last Mine: ${lastMineTime}
-                    💾 User ID: ${window.userData.userId}
+                    ------------------------------------
+                    💾 Storage: ${localStorage.getItem('vip_mining_' + window.userData.userId) ? 'Active' : 'Not saved'}
                 `;
                 
                 if (window.showMessage) {
@@ -542,35 +511,16 @@
                 } else {
                     alert(stats);
                 }
+            } else {
+                alert("📱 Loading app data... Please wait a moment.");
             }
         }
         
         function refreshPage() {
-            if (confirm('🔄 Refresh page?\n\nYour progress is automatically saved.')) {
+            if (confirm('🔄 Refresh page?\n\nYour progress is automatically saved. Refresh only if the app is not responding.')) {
                 location.reload();
             }
         }
-        
-        // إعداد القائمة السفلية
-        function setupBottomNav() {
-            // إضافة تأثيرات للأيقونات
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    // تأثير بسيط عند النقر
-                    this.style.transform = 'scale(0.95)';
-                    setTimeout(() => {
-                        this.style.transform = 'scale(1)';
-                    }, 150);
-                });
-            });
-        }
-        
-        // جعل switchPage متاحاً عالمياً
-        window.switchPage = switchPage;
-        window.showComingSoon = showComingSoon;
-        window.updateWalletBalance = updateWalletBalance;
-        
-        console.log("✅ Navigation system initialized");
     </script>
 </body>
 </html>
