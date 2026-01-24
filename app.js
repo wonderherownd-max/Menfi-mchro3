@@ -217,9 +217,9 @@ function updateUserUI() {
 
 function generateReferralLink() {
     if (userData.referralCode) {
-        return `https://t.me/VIPMainingPROBot/PRO?startapp=${userData.referralCode}`;
+        return `http://t.me/MiningWealthbot/PRO?startapp=${userData.referralCode}`;
     }
-    return 'https://t.me/VIPMainingPROBot/PRO';
+    return 'http://t.me/MiningWealthbot/PRO';
 }
 
 function updateReferralLink() {
@@ -794,7 +794,7 @@ function copyReferralLink() {
 
 function shareOnTelegram() {
     const refLink = generateReferralLink();
-    const shareText = `🚀 *Join VIP Mining PRO!*\n\n⛏️ *Mine 250 points every 4 hours*\n👥 *Get +25 BONUS points with my link*\n💰 *Earn 25 points for each referral*\n\n👉 ${refLink}\n\n💎 *Start earning now!* @VIPMainingPROBot`;
+    const shareText = `🚀 *Join VIP Mining Wealth PRO!*\n\n⛏️ *Mine 250 points every 4 hours*\n👥 *Get +25 BONUS points with my link*\n💰 *Earn 25 points for each referral*\n\n👉 ${refLink}\n\n💎 *Start earning now!* @VIPMainingPROBot`;
     
     const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(shareText)}`;
     
