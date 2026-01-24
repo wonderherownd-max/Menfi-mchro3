@@ -54,18 +54,19 @@ let userData = {
     lastSaveTime: 0
 };
 
-// Configuration
+// Configuration - UPDATED FOR 4 HOURS
 const CONFIG = {
-    MINE_COOLDOWN: 5000,
+    MINE_COOLDOWN: 14400000, // 4 hours (4 × 60 × 60 × 1000) = 14,400,000 ms
+    MINE_REWARD: 250, // Changed from 1 to 250
     REFERRAL_REWARD: 25,
     REFERRER_REWARD: 25,
     
     RANKS: [
-        { name: 'Beginner', min: 0, max: 199, reward: 1, power: '10/hour' },
-        { name: 'Professional', min: 200, max: 499, reward: 2, power: '25/hour' },
-        { name: 'Expert', min: 500, max: 999, reward: 3, power: '50/hour' },
-        { name: 'VIP', min: 1000, max: 9999, reward: 5, power: '100/hour' },
-        { name: 'Legend', min: 10000, max: Infinity, reward: 10, power: '200/hour' }
+        { name: 'Beginner', min: 0, max: 199, reward: 250, power: '250/4h' },
+        { name: 'Professional', min: 200, max: 499, reward: 500, power: '500/4h' },
+        { name: 'Expert', min: 500, max: 999, reward: 750, power: '750/4h' },
+        { name: 'VIP', min: 1000, max: 9999, reward: 1250, power: '1250/4h' },
+        { name: 'Legend', min: 10000, max: Infinity, reward: 2500, power: '2500/4h' }
     ]
 };
 
@@ -591,7 +592,7 @@ async function logReferralEvent(referrerId, referredId, referralCode) {
 }
 
 // ============================================
-// Mining System
+// Mining System - UPDATED FOR 4 HOURS
 // ============================================
 
 function minePoints() {
@@ -606,8 +607,8 @@ function minePoints() {
     const timeSinceLastMine = now - userData.lastMineTime;
     
     if (timeSinceLastMine < CONFIG.MINE_COOLDOWN) {
-        const secondsLeft = Math.ceil((CONFIG.MINE_COOLDOWN - timeSinceLastMine) / 1000);
-        showMessage(`⏳ Wait ${secondsLeft} seconds`, 'warning');
+        const hoursLeft = Math.ceil((CONFIG.MINE_COOLDOWN - timeSinceLastMine) / (1000 * 60 * 60));
+        showMessage(`⏳ Wait ${hoursLeft} hours`, 'warning');
         return;
     }
     
@@ -623,6 +624,9 @@ function minePoints() {
     
     console.log("📈 After mining - Balance:", userData.balance);
     
+    // Animate belt emptying
+    animateBeltEmpty();
+    
     // Immediate save
     saveUserData();
     updateUI();
@@ -630,6 +634,9 @@ function minePoints() {
     
     showMessage(`⛏️ +${reward} points! Total: ${userData.balance}`, 'success');
     checkRankUp();
+    
+    // Update belt immediately
+    setTimeout(updateEnergyBelt, 100);
 }
 
 function animateMineButton(reward) {
@@ -643,41 +650,103 @@ function animateMineButton(reward) {
             <i class="fas fa-hammer"></i>
         </div>
         <div class="mine-text">
-            <div class="mine-title">Mined!</div>
+            <div class="mine-title">Claimed!</div>
             <div class="mine-reward">+${reward} points</div>
+            <div class="mine-subtitle">Come back in 4 hours</div>
         </div>
-        <div class="mine-cooldown" id="cooldownTimer">5s</div>
+        <div class="mine-cooldown" id="cooldownTimer">4h</div>
     `;
     
     btn.disabled = true;
     btn.style.opacity = '0.7';
     
-    let secondsLeft = 5;
-    
-    const updateTimer = () => {
-        const timerElement = btn.querySelector('.mine-cooldown');
-        if (timerElement) {
-            timerElement.textContent = `${secondsLeft}s`;
+    setTimeout(() => {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.innerHTML = originalHTML;
+        // Reattach event listener
+        if (elements.mineBtn) {
+            elements.mineBtn.addEventListener('click', minePoints);
         }
-        
-        secondsLeft--;
-        
-        if (secondsLeft >= 0) {
-            setTimeout(updateTimer, 1000);
-        } else {
-            btn.disabled = false;
-            btn.style.opacity = '1';
-            btn.innerHTML = originalHTML;
-            // Reattach event listener
-            reattachMineButton();
-        }
-    };
-    
-    updateTimer();
+    }, 2000);
 }
 
 // ============================================
-// Event Listeners - SIMPLIFIED VERSION
+// Energy Belt System - NEW
+// ============================================
+
+function updateEnergyBelt() {
+    const energyBelt = document.getElementById('energyBelt');
+    const beltFill = document.getElementById('beltFill');
+    const beltKnob = document.getElementById('beltKnob');
+    const mineBtn = document.getElementById('mineBtn');
+    const cooldownTimer = document.getElementById('cooldownTimer');
+    
+    if (!energyBelt || !beltFill || !beltKnob || !mineBtn) return;
+    
+    const now = Date.now();
+    const timeSinceLastMine = now - userData.lastMineTime;
+    const cooldown = CONFIG.MINE_COOLDOWN;
+    
+    // Calculate fill percentage (0 to 100)
+    let fillPercentage = 0;
+    
+    if (userData.lastMineTime > 0) {
+        fillPercentage = Math.min((timeSinceLastMine / cooldown) * 100, 100);
+    } else {
+        fillPercentage = 100; // First time, ready immediately
+    }
+    
+    // Update visual elements
+    beltFill.style.width = `${fillPercentage}%`;
+    beltKnob.style.left = `${fillPercentage}%`;
+    
+    // Check if ready
+    const isReady = timeSinceLastMine >= cooldown || userData.lastMineTime === 0;
+    
+    if (isReady) {
+        // Ready to claim
+        energyBelt.classList.add('belt-ready');
+        energyBelt.classList.remove('belt-emptying');
+        mineBtn.classList.add('mine-ready');
+        mineBtn.disabled = false;
+        
+        if (cooldownTimer) {
+            cooldownTimer.textContent = 'READY';
+            cooldownTimer.style.color = '#22c55e';
+            cooldownTimer.style.background = 'rgba(34, 197, 94, 0.1)';
+        }
+    } else {
+        // Waiting
+        energyBelt.classList.remove('belt-ready');
+        mineBtn.classList.remove('mine-ready');
+        mineBtn.disabled = true;
+        
+        // Update cooldown timer
+        if (cooldownTimer) {
+            const timeLeft = cooldown - timeSinceLastMine;
+            const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            
+            cooldownTimer.textContent = `${hours}h ${minutes}m`;
+            cooldownTimer.style.color = '#ef4444';
+            cooldownTimer.style.background = 'rgba(239, 68, 68, 0.1)';
+        }
+    }
+}
+
+function animateBeltEmpty() {
+    const energyBelt = document.getElementById('energyBelt');
+    if (energyBelt) {
+        energyBelt.classList.add('belt-emptying');
+        setTimeout(() => {
+            energyBelt.classList.remove('belt-emptying');
+        }, 1000);
+    }
+}
+
+// ============================================
+// Event Listeners
 // ============================================
 
 function setupEventListeners() {
@@ -704,12 +773,6 @@ function setupEventListeners() {
     console.log("✅ Event listeners setup complete");
 }
 
-function reattachMineButton() {
-    if (elements.mineBtn) {
-        elements.mineBtn.addEventListener('click', minePoints);
-    }
-}
-
 function copyReferralLink() {
     const refLink = generateReferralLink();
     
@@ -731,7 +794,7 @@ function copyReferralLink() {
 
 function shareOnTelegram() {
     const refLink = generateReferralLink();
-    const shareText = `🚀 *Join VIP Mining PRO!*\n\n⛏️ *Mine points every 5 seconds*\n👥 *Get +25 BONUS points with my link*\n💰 *Earn 25 points for each referral*\n\n👉 ${refLink}\n\n💎 *Start earning now!* @VIPMainingPROBot`;
+    const shareText = `🚀 *Join VIP Mining PRO!*\n\n⛏️ *Mine 250 points every 4 hours*\n👥 *Get +25 BONUS points with my link*\n💰 *Earn 25 points for each referral*\n\n👉 ${refLink}\n\n💎 *Start earning now!* @VIPMainingPROBot`;
     
     const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(shareText)}`;
     
@@ -769,7 +832,7 @@ function updateUI() {
     }
     
     if (elements.miningPower) {
-        elements.miningPower.innerHTML = `<i class="fas fa-bolt"></i> Power: ${currentRank.power}`;
+        elements.miningPower.innerHTML = `<i class="fas fa-bolt"></i> Yield: ${currentRank.power}`;
     }
     
     // Update referral statistics
@@ -793,6 +856,9 @@ function updateUI() {
     
     // Update wallet balance immediately
     updateWalletBalanceDirect();
+    
+    // Update energy belt
+    updateEnergyBelt();
 }
 
 function updateProgress() {
@@ -857,11 +923,10 @@ function updateConnectionStatus() {
 }
 
 // ============================================
-// 🔥 NEW: Instant Wallet Update System
+// Instant Wallet Update System
 // ============================================
 
 function updateWalletBalanceDirect() {
-    // Direct update of wallet balance
     const walletPoints = document.getElementById('walletPoints');
     if (walletPoints) {
         walletPoints.textContent = userData.balance.toLocaleString();
@@ -870,120 +935,91 @@ function updateWalletBalanceDirect() {
 }
 
 // ============================================
-// 🔥 ULTIMATE FIX: Navigation System
+// Navigation System
 // ============================================
 
 function switchPageFixed(pageName) {
-    console.log("🎯 ULTIMATE SWITCH to:", pageName);
+    console.log("🔄 Switching to page:", pageName);
     
-    // Hide all pages and container
-    const allPages = document.querySelectorAll('.page, .container');
-    allPages.forEach(element => {
-        element.classList.remove('active');
-        element.classList.add('hidden');
+    // Hide all pages
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+        page.classList.add('hidden');
     });
     
-    // Remove active from all nav items
+    // Remove active from all icons
     document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.remove('active');
     });
     
     // Show requested page and activate icon
     if (pageName === 'home') {
-        const homeContainer = document.querySelector('.container');
-        if (homeContainer) {
-            homeContainer.classList.remove('hidden');
-            homeContainer.classList.add('active');
-        }
+        document.querySelector('.container').classList.remove('hidden');
+        document.querySelector('.container').classList.add('active');
         
-        // Activate home icon
-        document.querySelectorAll('.nav-item').forEach(item => {
-            const span = item.querySelector('span');
-            if (span && span.textContent.toLowerCase().includes('home')) {
-                item.classList.add('active');
-            }
-        });
-        
-        // Reattach event listeners after a short delay
+        // Reinitialize event listeners when returning to home
         setTimeout(() => {
-            reattachAllEventListeners();
+            reinitializeEventListeners();
         }, 100);
         
         // Update UI
         updateUI();
         
-    } else if (pageName === 'wallet') {
-        const walletPage = document.getElementById('walletPage');
-        if (walletPage) {
-            walletPage.classList.remove('hidden');
-            walletPage.classList.add('active');
+        // Activate home icon
+        const homeIcons = document.querySelectorAll('[onclick*="switchPage(\'home\')"], [onclick*="switchPageFixed(\'home\')"]');
+        if (homeIcons.length > 0) {
+            homeIcons[0].classList.add('active');
         }
         
+    } else if (pageName === 'wallet') {
+        document.getElementById('walletPage').classList.remove('hidden');
+        document.getElementById('walletPage').classList.add('active');
+        
         // Activate wallet icon
-        document.querySelectorAll('.nav-item').forEach(item => {
-            const span = item.querySelector('span');
-            if (span && span.textContent.toLowerCase().includes('wallet')) {
-                item.classList.add('active');
-            }
-        });
+        const walletIcons = document.querySelectorAll('[onclick*="switchPage(\'wallet\')"], [onclick*="switchPageFixed(\'wallet\')"]');
+        if (walletIcons.length > 0) {
+            walletIcons[0].classList.add('active');
+        }
+        
+        document.querySelector('.container').classList.add('hidden');
         
         // Update wallet balance
         updateWalletBalanceDirect();
         
     } else if (pageName === 'earning') {
-        const earningPage = document.getElementById('earningPage');
-        if (earningPage) {
-            earningPage.classList.remove('hidden');
-            earningPage.classList.add('active');
-        }
+        document.getElementById('earningPage').classList.remove('hidden');
+        document.getElementById('earningPage').classList.add('active');
         
         // Activate earning icon
-        document.querySelectorAll('.nav-item').forEach(item => {
-            const span = item.querySelector('span');
-            if (span && span.textContent.toLowerCase().includes('earning')) {
-                item.classList.add('active');
-            }
-        });
+        const earningIcons = document.querySelectorAll('[onclick*="switchPage(\'earning\')"], [onclick*="switchPageFixed(\'earning\')"]');
+        if (earningIcons.length > 0) {
+            earningIcons[0].classList.add('active');
+        }
+        
+        document.querySelector('.container').classList.add('hidden');
     }
 }
 
-// Reattach ALL event listeners - SIMPLIFIED
-function reattachAllEventListeners() {
-    console.log("🔧 Reattaching all event listeners...");
+function reinitializeEventListeners() {
+    console.log("🔄 Reinitializing event listeners...");
     
-    // Mine button
-    const mineBtn = document.getElementById('mineBtn');
-    if (mineBtn) {
-        // Remove old listener by cloning
-        const newMineBtn = mineBtn.cloneNode(true);
-        mineBtn.parentNode.replaceChild(newMineBtn, mineBtn);
-        
-        // Add fresh listener to new button
-        document.getElementById('mineBtn').addEventListener('click', minePoints);
-        console.log("✅ Mine button reattached");
+    // Remove old listeners first
+    if (elements.mineBtn) {
+        elements.mineBtn.removeEventListener('click', minePoints);
+        elements.mineBtn.addEventListener('click', minePoints);
     }
     
-    // Copy button
-    const copyBtn = document.getElementById('copyBtn');
-    if (copyBtn) {
-        const newCopyBtn = copyBtn.cloneNode(true);
-        copyBtn.parentNode.replaceChild(newCopyBtn, copyBtn);
-        
-        document.getElementById('copyBtn').addEventListener('click', copyReferralLink);
-        console.log("✅ Copy button reattached");
+    if (elements.copyBtn) {
+        elements.copyBtn.removeEventListener('click', copyReferralLink);
+        elements.copyBtn.addEventListener('click', copyReferralLink);
     }
     
-    // Share button
-    const shareBtn = document.getElementById('shareBtn');
-    if (shareBtn) {
-        const newShareBtn = shareBtn.cloneNode(true);
-        shareBtn.parentNode.replaceChild(newShareBtn, shareBtn);
-        
-        document.getElementById('shareBtn').addEventListener('click', shareOnTelegram);
-        console.log("✅ Share button reattached");
+    if (elements.shareBtn) {
+        elements.shareBtn.removeEventListener('click', shareOnTelegram);
+        elements.shareBtn.addEventListener('click', shareOnTelegram);
     }
     
-    console.log("✅ All event listeners reattached successfully");
+    console.log("✅ Event listeners reinitialized");
 }
 
 // ============================================
@@ -1045,21 +1081,9 @@ function showMessage(text, type = 'info') {
 // Application Startup
 // ============================================
 
-// Check cooldown timer every second
+// Check cooldown and update belt every second
 setInterval(() => {
-    if (userData.lastMineTime > 0) {
-        const timeSinceLastMine = Date.now() - userData.lastMineTime;
-        if (timeSinceLastMine < CONFIG.MINE_COOLDOWN) {
-            const secondsLeft = Math.ceil((CONFIG.MINE_COOLDOWN - timeSinceLastMine) / 1000);
-            if (elements.cooldownTimer) {
-                elements.cooldownTimer.textContent = `${secondsLeft}s`;
-            }
-        } else {
-            if (elements.cooldownTimer) {
-                elements.cooldownTimer.textContent = '';
-            }
-        }
-    }
+    updateEnergyBelt();
 }, 1000);
 
 // Auto-save every 30 seconds as backup
@@ -1092,7 +1116,7 @@ window.processReferral = processReferral;
 window.saveUserData = saveUserData;
 window.updateWalletBalanceDirect = updateWalletBalanceDirect;
 window.switchPageFixed = switchPageFixed;
-window.reinitializeEventListeners = reattachAllEventListeners;
+window.reinitializeEventListeners = reinitializeEventListeners;
 
 // Debug function
 window.debugStorage = function() {
@@ -1121,4 +1145,4 @@ window.debugStorage = function() {
 };
 
 console.log("🎮 VIP Mining App loaded successfully");
-console.log("✅ ULTIMATE navigation system ready");
+console.log("✅ Energy belt system activated (250 points every 4 hours)");
