@@ -14,6 +14,7 @@ body {
     padding: 20px;
     direction: ltr;
     text-align: left;
+    padding-bottom: 90px; /* مساحة للقائمة السفلية */
 }
 
 .container {
@@ -21,6 +22,322 @@ body {
     margin: 0 auto;
     padding-bottom: 30px;
 }
+
+/* =========================================== */
+/* 🆕 إضافات جديدة - القائمة السفلية والصفحات */
+/* =========================================== */
+
+/* الصفحات */
+.page {
+    display: none;
+    max-width: 450px;
+    margin: 0 auto;
+    animation: fadeIn 0.3s ease;
+}
+
+.page.active {
+    display: block;
+}
+
+.page.hidden {
+    display: none;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* رأس الصفحات الجديدة */
+.page-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding: 20px;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.back-btn {
+    background: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.back-btn:hover {
+    background: rgba(59, 130, 246, 0.2);
+    transform: scale(1.1);
+}
+
+.page-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #f8fafc;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* محتوى صفحة المحفظة */
+.wallet-content {
+    padding: 0 10px;
+}
+
+.wallet-balance {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.wallet-balance .balance-card {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+    border-radius: 15px;
+    padding: 20px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    text-align: center;
+}
+
+.wallet-balance .balance-card h3 {
+    font-size: 14px;
+    color: #cbd5e0;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.wallet-balance .balance-card .amount {
+    font-size: 28px;
+    font-weight: 800;
+    color: #fbbf24;
+    margin: 10px 0;
+}
+
+.wallet-balance .balance-card .currency {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+/* أزرار المحفظة */
+.wallet-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.action-card {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 20px 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.action-card:hover {
+    border-color: rgba(59, 130, 246, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.action-card i {
+    font-size: 24px;
+    color: #60a5fa;
+    margin-bottom: 10px;
+}
+
+.action-card h4 {
+    font-size: 14px;
+    color: #f8fafc;
+    margin-bottom: 5px;
+}
+
+.action-card p {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+/* ملاحظة المحفظة */
+.wallet-notice {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.wallet-notice i {
+    color: #f59e0b;
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.wallet-notice p {
+    color: #f59e0b;
+    font-size: 14px;
+}
+
+/* صفحة الأرباح */
+.earning-content {
+    padding: 0 10px;
+}
+
+.coming-soon {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.rocket-animation {
+    font-size: 60px;
+    margin-bottom: 20px;
+    animation: float 2s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.coming-soon h3 {
+    font-size: 24px;
+    color: #fbbf24;
+    margin-bottom: 10px;
+}
+
+.coming-soon p {
+    color: #94a3b8;
+    margin-bottom: 30px;
+}
+
+.features-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.feature-item {
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 12px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: transform 0.3s;
+}
+
+.feature-item:hover {
+    transform: translateY(-2px);
+}
+
+.feature-item i {
+    color: #fbbf24;
+    font-size: 18px;
+}
+
+.feature-item span {
+    color: #cbd5e0;
+    font-size: 14px;
+}
+
+/* =========================================== */
+/* 🆕 القائمة السفلية الثابتة */
+/* =========================================== */
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0;
+    box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 100%;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    padding: 5px 20px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    position: relative;
+    min-width: 70px;
+}
+
+.nav-item i {
+    font-size: 22px;
+    margin-bottom: 5px;
+    color: #94a3b8;
+    transition: all 0.3s ease;
+}
+
+.nav-item span {
+    font-size: 12px;
+    color: #94a3b8;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.nav-item.active i {
+    color: #3b82f6;
+    transform: translateY(-2px);
+    text-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+}
+
+.nav-item.active span {
+    color: #3b82f6;
+    font-weight: 600;
+}
+
+.nav-item:not(.active):hover i {
+    color: #cbd5e0;
+}
+
+.nav-item:not(.active):hover span {
+    color: #cbd5e0;
+}
+
+/* مؤشر نشط */
+.nav-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: #3b82f6;
+    border-radius: 50%;
+}
+
+/* =========================================== */
+/* 🏁 نهاية الإضافات الجديدة */
+/* =========================================== */
 
 /* ====== Header ====== */
 .app-header {
@@ -800,6 +1117,7 @@ body {
 @media (max-width: 480px) {
     body {
         padding: 15px;
+        padding-bottom: 80px; /* أقل بقليل للشاشات الصغيرة */
     }
     
     .container {
@@ -841,6 +1159,33 @@ body {
         flex-wrap: wrap;
         gap: 15px;
     }
+    
+    /* تعديلات للقائمة السفلية على الشاشات الصغيرة */
+    .bottom-nav {
+        padding: 10px 0;
+    }
+    
+    .nav-item {
+        padding: 5px 15px;
+        min-width: 60px;
+    }
+    
+    .nav-item i {
+        font-size: 20px;
+    }
+    
+    .nav-item span {
+        font-size: 11px;
+    }
+    
+    /* تعديلات للصفحات الجديدة */
+    .wallet-actions {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .features-list {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 380px) {
@@ -854,5 +1199,24 @@ body {
     
     .ref-stat-value {
         font-size: 20px;
+    }
+    
+    /* المزيد من التعديلات للشاشات الصغيرة جداً */
+    .bottom-nav {
+        padding: 8px 0;
+    }
+    
+    .nav-item {
+        padding: 4px 10px;
+        min-width: 50px;
+    }
+    
+    .nav-item i {
+        font-size: 18px;
+        margin-bottom: 3px;
+    }
+    
+    .nav-item span {
+        font-size: 10px;
     }
 }
