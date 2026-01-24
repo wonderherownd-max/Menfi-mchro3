@@ -124,8 +124,7 @@ function cacheElements() {
         'rewardAmount', 'referralLink', 'copyBtn', 'miningPower',
         'refCount', 'refEarned', 'refRank', 'progressFill',
         'nextRank', 'currentPoints', 'targetPoints', 'remainingPoints',
-        'connectionStatus', 'cooldownTimer', 'shareBtn', 'whatsappBtn',
-        'helpBtn', 'statsBtn', 'refreshBtn'
+        'connectionStatus', 'cooldownTimer', 'shareBtn'
     ];
     
     elementIds.forEach(id => {
@@ -669,6 +668,7 @@ function animateMineButton(reward) {
             btn.disabled = false;
             btn.style.opacity = '1';
             btn.innerHTML = originalHTML;
+            // Reattach event listener
             btn.addEventListener('click', minePoints);
         }
     };
@@ -677,50 +677,29 @@ function animateMineButton(reward) {
 }
 
 // ============================================
-// Event Listeners
+// Event Listeners - FIXED VERSION
 // ============================================
 
 function setupEventListeners() {
     console.log("🎯 Setting up event listeners...");
     
-    // Mine button
+    // Remove old listeners first
     if (elements.mineBtn) {
+        elements.mineBtn.removeEventListener('click', minePoints);
         elements.mineBtn.addEventListener('click', minePoints);
-        console.log("✅ Mine button listener added");
     }
     
-    // Copy referral link
     if (elements.copyBtn) {
+        elements.copyBtn.removeEventListener('click', copyReferralLink);
         elements.copyBtn.addEventListener('click', copyReferralLink);
-        console.log("✅ Copy button listener added");
     }
     
-    // Share on Telegram
     if (elements.shareBtn) {
+        elements.shareBtn.removeEventListener('click', shareOnTelegram);
         elements.shareBtn.addEventListener('click', shareOnTelegram);
-        console.log("✅ Telegram share button added");
     }
     
-    // Share on WhatsApp
-    if (elements.whatsappBtn) {
-        elements.whatsappBtn.addEventListener('click', shareOnWhatsApp);
-        console.log("✅ WhatsApp share button added");
-    }
-    
-    // Help button
-    if (elements.helpBtn) {
-        elements.helpBtn.addEventListener('click', showHelp);
-    }
-    
-    // Stats button
-    if (elements.statsBtn) {
-        elements.statsBtn.addEventListener('click', showStatistics);
-    }
-    
-    // Refresh button
-    if (elements.refreshBtn) {
-        elements.refreshBtn.addEventListener('click', refreshPage);
-    }
+    console.log("✅ Event listeners setup complete");
 }
 
 function copyReferralLink() {
@@ -750,16 +729,6 @@ function shareOnTelegram() {
     
     window.open(shareUrl, '_blank');
     showMessage('📱 Opening Telegram...', 'info');
-}
-
-function shareOnWhatsApp() {
-    const refLink = generateReferralLink();
-    const shareText = `🚀 *VIP Mining PRO* 🪙\n\nJoin and earn FREE points!\n⛏️ Mine every 5 seconds\n🎁 +25 BONUS with my link\n👥 Earn 25 per referral\n\n${refLink}\n\nStart now and level up! 🏆`;
-    
-    const shareUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
-    
-    window.open(shareUrl, '_blank');
-    showMessage('💚 Opening WhatsApp...', 'info');
 }
 
 // ============================================
@@ -814,7 +783,7 @@ function updateUI() {
     // Update referral link
     updateReferralLink();
     
-    // 🔥 NEW: Update wallet balance immediately
+    // Update wallet balance immediately
     updateWalletBalanceDirect();
 }
 
@@ -893,6 +862,92 @@ function updateWalletBalanceDirect() {
 }
 
 // ============================================
+// 🔥 NEW: Fixed Navigation System
+// ============================================
+
+function reinitializeEventListeners() {
+    console.log("🔄 Reinitializing event listeners...");
+    
+    // Remove old listeners first
+    if (elements.mineBtn) {
+        elements.mineBtn.removeEventListener('click', minePoints);
+        elements.mineBtn.addEventListener('click', minePoints);
+    }
+    
+    if (elements.copyBtn) {
+        elements.copyBtn.removeEventListener('click', copyReferralLink);
+        elements.copyBtn.addEventListener('click', copyReferralLink);
+    }
+    
+    if (elements.shareBtn) {
+        elements.shareBtn.removeEventListener('click', shareOnTelegram);
+        elements.shareBtn.addEventListener('click', shareOnTelegram);
+    }
+    
+    console.log("✅ Event listeners reinitialized");
+}
+
+function switchPageFixed(pageName) {
+    console.log("🔄 Switching to page:", pageName);
+    
+    // Hide all pages
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+        page.classList.add('hidden');
+    });
+    
+    // Remove active from all icons
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Show requested page and activate icon
+    if (pageName === 'home') {
+        document.querySelector('.container').classList.remove('hidden');
+        document.querySelector('.container').classList.add('active');
+        
+        // 🔥 CRITICAL FIX: Reinitialize event listeners when returning to home
+        reinitializeEventListeners();
+        
+        // Update UI
+        updateUI();
+        
+        // Activate home icon
+        const homeIcons = document.querySelectorAll('[onclick*="switchPage(\'home\')"], [onclick*="switchPageFixed(\'home\')"]');
+        if (homeIcons.length > 0) {
+            homeIcons[0].classList.add('active');
+        }
+        
+    } else if (pageName === 'wallet') {
+        document.getElementById('walletPage').classList.remove('hidden');
+        document.getElementById('walletPage').classList.add('active');
+        
+        // Activate wallet icon
+        const walletIcons = document.querySelectorAll('[onclick*="switchPage(\'wallet\')"], [onclick*="switchPageFixed(\'wallet\')"]');
+        if (walletIcons.length > 0) {
+            walletIcons[0].classList.add('active');
+        }
+        
+        document.querySelector('.container').classList.add('hidden');
+        
+        // Update wallet balance
+        updateWalletBalanceDirect();
+        
+    } else if (pageName === 'earning') {
+        document.getElementById('earningPage').classList.remove('hidden');
+        document.getElementById('earningPage').classList.add('active');
+        
+        // Activate earning icon
+        const earningIcons = document.querySelectorAll('[onclick*="switchPage(\'earning\')"], [onclick*="switchPageFixed(\'earning\')"]');
+        if (earningIcons.length > 0) {
+            earningIcons[0].classList.add('active');
+        }
+        
+        document.querySelector('.container').classList.add('hidden');
+    }
+}
+
+// ============================================
 // Utility Functions
 // ============================================
 
@@ -922,7 +977,7 @@ function showMessage(text, type = 'info') {
         display: flex;
         align-items: center;
         gap: 10px;
-        z-index: 1000;
+        z-index: 2000;
         opacity: 0;
         transition: all 0.3s ease;
         box-shadow: 0 5px 15px rgba(0,0,0,0.2);
@@ -945,68 +1000,6 @@ function showMessage(text, type = 'info') {
             }
         }, 300);
     }, 3000);
-}
-
-// ============================================
-// Helper Functions for HTML buttons
-// ============================================
-
-function showHelp() {
-    const helpMessage = `
-        <div style="text-align: left; line-height: 1.8; padding: 20px;">
-            <h3 style="color: #3b82f6; margin-bottom: 15px;">🧭 How VIP Mining Works</h3>
-            
-            <p><strong>⛏️ Mining Points:</strong></p>
-            <p>• Click the Mine button every 5 seconds</p>
-            <p>• Earn points based on your rank</p>
-            <p>• Higher ranks = more points per click</p>
-            
-            <p><strong>👥 Referral System:</strong></p>
-            <p>1. Share your unique referral link</p>
-            <p>2. When friend joins, both get +25 points</p>
-            <p>3. Track your referrals in statistics</p>
-            
-            <p><strong>💾 Data Saving:</strong></p>
-            <p>• Your progress saves automatically</p>
-            <p>• Works offline (local storage)</p>
-            <p>• Syncs with cloud when online</p>
-        </div>
-    `;
-    
-    showMessage('Opening help guide', 'info');
-    setTimeout(() => {
-        alert(helpMessage);
-    }, 500);
-}
-
-function showStatistics() {
-    const lastMineTime = userData.lastMineTime ? 
-        new Date(userData.lastMineTime).toLocaleTimeString() : 
-        'Not started';
-    
-    const stats = `
-        📊 <strong>Your Statistics</strong>
-        
-        💰 Balance: ${userData.balance} points
-        👥 Referrals: ${userData.referrals}
-        📈 Total Earned: ${userData.totalEarned} points
-        🏆 Rank: ${userData.rank}
-        🎯 Referral Earnings: ${userData.referralEarnings} points
-        🔗 Your Code: ${userData.referralCode || 'Generating...'}
-        ⏳ Last Mine: ${lastMineTime}
-        💾 User ID: ${userData.userId}
-    `;
-    
-    showMessage('Opening statistics', 'info');
-    setTimeout(() => {
-        alert(stats);
-    }, 500);
-}
-
-function refreshPage() {
-    if (confirm('🔄 Refresh page?\n\nYour progress is automatically saved.')) {
-        location.reload();
-    }
 }
 
 // ============================================
@@ -1058,10 +1051,9 @@ window.showMessage = showMessage;
 window.generateReferralLink = generateReferralLink;
 window.processReferral = processReferral;
 window.saveUserData = saveUserData;
-window.showHelp = showHelp;
-window.showStatistics = showStatistics;
-window.refreshPage = refreshPage;
 window.updateWalletBalanceDirect = updateWalletBalanceDirect;
+window.switchPageFixed = switchPageFixed;
+window.reinitializeEventListeners = reinitializeEventListeners;
 
 // Debug function
 window.debugStorage = function() {
@@ -1090,3 +1082,4 @@ window.debugStorage = function() {
 };
 
 console.log("🎮 VIP Mining App loaded successfully");
+console.log("✅ Fixed navigation system ready");
