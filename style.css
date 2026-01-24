@@ -14,7 +14,7 @@ body {
     padding: 20px;
     direction: ltr;
     text-align: left;
-    padding-bottom: 90px; /* مساحة للقائمة السفلية */
+    padding-bottom: 90px; /* Space for bottom navigation */
 }
 
 .container {
@@ -24,10 +24,10 @@ body {
 }
 
 /* =========================================== */
-/* 🆕 إضافات جديدة - القائمة السفلية والصفحات */
+/* 🆕 New Additions - Bottom Navigation and Pages */
 /* =========================================== */
 
-/* الصفحات */
+/* Pages */
 .page {
     display: none;
     max-width: 450px;
@@ -37,6 +37,17 @@ body {
 
 .page.active {
     display: block;
+    /* 🔥 NEW: Fix page display to cover entire screen */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 70px; /* Space above bottom nav */
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    z-index: 1000;
+    overflow-y: auto;
+    padding: 20px;
+    animation: slideUp 0.3s ease;
 }
 
 .page.hidden {
@@ -48,7 +59,29 @@ body {
     to { opacity: 1; }
 }
 
-/* رأس الصفحات الجديدة */
+@keyframes slideUp {
+    from { 
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Hide main container when other pages are active */
+.container.active ~ #walletPage.active,
+.container.active ~ #earningPage.active {
+    display: none !important;
+}
+
+/* Hide wallet/earning page when home is active */
+.container.active {
+    display: block;
+}
+
+/* Header of new pages */
 .page-header {
     display: flex;
     align-items: center;
@@ -87,7 +120,7 @@ body {
     gap: 10px;
 }
 
-/* محتوى صفحة المحفظة */
+/* Wallet page content */
 .wallet-content {
     padding: 0 10px;
 }
@@ -129,7 +162,7 @@ body {
     color: #94a3b8;
 }
 
-/* أزرار المحفظة */
+/* Wallet buttons */
 .wallet-actions {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -170,7 +203,7 @@ body {
     color: #94a3b8;
 }
 
-/* ملاحظة المحفظة */
+/* Wallet notice */
 .wallet-notice {
     background: rgba(245, 158, 11, 0.1);
     border: 1px solid rgba(245, 158, 11, 0.3);
@@ -191,7 +224,7 @@ body {
     font-size: 14px;
 }
 
-/* صفحة الأرباح */
+/* Earning page */
 .earning-content {
     padding: 0 10px;
 }
@@ -257,7 +290,7 @@ body {
 }
 
 /* =========================================== */
-/* 🆕 القائمة السفلية الثابتة */
+/* 🆕 Fixed Bottom Navigation */
 /* =========================================== */
 
 .bottom-nav {
@@ -272,7 +305,7 @@ body {
     justify-content: space-around;
     padding: 12px 0;
     box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.3);
-    z-index: 1000;
+    z-index: 1001; /* Above pages */
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     max-width: 100%;
 }
@@ -322,7 +355,7 @@ body {
     color: #cbd5e0;
 }
 
-/* مؤشر نشط */
+/* Active indicator */
 .nav-item.active::after {
     content: '';
     position: absolute;
@@ -336,7 +369,7 @@ body {
 }
 
 /* =========================================== */
-/* 🏁 نهاية الإضافات الجديدة */
+/* 🏁 End of New Additions */
 /* =========================================== */
 
 /* ====== Header ====== */
@@ -936,69 +969,6 @@ body {
     font-size: 14px;
 }
 
-/* ====== Bonus Section ====== */
-.bonus-section {
-    background: rgba(30, 41, 59, 0.8);
-    border-radius: 20px;
-    padding: 20px;
-    margin-bottom: 25px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
-}
-
-.bonus-section:hover {
-    border-color: rgba(59, 130, 246, 0.4);
-}
-
-.bonus-section h3 {
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #f8fafc;
-    margin-bottom: 15px;
-}
-
-.bonus-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-}
-
-.bonus-item {
-    background: rgba(15, 23, 42, 0.8);
-    border-radius: 12px;
-    padding: 15px;
-    text-align: center;
-    transition: transform 0.3s;
-}
-
-.bonus-item:hover {
-    transform: translateY(-2px);
-}
-
-.bonus-icon {
-    font-size: 24px;
-    margin-bottom: 8px;
-}
-
-.bonus-info {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.bonus-title {
-    font-size: 12px;
-    color: #94a3b8;
-}
-
-.bonus-amount {
-    font-size: 14px;
-    font-weight: 600;
-    color: #fbbf24;
-}
-
 /* ====== Footer ====== */
 .app-footer {
     text-align: center;
@@ -1058,7 +1028,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    z-index: 1000;
+    z-index: 2000; /* Above everything */
     opacity: 0;
     transition: all 0.3s ease;
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
@@ -1117,7 +1087,7 @@ body {
 @media (max-width: 480px) {
     body {
         padding: 15px;
-        padding-bottom: 80px; /* أقل بقليل للشاشات الصغيرة */
+        padding-bottom: 80px; /* Slightly less for small screens */
     }
     
     .container {
@@ -1160,7 +1130,7 @@ body {
         gap: 15px;
     }
     
-    /* تعديلات للقائمة السفلية على الشاشات الصغيرة */
+    /* Bottom navigation adjustments for small screens */
     .bottom-nav {
         padding: 10px 0;
     }
@@ -1178,13 +1148,19 @@ body {
         font-size: 11px;
     }
     
-    /* تعديلات للصفحات الجديدة */
+    /* New pages adjustments */
     .wallet-actions {
         grid-template-columns: repeat(2, 1fr);
     }
     
     .features-list {
         grid-template-columns: 1fr;
+    }
+    
+    /* Page adjustments for mobile */
+    .page.active {
+        padding: 15px;
+        bottom: 70px;
     }
 }
 
@@ -1201,7 +1177,7 @@ body {
         font-size: 20px;
     }
     
-    /* المزيد من التعديلات للشاشات الصغيرة جداً */
+    /* More adjustments for very small screens */
     .bottom-nav {
         padding: 8px 0;
     }
