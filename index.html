@@ -168,7 +168,7 @@
     <!-- Wallet Page -->
     <div id="walletPage" class="page hidden">
         <div class="page-header">
-            <div class="back-btn" onclick="switchPage('home')">
+            <div class="back-btn" onclick="window.switchPageFixed('home'); return false;">
                 <i class="fas fa-arrow-left"></i>
             </div>
             <h2><i class="fas fa-wallet"></i> Wallet</h2>
@@ -219,7 +219,7 @@
     <!-- Earning Page -->
     <div id="earningPage" class="page hidden">
         <div class="page-header">
-            <div class="back-btn" onclick="switchPage('home')">
+            <div class="back-btn" onclick="window.switchPageFixed('home'); return false;">
                 <i class="fas fa-arrow-left"></i>
             </div>
             <h2><i class="fas fa-chart-line"></i> Earning</h2>
@@ -256,19 +256,19 @@
     </div>
 
     <!-- =========================================== -->
-    <!-- 🆕 Bottom Navigation -->
+    <!-- 🆕 Bottom Navigation - FIXED VERSION -->
     <!-- =========================================== -->
 
     <div id="bottomNav" class="bottom-nav">
-        <div class="nav-item active" onclick="switchPage('home'); return false;">
+        <div class="nav-item active" onclick="window.switchPageFixed('home'); return false;">
             <i class="fas fa-home"></i>
             <span>Home</span>
         </div>
-        <div class="nav-item" onclick="switchPage('earning'); return false;">
+        <div class="nav-item" onclick="window.switchPageFixed('earning'); return false;">
             <i class="fas fa-chart-line"></i>
             <span>Earning</span>
         </div>
-        <div class="nav-item" onclick="switchPage('wallet'); return false;">
+        <div class="nav-item" onclick="window.switchPageFixed('wallet'); return false;">
             <i class="fas fa-wallet"></i>
             <span>Wallet</span>
         </div>
@@ -301,20 +301,20 @@
             if (pageName === 'home') {
                 document.querySelector('.container').classList.remove('hidden');
                 document.querySelector('.container').classList.add('active');
-                document.querySelector('[onclick="switchPage(\'home\')"]').classList.add('active');
+                document.querySelector('[onclick*="switchPage(\'home\')"]').classList.add('active');
             } else if (pageName === 'wallet') {
                 document.getElementById('walletPage').classList.remove('hidden');
                 document.getElementById('walletPage').classList.add('active');
-                document.querySelector('[onclick="switchPage(\'wallet\')"]').classList.add('active');
+                document.querySelector('[onclick*="switchPage(\'wallet\')"]').classList.add('active');
                 document.querySelector('.container').classList.add('hidden');
                 // Update wallet balance
-                if (window.updateWalletBalance) {
-                    window.updateWalletBalance();
+                if (window.updateWalletBalanceDirect) {
+                    window.updateWalletBalanceDirect();
                 }
             } else if (pageName === 'earning') {
                 document.getElementById('earningPage').classList.remove('hidden');
                 document.getElementById('earningPage').classList.add('active');
-                document.querySelector('[onclick="switchPage(\'earning\')"]').classList.add('active');
+                document.querySelector('[onclick*="switchPage(\'earning\')"]').classList.add('active');
                 document.querySelector('.container').classList.add('hidden');
             }
             
@@ -410,12 +410,11 @@
             });
         }
         
-        // Make switchPage available globally
-        window.switchPage = switchPage;
+        // Make functions available globally
         window.showComingSoon = showComingSoon;
         window.updateWalletBalance = updateWalletBalance;
         
-        console.log("✅ Navigation system initialized - Fixed version");
+        console.log("✅ Navigation system initialized");
     </script>
 </body>
 </html>
