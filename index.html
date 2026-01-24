@@ -269,15 +269,15 @@
     <!-- =========================================== -->
 
     <div id="bottomNav" class="bottom-nav">
-        <div class="nav-item active" onclick="window.switchPageFixed('home'); return false;">
+        <div class="nav-item active" onclick="switchToPage('home'); return false;">
             <i class="fas fa-home"></i>
             <span>Home</span>
         </div>
-        <div class="nav-item" onclick="window.switchPageFixed('earning'); return false;">
+        <div class="nav-item" onclick="switchToPage('earning'); return false;">
             <i class="fas fa-chart-line"></i>
             <span>Earning</span>
         </div>
-        <div class="nav-item" onclick="window.switchPageFixed('wallet'); return false;">
+        <div class="nav-item" onclick="switchToPage('wallet'); return false;">
             <i class="fas fa-wallet"></i>
             <span>Wallet</span>
         </div>
@@ -286,65 +286,48 @@
     <!-- JavaScript Files -->
     <script src="app.js"></script>
     
-    <!-- Helper Functions - NAVIGATION FIX ONLY -->
+    <!-- ULTIMATE NAVIGATION FIX -->
     <script>
-        // Navigation System - Fixed Version
-        // This only fixes page switching, doesn't touch anything else
+        // ============================================
+        // ULTIMATE NAVIGATION SYSTEM - SIMPLE & RELIABLE
+        // ============================================
         
         document.addEventListener('DOMContentLoaded', function() {
-            console.log("🚀 Initializing navigation system...");
+            console.log("🎯 Ultimate navigation system loading...");
             
-            // Initialize navigation after app.js loads
-            setTimeout(function() {
-                setupFixedNavigation();
-                checkUrlForReferral();
-            }, 500);
+            // Setup navigation
+            setupNavigation();
+            
+            // Initialize home page
+            setTimeout(initializeHomePage, 100);
         });
         
-        function setupFixedNavigation() {
-            console.log("🎯 Setting up fixed navigation...");
+        function setupNavigation() {
+            console.log("🔄 Setting up navigation...");
             
             // Get all navigation items
             const navItems = document.querySelectorAll('.nav-item');
             
-            // Remove ALL existing click listeners first by cloning
             navItems.forEach(item => {
-                const newItem = item.cloneNode(true);
-                item.parentNode.replaceChild(newItem, item);
-            });
-            
-            // Get fresh references after clone
-            const freshNavItems = document.querySelectorAll('.nav-item');
-            
-            // Add click listeners with proper delegation
-            freshNavItems.forEach(item => {
+                // Remove any existing onclick
+                item.onclick = null;
+                
+                // Add fresh click listener
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
                     
-                    // Get page name from text
-                    let pageName = 'home';
+                    // Get page name
                     const text = this.querySelector('span').textContent.toLowerCase();
+                    let pageName = 'home';
                     
-                    if (text.includes('wallet')) {
-                        pageName = 'wallet';
-                    } else if (text.includes('earning')) {
-                        pageName = 'earning';
-                    } else {
-                        pageName = 'home';
-                    }
+                    if (text.includes('wallet')) pageName = 'wallet';
+                    else if (text.includes('earning')) pageName = 'earning';
                     
-                    console.log("🔄 Switching to:", pageName);
+                    console.log("🚀 Switching to page:", pageName);
+                    switchToPage(pageName);
                     
-                    // Use the FIXED function from app.js
-                    if (window.switchPageFixed) {
-                        window.switchPageFixed(pageName);
-                    } else {
-                        // Fallback to simple switching
-                        simplePageSwitch(pageName);
-                    }
-                    
-                    // Add click animation
+                    // Click animation
                     this.style.transform = 'scale(0.95)';
                     setTimeout(() => {
                         this.style.transform = 'scale(1)';
@@ -354,14 +337,17 @@
                 });
             });
             
-            console.log("✅ Fixed navigation setup complete");
+            console.log("✅ Navigation setup complete");
         }
         
-        function simplePageSwitch(pageName) {
-            console.log("🔄 Simple page switch to:", pageName);
+        function switchToPage(pageName) {
+            console.log("🔄 Page switch to:", pageName);
+            
+            // Get all pages
+            const allPages = document.querySelectorAll('.page, .container');
             
             // Hide all pages
-            document.querySelectorAll('.page').forEach(page => {
+            allPages.forEach(page => {
                 page.classList.remove('active');
                 page.classList.add('hidden');
             });
@@ -371,32 +357,37 @@
                 item.classList.remove('active');
             });
             
-            // Activate clicked nav item
-            document.querySelectorAll('.nav-item').forEach(item => {
-                const text = item.querySelector('span').textContent.toLowerCase();
-                if ((pageName === 'home' && text.includes('home')) ||
-                    (pageName === 'wallet' && text.includes('wallet')) ||
-                    (pageName === 'earning' && text.includes('earning'))) {
-                    item.classList.add('active');
-                }
-            });
-            
             // Show requested page
             if (pageName === 'home') {
-                document.querySelector('.container').classList.remove('hidden');
-                document.querySelector('.container').classList.add('active');
+                const homePage = document.querySelector('.container');
+                if (homePage) {
+                    homePage.classList.remove('hidden');
+                    homePage.classList.add('active');
+                }
                 
-                // 🔥 CRITICAL: Reinitialize mining button when returning to home
-                setTimeout(() => {
-                    if (window.reinitializeEventListeners) {
-                        window.reinitializeEventListeners();
+                // Activate home nav item
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    if (item.querySelector('span').textContent.toLowerCase().includes('home')) {
+                        item.classList.add('active');
                     }
-                }, 100);
+                });
+                
+                // 🔥 CRITICAL: Reattach ALL event listeners
+                setTimeout(reattachAllEventListeners, 150);
                 
             } else if (pageName === 'wallet') {
-                document.getElementById('walletPage').classList.remove('hidden');
-                document.getElementById('walletPage').classList.add('active');
-                document.querySelector('.container').classList.add('hidden');
+                const walletPage = document.getElementById('walletPage');
+                if (walletPage) {
+                    walletPage.classList.remove('hidden');
+                    walletPage.classList.add('active');
+                }
+                
+                // Activate wallet nav item
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    if (item.querySelector('span').textContent.toLowerCase().includes('wallet')) {
+                        item.classList.add('active');
+                    }
+                });
                 
                 // Update wallet balance
                 if (window.updateWalletBalanceDirect) {
@@ -404,23 +395,102 @@
                 }
                 
             } else if (pageName === 'earning') {
-                document.getElementById('earningPage').classList.remove('hidden');
-                document.getElementById('earningPage').classList.add('active');
-                document.querySelector('.container').classList.add('hidden');
+                const earningPage = document.getElementById('earningPage');
+                if (earningPage) {
+                    earningPage.classList.remove('hidden');
+                    earningPage.classList.add('active');
+                }
+                
+                // Activate earning nav item
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    if (item.querySelector('span').textContent.toLowerCase().includes('earning')) {
+                        item.classList.add('active');
+                    }
+                });
             }
         }
         
-        function checkUrlForReferral() {
-            // Check for referral code in URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const referrerCode = urlParams.get('startapp') || 
-                               urlParams.get('ref') || 
-                               urlParams.get('start');
+        function reattachAllEventListeners() {
+            console.log("🔧 Reattaching ALL event listeners...");
             
-            if (referrerCode) {
-                console.log("🔗 URL referral code detected:", referrerCode);
-                localStorage.setItem('pending_referral', referrerCode);
+            // 1. Mine Button
+            const mineBtn = document.getElementById('mineBtn');
+            if (mineBtn) {
+                // Clone to remove old listeners
+                const newMineBtn = mineBtn.cloneNode(true);
+                mineBtn.parentNode.replaceChild(newMineBtn, mineBtn);
+                
+                // Add fresh listener
+                document.getElementById('mineBtn').addEventListener('click', function() {
+                    if (window.minePoints) {
+                        window.minePoints();
+                    }
+                });
+                console.log("✅ Mine button reattached");
             }
+            
+            // 2. Copy Button
+            const copyBtn = document.getElementById('copyBtn');
+            if (copyBtn) {
+                const newCopyBtn = copyBtn.cloneNode(true);
+                copyBtn.parentNode.replaceChild(newCopyBtn, copyBtn);
+                
+                document.getElementById('copyBtn').addEventListener('click', function() {
+                    if (window.copyReferralLink) {
+                        window.copyReferralLink();
+                    }
+                });
+                console.log("✅ Copy button reattached");
+            }
+            
+            // 3. Share Button
+            const shareBtn = document.getElementById('shareBtn');
+            if (shareBtn) {
+                const newShareBtn = shareBtn.cloneNode(true);
+                shareBtn.parentNode.replaceChild(newShareBtn, shareBtn);
+                
+                document.getElementById('shareBtn').addEventListener('click', function() {
+                    if (window.shareOnTelegram) {
+                        window.shareOnTelegram();
+                    }
+                });
+                console.log("✅ Share button reattached");
+            }
+            
+            // 4. Back Buttons
+            document.querySelectorAll('.back-btn').forEach(btn => {
+                const newBtn = btn.cloneNode(true);
+                btn.parentNode.replaceChild(newBtn, btn);
+                
+                newBtn.addEventListener('click', function() {
+                    switchToPage('home');
+                });
+            });
+            console.log("✅ Back buttons reattached");
+            
+            console.log("✅ ALL event listeners reattached successfully");
+        }
+        
+        function initializeHomePage() {
+            // Make sure home page is active
+            const homePage = document.querySelector('.container');
+            if (homePage) {
+                homePage.classList.remove('hidden');
+                homePage.classList.add('active');
+            }
+            
+            // Activate home nav item
+            document.querySelectorAll('.nav-item').forEach(item => {
+                const text = item.querySelector('span').textContent.toLowerCase();
+                if (text.includes('home')) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+            
+            // Initial reattach
+            setTimeout(reattachAllEventListeners, 200);
         }
         
         function showComingSoon() {
@@ -431,23 +501,12 @@
             }
         }
         
-        // Make sure home page is active on load
-        window.addEventListener('load', function() {
-            // Activate home nav item
-            document.querySelectorAll('.nav-item').forEach(item => {
-                const text = item.querySelector('span').textContent.toLowerCase();
-                if (text.includes('home')) {
-                    item.classList.add('active');
-                } else {
-                    item.classList.remove('active');
-                }
-            });
-        });
-        
         // Make functions available globally
+        window.switchPageFixed = switchToPage;
+        window.reinitializeEventListeners = reattachAllEventListeners;
         window.showComingSoon = showComingSoon;
         
-        console.log("✅ Navigation system loaded (FIXED VERSION)");
+        console.log("✅ Ultimate navigation system ready");
     </script>
 </body>
 </html>
