@@ -558,6 +558,8 @@ body {
     margin-bottom: 25px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s ease;
+    position: relative;
+    padding-bottom: 40px;
 }
 
 .mining-section:hover {
@@ -628,6 +630,27 @@ body {
     background: rgba(255, 255, 255, 0.2);
     padding: 12px;
     border-radius: 12px;
+    animation: hammerSwing 3s ease-in-out infinite;
+    transform-origin: bottom center;
+}
+
+@keyframes hammerSwing {
+    0%, 100% { 
+        transform: rotate(0deg) translateY(0);
+    }
+    25% { 
+        transform: rotate(-15deg) translateY(-3px);
+    }
+    50% { 
+        transform: rotate(0deg) translateY(0);
+    }
+    75% { 
+        transform: rotate(8deg) translateY(-2px);
+    }
+}
+
+.mine-ready .mine-icon {
+    animation: hammerSwing 1.5s ease-in-out infinite;
 }
 
 .mine-text {
@@ -642,9 +665,16 @@ body {
 }
 
 .mine-reward {
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 22px;
+    font-weight: 800;
     color: #fbbf24;
+    text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+}
+
+.mine-subtitle {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 2px;
 }
 
 .mine-cooldown {
@@ -652,9 +682,10 @@ body {
     color: #ef4444;
     padding: 8px 12px;
     border-radius: 10px;
-    font-size: 12px;
+    font-size: 16px;
     font-family: monospace;
-    min-width: 40px;
+    font-weight: 700;
+    min-width: 60px;
     text-align: center;
 }
 
@@ -667,6 +698,80 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
+}
+
+/* ====== Energy Belt System ====== */
+.energy-belt {
+    position: absolute;
+    bottom: 15px;
+    left: 25px;
+    right: 25px;
+    height: 12px;
+    background: rgba(30, 41, 59, 0.9);
+    border-radius: 10px;
+    border: 2px solid rgba(59, 130, 246, 0.3);
+    overflow: hidden;
+    z-index: 5;
+}
+
+.belt-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, 
+        #ef4444 0%, 
+        #f59e0b 25%, 
+        #fbbf24 50%, 
+        #22c55e 75%, 
+        #10b981 100%
+    );
+    border-radius: 8px;
+    transition: width 0.5s ease;
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+}
+
+.belt-knob {
+    position: absolute;
+    top: -6px;
+    left: 0%;
+    width: 20px;
+    height: 20px;
+    background: #fbbf24;
+    border-radius: 50%;
+    border: 3px solid #1e293b;
+    box-shadow: 0 0 15px rgba(251, 191, 36, 0.8);
+    z-index: 6;
+    transition: left 0.5s ease;
+    transform: translateX(-50%);
+}
+
+@keyframes pulseReady {
+    0%, 100% { 
+        box-shadow: 0 0 15px rgba(251, 191, 36, 0.8);
+    }
+    50% { 
+        box-shadow: 0 0 25px rgba(251, 191, 36, 1);
+        transform: translateX(-50%) scale(1.1);
+    }
+}
+
+.belt-ready .belt-knob {
+    animation: pulseReady 1.5s ease-in-out infinite;
+}
+
+@keyframes beltEmpty {
+    0% { width: 100%; }
+    100% { width: 0%; }
+}
+
+.belt-emptying .belt-fill {
+    animation: beltEmpty 0.8s ease-out forwards;
+}
+
+.belt-emptying .belt-knob {
+    animation: beltEmpty 0.8s ease-out forwards;
 }
 
 /* ====== Referral System ====== */
@@ -1164,6 +1269,33 @@ body {
         gap: 15px;
     }
     
+    /* Mining section adjustments */
+    .mining-section {
+        padding: 20px;
+        padding-bottom: 35px;
+    }
+    
+    .energy-belt {
+        left: 20px;
+        right: 20px;
+        height: 10px;
+    }
+    
+    .belt-knob {
+        width: 16px;
+        height: 16px;
+        top: -5px;
+    }
+    
+    .mine-reward {
+        font-size: 20px !important;
+    }
+    
+    .mine-cooldown {
+        font-size: 14px !important;
+        min-width: 50px !important;
+    }
+    
     /* Bottom navigation adjustments for small screens */
     .bottom-nav {
         padding: 10px 0;
@@ -1204,7 +1336,7 @@ body {
     }
     
     .mine-reward {
-        font-size: 18px;
+        font-size: 18px !important;
     }
     
     .ref-stat-value {
@@ -1242,6 +1374,23 @@ body {
     
     .user-id {
         font-size: 9px;
+    }
+    
+    .mining-section {
+        padding: 15px;
+        padding-bottom: 30px;
+    }
+    
+    .energy-belt {
+        left: 15px;
+        right: 15px;
+        height: 8px;
+    }
+    
+    .belt-knob {
+        width: 14px;
+        height: 14px;
+        top: -4px;
     }
     
     /* More adjustments for very small screens */
