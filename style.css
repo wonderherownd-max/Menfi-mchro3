@@ -390,11 +390,8 @@ body {
     overflow: hidden;
 }
 
-/* Logo - Centered */
+/* Logo - Left aligned */
 .logo {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
     display: flex;
     align-items: center;
     gap: 12px;
