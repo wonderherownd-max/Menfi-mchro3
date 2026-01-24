@@ -24,15 +24,15 @@
 <body>
     <!-- Main Home Page -->
     <div class="container" id="homePage">
-        <!-- Header Section -->
-        <header class="app-header">
+        <!-- Header Section - Compact Version -->
+        <header class="app-header compact">
             <div class="logo">
                 <i class="fas fa-gem"></i>
                 <h1>VIP Mining</h1>
             </div>
-            <div class="user-section" id="userSection">
+            <div class="user-section compact" id="userSection">
                 <div class="user-avatar" id="userAvatar">U</div>
-                <div class="user-info">
+                <div class="user-info compact">
                     <div class="username" id="username">Loading...</div>
                     <div class="user-id" id="userId">ID: ---</div>
                 </div>
@@ -82,7 +82,7 @@
             </div>
         </div>
 
-        <!-- Referral System -->
+        <!-- Referral System - Simplified -->
         <div class="referral-section">
             <div class="section-header">
                 <h3><i class="fas fa-share-alt"></i> Referral Program</h3>
@@ -106,7 +106,7 @@
                 </div>
             </div>
 
-            <!-- Referral Link -->
+            <!-- Referral Link - Simplified -->
             <div class="referral-link-container">
                 <div class="input-group">
                     <div class="input-icon">
@@ -125,44 +125,13 @@
                     <button class="action-btn" id="shareBtn">
                         <i class="fab fa-telegram"></i> Share on Telegram
                     </button>
-                    <button class="action-btn secondary" id="whatsappBtn">
-                        <i class="fab fa-whatsapp"></i> Share on WhatsApp
-                    </button>
                 </div>
             </div>
 
-            <!-- How it Works -->
-            <div class="referral-info">
-                <h4><i class="fas fa-info-circle"></i> How Referral System Works?</h4>
-                <div class="info-steps">
-                    <div class="step">
-                        <div class="step-number">1</div>
-                        <div class="step-content">
-                            <strong>Share Your Unique Link</strong>
-                            <p>Copy and share the link above with your friends</p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">2</div>
-                        <div class="step-content">
-                            <strong>Friend Opens Mini App</strong>
-                            <p>They click the link and app opens directly in Telegram</p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">3</div>
-                        <div class="step-content">
-                            <strong>Get Automatic Rewards</strong>
-                            <p>You receive +25 points immediately</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Referral Note -->
-            <div class="referral-note">
-                <i class="fas fa-exclamation-circle"></i>
-                <span>Important: Link opens the Mini App directly, not just the bot!</span>
+            <!-- Simple Referral Message -->
+            <div class="referral-info simple">
+                <h4><i class="fas fa-info-circle"></i> Share Your Unique Link</h4>
+                <p>Copy and share your referral link to get +25 points</p>
             </div>
         </div>
 
@@ -190,25 +159,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Footer -->
-        <footer class="app-footer">
-            <div class="footer-links">
-                <a href="javascript:void(0)" class="footer-link" id="helpBtn">
-                    <i class="fas fa-question-circle"></i> Help
-                </a>
-                <a href="javascript:void(0)" class="footer-link" id="statsBtn">
-                    <i class="fas fa-chart-bar"></i> Statistics
-                </a>
-                <a href="javascript:void(0)" class="footer-link" id="refreshBtn">
-                    <i class="fas fa-sync-alt"></i> Refresh
-                </a>
-            </div>
-            <div class="footer-copyright">
-                <p>Powered by @VIPMainingPROBot • VIP Mining © 2024</p>
-                <p id="connectionStatus">🔵 Connecting...</p>
-            </div>
-        </footer>
     </div>
 
     <!-- =========================================== -->
@@ -310,15 +260,15 @@
     <!-- =========================================== -->
 
     <div id="bottomNav" class="bottom-nav">
-        <div class="nav-item active" onclick="switchPage('home')">
+        <div class="nav-item active" onclick="switchPage('home'); return false;">
             <i class="fas fa-home"></i>
             <span>Home</span>
         </div>
-        <div class="nav-item" onclick="switchPage('earning')">
+        <div class="nav-item" onclick="switchPage('earning'); return false;">
             <i class="fas fa-chart-line"></i>
             <span>Earning</span>
         </div>
-        <div class="nav-item" onclick="switchPage('wallet')">
+        <div class="nav-item" onclick="switchPage('wallet'); return false;">
             <i class="fas fa-wallet"></i>
             <span>Wallet</span>
         </div>
@@ -329,9 +279,12 @@
     
     <!-- Helper Functions -->
     <script>
-        // Switch between pages - enhanced
+        // Switch between pages - enhanced and fixed
         function switchPage(pageName) {
             console.log("🔄 Switching to page:", pageName);
+            
+            // Prevent default behavior
+            event.preventDefault();
             
             // Hide all pages
             document.querySelectorAll('.page').forEach(page => {
@@ -355,13 +308,18 @@
                 document.querySelector('[onclick="switchPage(\'wallet\')"]').classList.add('active');
                 document.querySelector('.container').classList.add('hidden');
                 // Update wallet balance
-                updateWalletBalance();
+                if (window.updateWalletBalance) {
+                    window.updateWalletBalance();
+                }
             } else if (pageName === 'earning') {
                 document.getElementById('earningPage').classList.remove('hidden');
                 document.getElementById('earningPage').classList.add('active');
                 document.querySelector('[onclick="switchPage(\'earning\')"]').classList.add('active');
                 document.querySelector('.container').classList.add('hidden');
             }
+            
+            // Prevent bubbling
+            return false;
         }
 
         // Wait for app.js to load first
@@ -383,23 +341,8 @@
         });
         
         function setupControlButtons() {
-            // Help button
-            const helpBtn = document.getElementById('helpBtn');
-            if (helpBtn) {
-                helpBtn.addEventListener('click', showHelp);
-            }
-            
-            // Statistics button
-            const statsBtn = document.getElementById('statsBtn');
-            if (statsBtn) {
-                statsBtn.addEventListener('click', showStatistics);
-            }
-            
-            // Refresh button
-            const refreshBtn = document.getElementById('refreshBtn');
-            if (refreshBtn) {
-                refreshBtn.addEventListener('click', refreshPage);
-            }
+            // No more Help, Statistics, Refresh buttons - removed
+            console.log("✅ Control buttons setup skipped (removed from UI)");
         }
         
         function checkUrlForReferral() {
@@ -444,82 +387,8 @@
             if (window.showMessage) {
                 window.showMessage('🚀 This feature is under development!', 'info');
             } else {
-                alert('🚀 This feature is under development!');
-            }
-        }
-        
-        function showHelp() {
-            const helpMessage = `
-                <div style="text-align: left; line-height: 1.8; padding: 20px;">
-                    <h3 style="color: #3b82f6; margin-bottom: 15px;">🧭 How VIP Mining Works</h3>
-                    
-                    <p><strong>⛏️ Mining Points:</strong></p>
-                    <p>• Click the Mine button every 5 seconds</p>
-                    <p>• Earn points based on your rank</p>
-                    <p>• Higher ranks = more points per click</p>
-                    
-                    <p><strong>👥 Referral System:</strong></p>
-                    <p>1. Share your unique referral link</p>
-                    <p>2. When friend joins, both get +25 points</p>
-                    <p>3. Track your referrals in statistics</p>
-                    
-                    <p><strong>🏆 Ranking System:</strong></p>
-                    <p>• Beginner: 1 point/click</p>
-                    <p>• Professional: 2 points/click</p>
-                    <p>• Expert: 3 points/click</p>
-                    <p>• VIP: 5 points/click</p>
-                    <p>• Legend: 10 points/click</p>
-                    
-                    <p><strong>📱 Navigation:</strong></p>
-                    <p>🏠 Home: Mining and referral page</p>
-                    <p>💰 Earning: Upcoming tasks and offers</p>
-                    <p>💳 Wallet: Manage and transfer balance</p>
-                </div>
-            `;
-            
-            if (window.showMessage) {
-                window.showMessage('Opening help guide', 'info');
-                setTimeout(() => {
-                    alert(helpMessage);
-                }, 500);
-            } else {
-                alert(helpMessage);
-            }
-        }
-        
-        function showStatistics() {
-            if (window.userData) {
-                const lastMineTime = window.userData.lastMineTime ? 
-                    new Date(window.userData.lastMineTime).toLocaleTimeString() : 
-                    'Not started';
-                
-                const stats = `
-                    📊 <strong>Your Statistics</strong>
-                    ------------------------------------
-                    💰 Balance: ${window.userData.balance} points
-                    👥 Referrals: ${window.userData.referrals}
-                    📈 Total Earned: ${window.userData.totalEarned} points
-                    🏆 Rank: ${window.userData.rank}
-                    🎯 Referral Earnings: ${window.userData.referralEarnings} points
-                    🔗 Your Code: ${window.userData.referralCode || 'Generating...'}
-                    ⏳ Last Mine: ${lastMineTime}
-                    💾 User ID: ${window.userData.userId}
-                `;
-                
-                if (window.showMessage) {
-                    window.showMessage('Opening statistics', 'info');
-                    setTimeout(() => {
-                        alert(stats);
-                    }, 500);
-                } else {
-                    alert(stats);
-                }
-            }
-        }
-        
-        function refreshPage() {
-            if (confirm('🔄 Refresh page?\n\nYour progress is automatically saved.')) {
-                location.reload();
+                // Don't use alert() - it blocks UI
+                console.log('🚀 This feature is under development!');
             }
         }
         
@@ -527,12 +396,16 @@
         function setupBottomNav() {
             // Add effects to icons
             document.querySelectorAll('.nav-item').forEach(item => {
-                item.addEventListener('click', function() {
+                item.addEventListener('click', function(e) {
                     // Simple click effect
                     this.style.transform = 'scale(0.95)';
                     setTimeout(() => {
                         this.style.transform = 'scale(1)';
                     }, 150);
+                    
+                    // Prevent default
+                    e.preventDefault();
+                    return false;
                 });
             });
         }
@@ -542,7 +415,7 @@
         window.showComingSoon = showComingSoon;
         window.updateWalletBalance = updateWalletBalance;
         
-        console.log("✅ Navigation system initialized");
+        console.log("✅ Navigation system initialized - Fixed version");
     </script>
 </body>
 </html>
