@@ -59,26 +59,35 @@
             </div>
         </div>
 
-        <!-- Mining Section -->
+        <!-- Mining Section - UPDATED -->
         <div class="mining-section">
             <div class="mining-header">
                 <h3><i class="fas fa-hard-hat"></i> Mining Station</h3>
                 <div class="mining-power" id="miningPower">
-                    <i class="fas fa-bolt"></i> Power: 10/hour
+                    <i class="fas fa-bolt"></i> Yield: 250 points/4h
                 </div>
             </div>
+            
             <button class="mine-btn" id="mineBtn">
                 <div class="mine-icon">
                     <i class="fas fa-hammer"></i>
                 </div>
                 <div class="mine-text">
-                    <div class="mine-title">Start Mining</div>
-                    <div class="mine-reward">+<span id="rewardAmount">1</span> point</div>
+                    <div class="mine-title">Claim Your Wealth</div>
+                    <div class="mine-reward">+<span id="rewardAmount">250</span> points</div>
+                    <div class="mine-subtitle">Every 4 hours</div>
                 </div>
                 <div class="mine-cooldown" id="cooldownTimer"></div>
             </button>
+            
+            <!-- Energy Belt Added -->
+            <div class="energy-belt" id="energyBelt">
+                <div class="belt-fill" id="beltFill"></div>
+                <div class="belt-knob" id="beltKnob"></div>
+            </div>
+            
             <div class="mining-tip">
-                <i class="fas fa-lightbulb"></i> Click every 5 seconds for maximum profit
+                <i class="fas fa-lightbulb"></i> Returns automatically every 4 hours
             </div>
         </div>
 
