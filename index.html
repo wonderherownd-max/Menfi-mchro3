@@ -22,7 +22,8 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛏️</text></svg>">
 </head>
 <body>
-    <div class="container">
+    <!-- الصفحة الرئيسية الحالية (كما هي) -->
+    <div class="container" id="homePage">
         <!-- Header Section -->
         <header class="app-header">
             <div class="logo">
@@ -238,6 +239,119 @@
         </footer>
     </div>
 
+    <!-- =========================================== -->
+    <!-- 🆕 الصفحات الجديدة - 2024-01-15 -->
+    <!-- =========================================== -->
+
+    <!-- صفحة المحفظة -->
+    <div id="walletPage" class="page hidden">
+        <div class="page-header">
+            <div class="back-btn" onclick="switchPage('home')">
+                <i class="fas fa-arrow-left"></i>
+            </div>
+            <h2><i class="fas fa-wallet"></i> المحفظة</h2>
+        </div>
+        
+        <div class="wallet-content">
+            <div class="wallet-balance">
+                <div class="balance-card">
+                    <h3><i class="fas fa-coins"></i> رصيد النقاط</h3>
+                    <div class="amount" id="walletPoints">100</div>
+                    <div class="currency">نقطة</div>
+                </div>
+                
+                <div class="balance-card">
+                    <h3><i class="fab fa-bitcoin"></i> رصيد الساتوشي</h3>
+                    <div class="amount" id="walletSatoshi">0</div>
+                    <div class="currency">ساتوشي</div>
+                </div>
+            </div>
+            
+            <div class="wallet-actions">
+                <div class="action-card" onclick="showComingSoon()">
+                    <i class="fas fa-exchange-alt"></i>
+                    <h4>تحويل النقاط</h4>
+                    <p>تحويل النقاط إلى ساتوشي</p>
+                </div>
+                
+                <div class="action-card" onclick="showComingSoon()">
+                    <i class="fas fa-paper-plane"></i>
+                    <h4>طلب سحب</h4>
+                    <p>سحب الرصيد إلى محفظتك</p>
+                </div>
+                
+                <div class="action-card" onclick="showComingSoon()">
+                    <i class="fas fa-download"></i>
+                    <h4>طلب إيداع</h4>
+                    <p>إيداع ساتوشي إلى حسابك</p>
+                </div>
+            </div>
+            
+            <div class="wallet-notice">
+                <i class="fas fa-info-circle"></i>
+                <p>🚀 الميزات قيد التطوير! سيتم إضافتها قريباً.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- صفحة الأرباح -->
+    <div id="earningPage" class="page hidden">
+        <div class="page-header">
+            <div class="back-btn" onclick="switchPage('home')">
+                <i class="fas fa-arrow-left"></i>
+            </div>
+            <h2><i class="fas fa-chart-line"></i> الأرباح</h2>
+        </div>
+        
+        <div class="earning-content">
+            <div class="coming-soon">
+                <div class="rocket-animation">
+                    🚀
+                </div>
+                <h3>قريباً!</h3>
+                <p>نعمل على ميزات جديدة لكسب المزيد</p>
+                
+                <div class="features-list">
+                    <div class="feature-item">
+                        <i class="fas fa-ad"></i>
+                        <span>مشاهدة إعلانات</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-tasks"></i>
+                        <span>مهام يومية</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-gift"></i>
+                        <span>عروض حصرية</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-trophy"></i>
+                        <span>مسابقات وجوائز</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================== -->
+    <!-- 🆕 القائمة السفلية الثابتة -->
+    <!-- =========================================== -->
+
+    <div id="bottomNav" class="bottom-nav">
+        <div class="nav-item active" onclick="switchPage('home')">
+            <i class="fas fa-home"></i>
+            <span>الرئيسية</span>
+        </div>
+        <div class="nav-item" onclick="switchPage('earning')">
+            <i class="fas fa-chart-line"></i>
+            <span>الأرباح</span>
+        </div>
+        <div class="nav-item" onclick="switchPage('wallet')">
+            <i class="fas fa-wallet"></i>
+            <span>المحفظة</span>
+        </div>
+    </div>
+
     <!-- JavaScript Files -->
     <script src="app.js"></script>
     
@@ -252,6 +366,9 @@
                 
                 // التحقق من الإحالة في URL
                 checkUrlForReferral();
+                
+                // تهيئة الصفحات
+                initializePages();
             }, 1000);
         });
         
@@ -297,6 +414,30 @@
             }
         }
         
+        // وظيفة للصفحات الجديدة
+        function initializePages() {
+            // تحديث رصيد المحفظة عند فتحها
+            if (window.userData) {
+                updateWalletBalance();
+            }
+        }
+        
+        function updateWalletBalance() {
+            // تحديث رصيد النقاط في صفحة المحفظة
+            const walletPoints = document.getElementById('walletPoints');
+            if (walletPoints && window.userData) {
+                walletPoints.textContent = window.userData.balance.toLocaleString();
+            }
+        }
+        
+        function showComingSoon() {
+            if (window.showMessage) {
+                window.showMessage('🚀 هذه الميزة قيد التطوير!', 'info');
+            } else {
+                alert('🚀 هذه الميزة قيد التطوير!');
+            }
+        }
+        
         function showHelp() {
             const helpMessage = `
                 <div style="text-align: left; line-height: 1.8; padding: 20px;">
@@ -323,6 +464,11 @@
                     <p>• Your progress saves automatically</p>
                     <p>• Works offline (local storage)</p>
                     <p>• Syncs with cloud when online</p>
+                    
+                    <p><strong>📱 Navigation:</strong></p>
+                    <p>🏠 الرئيسية: صفحة التعدين والإحالة</p>
+                    <p>💰 الأرباح: مهام وعروض قادمة</p>
+                    <p>👛 المحفظة: إدارة وتحويل الرصيد</p>
                 </div>
             `;
             
