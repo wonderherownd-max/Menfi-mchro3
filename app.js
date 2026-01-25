@@ -1,5 +1,5 @@
 // ============================================
-// VIP Mining Mini App - PROFESSIONAL WALLET v6.0
+// VIP Mining Mini App - PROFESSIONAL WALLET v6.1
 // ============================================
 
 // Telegram WebApp
@@ -83,19 +83,23 @@ const CONFIG = {
     REFERRER_REWARD: 50,
     
     MWH_TO_USD: 0.001,
-    BNB_TO_USD: 400,
-    TON_TO_USD: 2,
+    BNB_TO_USD: 875, // Updated BNB price
+    TON_TO_USD: 1.6,
     ETH_TO_USD: 3000,
     
+    // Swap Rates
     MIN_SWAP: 10000,
+    MWH_TO_USDT_RATE: 1000, // 1,000 MWH = 1 USDT
+    BNB_TO_MWH_RATE: 870000, // 1 BNB = 870,000 MWH (NEW)
+    
+    // Withdrawal & Deposit Limits
     MIN_WITHDRAWAL: 50,
     MIN_DEPOSIT_USDT: 10,
     MIN_DEPOSIT_BNB: 0.015,
     WITHDRAWAL_FEE: 0.0005,
     
-    DEPOSIT_ADDRESS: "0x790CAB511055F63db2F30AD227f7086bA3B6376a",
-    
-    SWAP_RATE: 1000
+    // Deposit Address
+    DEPOSIT_ADDRESS: "0x790CAB511055F63db2F30AD227f7086bA3B6376a"
 };
 
 // DOM Elements
@@ -106,7 +110,7 @@ const elements = {};
 // ============================================
 
 async function initApp() {
-    console.log("🚀 Starting VIP Mining App v6.0...");
+    console.log("🚀 Starting VIP Mining App v6.1...");
     
     try {
         // Cache DOM elements
@@ -124,8 +128,8 @@ async function initApp() {
         // Update UI
         updateUI();
         
-        // Update connection status
-        updateConnectionStatus();
+        // Update wallet UI
+        updateWalletUI();
         
         // Check for referrals
         checkForReferral();
@@ -551,23 +555,23 @@ function updateWalletValues() {
     
     // Update display
     if (document.getElementById('walletMWHValue')) {
-        document.getElementById('walletMWHValue').textContent = `≈ $${mwhUSD}`;
+        document.getElementById('walletMWHValue').textContent = `$${mwhUSD}`;
     }
     
     if (document.getElementById('walletUSDTValue')) {
-        document.getElementById('walletUSDTValue').textContent = `≈ $${usdtUSD}`;
+        document.getElementById('walletUSDTValue').textContent = `$${usdtUSD}`;
     }
     
     if (document.getElementById('walletBNBValue')) {
-        document.getElementById('walletBNBValue').textContent = `≈ $${bnbUSD}`;
+        document.getElementById('walletBNBValue').textContent = `$${bnbUSD}`;
     }
     
     if (document.getElementById('walletTONValue')) {
-        document.getElementById('walletTONValue').textContent = `≈ $${tonUSD}`;
+        document.getElementById('walletTONValue').textContent = `$${tonUSD}`;
     }
     
     if (document.getElementById('walletETHValue')) {
-        document.getElementById('walletETHValue').textContent = `≈ $${ethUSD}`;
+        document.getElementById('walletETHValue').textContent = `$${ethUSD}`;
     }
 }
 
@@ -590,7 +594,6 @@ function updateWithdrawalStatus() {
     const bnbBalance = walletData.bnbBalance;
     const withdrawBtn = document.getElementById('withdrawUSDTBtn');
     const withdrawalInfo = document.getElementById('usdtWithdrawalInfo');
-    const withdrawalFee = document.getElementById('usdtWithdrawalFee');
     
     if (!withdrawalInfo) return;
     
@@ -598,17 +601,11 @@ function updateWithdrawalStatus() {
         withdrawalInfo.style.display = 'block';
         
         if (bnbBalance >= CONFIG.WITHDRAWAL_FEE) {
-            if (withdrawalFee) {
-                withdrawalFee.style.display = 'block';
-            }
             if (withdrawBtn) {
                 withdrawBtn.disabled = false;
                 withdrawBtn.innerHTML = '<i class="fas fa-upload"></i> Withdraw';
             }
         } else {
-            if (withdrawalFee) {
-                withdrawalFee.style.display = 'block';
-            }
             if (withdrawBtn) {
                 withdrawBtn.disabled = true;
                 withdrawBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Need BNB';
@@ -626,15 +623,35 @@ function updateWithdrawalStatus() {
 }
 
 // ============================================
-// Swap System (MWH ↔ USDT)
+// Swap System (MWH ↔ USDT ↔ BNB)
 // ============================================
 
 function openSwapModal(currency) {
-    const isMWHtoUSDT = currency === 'MWH';
-    const fromCurrency = isMWHtoUSDT ? 'MWH' : 'USDT';
-    const toCurrency = isMWHtoUSDT ? 'USDT' : 'MWH';
-    const fromBalance = isMWHtoUSDT ? walletData.mwhBalance : walletData.usdtBalance;
-    const toBalance = isMWHtoUSDT ? walletData.usdtBalance : walletData.mwhBalance;
+    const isMWH = currency === 'MWH';
+    const isUSDT = currency === 'USDT';
+    const isBNB = currency === 'BNB';
+    
+    let fromCurrency = currency;
+    let toCurrency = '';
+    let rateText = '';
+    let minSwap = 0;
+    
+    if (isMWH) {
+        toCurrency = 'USDT';
+        rateText = '1,000 MWH = 1 USDT';
+        minSwap = CONFIG.MIN_SWAP;
+    } else if (isUSDT) {
+        toCurrency = 'MWH';
+        rateText = '1 USDT = 1,000 MWH';
+        minSwap = 0.01;
+    } else if (isBNB) {
+        toCurrency = 'MWH';
+        rateText = `1 BNB = ${CONFIG.BNB_TO_MWH_RATE.toLocaleString()} MWH`;
+        minSwap = 0.001;
+    }
+    
+    const fromBalance = getBalanceByCurrency(fromCurrency);
+    const toBalance = getBalanceByCurrency(toCurrency);
     
     const modalHTML = `
         <div class="modal-overlay" id="swapModal">
@@ -645,9 +662,9 @@ function openSwapModal(currency) {
                 </div>
                 <div class="modal-body">
                     <div class="swap-info">
-                        <p>Fixed Rate: <strong>1,000 MWH = 1 USDT</strong></p>
-                        <p>Minimum Swap: <strong>${CONFIG.MIN_SWAP.toLocaleString()} MWH</strong></p>
-                        <p>Available: <strong>${formatNumber(fromBalance)} ${fromCurrency}</strong></p>
+                        <p>Fixed Rate: <strong>${rateText}</strong></p>
+                        <p>Minimum Swap: <strong>${minSwap.toLocaleString()} ${fromCurrency}</strong></p>
+                        <p>Available: <strong>${formatNumber(fromBalance, isBNB ? 4 : isUSDT ? 2 : 0)} ${fromCurrency}</strong></p>
                     </div>
                     
                     <div class="swap-inputs">
@@ -656,8 +673,8 @@ function openSwapModal(currency) {
                             <div class="input-with-max">
                                 <input type="number" id="swapFromAmount" 
                                        placeholder="Enter amount" 
-                                       min="${isMWHtoUSDT ? CONFIG.MIN_SWAP : '0.01'}" 
-                                       step="${isMWHtoUSDT ? '1000' : '0.01'}"
+                                       min="${minSwap}" 
+                                       step="${isBNB ? '0.001' : isUSDT ? '0.01' : '1000'}"
                                        oninput="calculateSwap('${fromCurrency}', '${toCurrency}')">
                                 <button class="max-btn" onclick="setMaxSwap('${fromCurrency}')">MAX</button>
                             </div>
@@ -676,7 +693,7 @@ function openSwapModal(currency) {
                     <div class="swap-details">
                         <div class="detail-row">
                             <span>Rate:</span>
-                            <span>1,000 MWH = 1 USDT</span>
+                            <span>${rateText}</span>
                         </div>
                         <div class="detail-row">
                             <span>You receive:</span>
@@ -709,18 +726,38 @@ function openSwapModal(currency) {
     }, 100);
 }
 
+function getBalanceByCurrency(currency) {
+    switch(currency) {
+        case 'MWH': return walletData.mwhBalance;
+        case 'USDT': return walletData.usdtBalance;
+        case 'BNB': return walletData.bnbBalance;
+        case 'TON': return walletData.tonBalance;
+        case 'ETH': return walletData.ethBalance;
+        default: return 0;
+    }
+}
+
 function calculateSwap(fromCurrency, toCurrency) {
     const fromAmount = parseFloat(document.getElementById('swapFromAmount').value) || 0;
     let toAmount = 0;
+    let rate = 0;
     
-    if (fromCurrency === 'MWH') {
-        toAmount = fromAmount / CONFIG.SWAP_RATE;
-    } else {
-        toAmount = fromAmount * CONFIG.SWAP_RATE;
+    // Calculate based on currency pair
+    if (fromCurrency === 'MWH' && toCurrency === 'USDT') {
+        rate = 1 / CONFIG.MWH_TO_USDT_RATE;
+        toAmount = fromAmount * rate;
+    } else if (fromCurrency === 'USDT' && toCurrency === 'MWH') {
+        rate = CONFIG.MWH_TO_USDT_RATE;
+        toAmount = fromAmount * rate;
+    } else if (fromCurrency === 'BNB' && toCurrency === 'MWH') {
+        rate = CONFIG.BNB_TO_MWH_RATE;
+        toAmount = fromAmount * rate;
     }
     
-    document.getElementById('swapToAmount').value = toAmount.toFixed(fromCurrency === 'MWH' ? 2 : 0);
-    document.getElementById('swapReceive').textContent = `${toAmount.toFixed(fromCurrency === 'MWH' ? 2 : 0)} ${toCurrency}`;
+    // Format based on target currency
+    const decimals = toCurrency === 'USDT' ? 2 : toCurrency === 'BNB' ? 4 : 0;
+    document.getElementById('swapToAmount').value = toAmount.toFixed(decimals);
+    document.getElementById('swapReceive').textContent = `${toAmount.toFixed(decimals)} ${toCurrency}`;
     
     const confirmBtn = document.getElementById('confirmSwapBtn');
     const warning = document.getElementById('swapWarning');
@@ -735,12 +772,23 @@ function calculateSwap(fromCurrency, toCurrency) {
         return;
     }
     
-    const fromBalance = fromCurrency === 'MWH' ? walletData.mwhBalance : walletData.usdtBalance;
+    const fromBalance = getBalanceByCurrency(fromCurrency);
+    let minSwap = 0;
     
-    if (fromCurrency === 'MWH' && fromAmount < CONFIG.MIN_SWAP) {
-        warningText.textContent = `Minimum swap is ${CONFIG.MIN_SWAP.toLocaleString()} MWH`;
-        warning.style.display = 'flex';
-        return;
+    if (fromCurrency === 'MWH') {
+        minSwap = CONFIG.MIN_SWAP;
+        if (fromAmount < minSwap) {
+            warningText.textContent = `Minimum swap is ${minSwap.toLocaleString()} MWH`;
+            warning.style.display = 'flex';
+            return;
+        }
+    } else if (fromCurrency === 'BNB') {
+        minSwap = 0.001;
+        if (fromAmount < minSwap) {
+            warningText.textContent = `Minimum swap is ${minSwap} BNB`;
+            warning.style.display = 'flex';
+            return;
+        }
     }
     
     if (fromAmount > fromBalance) {
@@ -755,10 +803,15 @@ function calculateSwap(fromCurrency, toCurrency) {
 function setMaxSwap(currency) {
     const input = document.getElementById('swapFromAmount');
     if (input) {
-        const maxBalance = currency === 'MWH' ? walletData.mwhBalance : walletData.usdtBalance;
-        input.value = currency === 'MWH' ? maxBalance : maxBalance.toFixed(2);
+        const maxBalance = getBalanceByCurrency(currency);
+        input.value = currency === 'BNB' ? maxBalance.toFixed(4) : 
+                     currency === 'USDT' ? maxBalance.toFixed(2) : maxBalance;
         
-        const toCurrency = currency === 'MWH' ? 'USDT' : 'MWH';
+        let toCurrency = '';
+        if (currency === 'MWH') toCurrency = 'USDT';
+        else if (currency === 'USDT') toCurrency = 'MWH';
+        else if (currency === 'BNB') toCurrency = 'MWH';
+        
         calculateSwap(currency, toCurrency);
     }
 }
@@ -767,31 +820,42 @@ function executeSwap(fromCurrency, toCurrency) {
     const fromAmount = parseFloat(document.getElementById('swapFromAmount').value);
     const toAmount = parseFloat(document.getElementById('swapToAmount').value);
     
-    if (fromCurrency === 'MWH') {
-        if (fromAmount < CONFIG.MIN_SWAP) {
-            showMessage(`Minimum swap is ${CONFIG.MIN_SWAP.toLocaleString()} MWH`, 'error');
-            return;
-        }
-        
-        if (fromAmount > walletData.mwhBalance) {
-            showMessage('Insufficient MWH balance', 'error');
-            return;
-        }
-        
-        walletData.mwhBalance -= fromAmount;
-        walletData.usdtBalance += toAmount;
-        
-    } else {
-        if (fromAmount > walletData.usdtBalance) {
-            showMessage('Insufficient USDT balance', 'error');
-            return;
-        }
-        
-        walletData.usdtBalance -= fromAmount;
-        walletData.mwhBalance += toAmount;
+    // Check minimum swap requirements
+    let minSwap = 0;
+    if (fromCurrency === 'MWH') minSwap = CONFIG.MIN_SWAP;
+    else if (fromCurrency === 'BNB') minSwap = 0.001;
+    
+    if (fromAmount < minSwap) {
+        showMessage(`Minimum swap is ${minSwap.toLocaleString()} ${fromCurrency}`, 'error');
+        return;
     }
     
-    userData.balance = walletData.mwhBalance;
+    const fromBalance = getBalanceByCurrency(fromCurrency);
+    if (fromAmount > fromBalance) {
+        showMessage(`Insufficient ${fromCurrency} balance`, 'error');
+        return;
+    }
+    
+    // Update balances
+    switch(fromCurrency) {
+        case 'MWH':
+            walletData.mwhBalance -= fromAmount;
+            walletData.usdtBalance += toAmount;
+            break;
+        case 'USDT':
+            walletData.usdtBalance -= fromAmount;
+            walletData.mwhBalance += toAmount;
+            break;
+        case 'BNB':
+            walletData.bnbBalance -= fromAmount;
+            walletData.mwhBalance += toAmount;
+            break;
+    }
+    
+    // Update user balance if MWH changed
+    if (fromCurrency === 'MWH' || fromCurrency === 'USDT' || fromCurrency === 'BNB') {
+        userData.balance = walletData.mwhBalance;
+    }
     
     saveWalletData();
     saveUserData();
@@ -808,6 +872,33 @@ function executeSwap(fromCurrency, toCurrency) {
 // ============================================
 
 function openDepositModal(currency) {
+    const isBNB = currency === 'BNB';
+    const isUSDT = currency === 'USDT';
+    
+    let minDeposit = '0.015 BNB';
+    let instructions = '';
+    
+    if (isBNB) {
+        instructions = `
+            <h4>⚠️ Important Instructions:</h4>
+            <ol>
+                <li>Send only <strong>BNB (BEP20)</strong> to this address</li>
+                <li>Minimum deposit: <strong>0.015 BNB</strong></li>
+                <li>Manual credit within <strong>2 minutes</strong></li>
+            </ol>
+        `;
+    } else if (isUSDT) {
+        minDeposit = '10 USDT';
+        instructions = `
+            <h4>⚠️ Important Instructions:</h4>
+            <ol>
+                <li>Send only <strong>USDT (BEP20)</strong> to this address</li>
+                <li>Minimum deposit: <strong>10 USDT</strong></li>
+                <li>Manual credit within <strong>2 minutes</strong></li>
+            </ol>
+        `;
+    }
+    
     const modalHTML = `
         <div class="modal-overlay" id="depositModal">
             <div class="modal-content">
@@ -825,24 +916,8 @@ function openDepositModal(currency) {
                             </button>
                         </div>
                         
-                        <div class="qr-code-placeholder">
-                            <div style="text-align: center; padding: 20px; background: #f8fafc; border-radius: 10px;">
-                                <div style="color: #666; font-size: 14px;">QR Code</div>
-                                <div style="font-size: 12px; color: #999; margin-top: 10px;">
-                                    Scan to deposit ${currency}
-                                </div>
-                            </div>
-                        </div>
-                        
                         <div class="deposit-instructions">
-                            <h4>⚠️ Important Instructions:</h4>
-                            <ol>
-                                <li>Send only <strong>${currency} (BEP20)</strong> to this address</li>
-                                <li>Minimum deposit: <strong>${currency === 'BNB' ? CONFIG.MIN_DEPOSIT_BNB : CONFIG.MIN_DEPOSIT_USDT} ${currency}</strong></li>
-                                <li>Manual credit within <strong>2 hours</strong></li>
-                                <li>Contact support if not credited after 2 hours</li>
-                                <li>This is a <strong>shared address</strong> for all users</li>
-                            </ol>
+                            ${instructions}
                         </div>
                     </div>
                     
@@ -971,6 +1046,7 @@ function validateWithdrawalAmount() {
     if (amount < CONFIG.MIN_WITHDRAWAL) {
         warningText.textContent = `Minimum withdrawal is ${CONFIG.MIN_WITHDRAWAL} USDT`;
         warning.style.display = 'flex';
+        warning.style.color = '#ef4444';
         btn.disabled = true;
         return;
     }
@@ -1349,18 +1425,6 @@ function checkRankUp() {
     }
 }
 
-function updateConnectionStatus() {
-    if (elements.connectionStatus) {
-        if (db) {
-            elements.connectionStatus.textContent = '🟢 Connected to Firebase';
-            elements.connectionStatus.style.color = '#22c55e';
-        } else {
-            elements.connectionStatus.textContent = '🟡 Local Storage Only';
-            elements.connectionStatus.style.color = '#f59e0b';
-        }
-    }
-}
-
 // ============================================
 // Event Listeners
 // ============================================
@@ -1517,7 +1581,7 @@ function saveUserData() {
             username: userData.username,
             firstName: userData.firstName,
             saveTime: Date.now(),
-            version: '6.0'
+            version: '6.1'
         };
         
         console.log("💾 Saving user data - Balance:", userData.balance);
@@ -1769,5 +1833,6 @@ window.executeSwap = executeSwap;
 window.validateWithdrawalAmount = validateWithdrawalAmount;
 window.validateWithdrawalAddress = validateWithdrawalAddress;
 window.submitWithdrawal = submitWithdrawal;
+window.showNoHistoryMessage = window.showNoHistoryMessage || function() {};
 
-console.log("🎮 VIP Mining Wallet v6.0 loaded successfully");
+console.log("🎮 VIP Mining Wallet v6.1 loaded successfully");
