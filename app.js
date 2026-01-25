@@ -936,7 +936,7 @@ function openDepositModal(currency) {
 }
 
 // ============================================
-// Withdrawal System
+// Withdrawal System - التعديلات هنا
 // ============================================
 
 function openWithdrawalModal() {
@@ -968,6 +968,18 @@ function openWithdrawalModal() {
                     </div>
                     
                     <div class="withdrawal-form">
+                        <!-- التعديل: تمت إضافة حقل عنوان المحفظة أولاً -->
+                        <div class="form-group">
+                            <label>USDT Address (BEP20)</label>
+                            <input type="text" 
+                                   id="withdrawalAddress" 
+                                   placeholder="0x..."
+                                   oninput="validateWithdrawalAddress()">
+                            <div class="form-hint">
+                                Enter your BEP20 USDT wallet address
+                            </div>
+                        </div>
+                        
                         <div class="form-group">
                             <label>USDT Amount</label>
                             <input type="number" 
@@ -979,17 +991,6 @@ function openWithdrawalModal() {
                                    oninput="validateWithdrawalAmount()">
                             <div class="form-hint">
                                 Min: ${CONFIG.MIN_WITHDRAWAL} USDT
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>USDT Address (BEP20)</label>
-                            <input type="text" 
-                                   id="withdrawalAddress" 
-                                   placeholder="0x..."
-                                   oninput="validateWithdrawalAddress()">
-                            <div class="form-hint">
-                                Enter your BEP20 USDT wallet address
                             </div>
                         </div>
                         
