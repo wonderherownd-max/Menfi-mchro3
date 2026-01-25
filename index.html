@@ -175,6 +175,28 @@
                 </div>
             </div>
         </div>
+        
+        <!-- App Footer - سيتم حذفه في CSS -->
+        <div class="app-footer">
+            <div class="footer-links">
+                <a href="#" class="footer-link" onclick="showComingSoon()">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Help</span>
+                </a>
+                <a href="#" class="footer-link" onclick="showComingSoon()">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Terms</span>
+                </a>
+                <a href="#" class="footer-link" onclick="showComingSoon()">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Privacy</span>
+                </a>
+            </div>
+            <div class="footer-copyright">
+                <p>VIP Mining Wealth © 2024</p>
+                <p id="connectionStatus">🟡 Connecting...</p>
+            </div>
+        </div>
     </div>
 
     <!-- =========================================== -->
@@ -232,10 +254,10 @@
                 </div>
             </div>
 
-            <!-- Cryptocurrency Cards - Original Structure with Compact Height -->
+            <!-- Cryptocurrency Cards - الأصلية مع إضافة Deposit لـ USDT و Swap لـ BNB -->
             <div class="crypto-grid">
                 <!-- MWH Card -->
-                <div class="crypto-card compact">
+                <div class="crypto-card" id="mwhCard">
                     <div class="crypto-header">
                         <div class="crypto-icon">
                             <i class="fas fa-gem"></i>
@@ -265,8 +287,8 @@
                     </div>
                 </div>
 
-                <!-- USDT Card -->
-                <div class="crypto-card compact">
+                <!-- USDT Card - مع إضافة زر Deposit -->
+                <div class="crypto-card" id="usdtCard">
                     <div class="crypto-header">
                         <div class="crypto-icon usdt">
                             <i class="fas fa-coins"></i>
@@ -309,8 +331,8 @@
                     </div>
                 </div>
 
-                <!-- BNB Card -->
-                <div class="crypto-card compact">
+                <!-- BNB Card - مع إضافة زر Swap -->
+                <div class="crypto-card" id="bnbCard">
                     <div class="crypto-header">
                         <div class="crypto-icon bnb">
                             <i class="fas fa-bolt"></i>
@@ -341,7 +363,7 @@
                 </div>
 
                 <!-- TON Card -->
-                <div class="crypto-card compact">
+                <div class="crypto-card" id="tonCard">
                     <div class="crypto-header">
                         <div class="crypto-icon ton">
                             <i class="fas fa-rocket"></i>
@@ -372,7 +394,7 @@
                 </div>
 
                 <!-- ETH Card -->
-                <div class="crypto-card compact">
+                <div class="crypto-card" id="ethCard">
                     <div class="crypto-header">
                         <div class="crypto-icon eth">
                             <i class="fab fa-ethereum"></i>
@@ -415,11 +437,11 @@
                         <span class="info-value">50 USDT</span>
                     </div>
                     <div class="info-item">
-                        <span>Swap Rate:</span>
+                        <span>Swap Rate (MWH to USDT):</span>
                         <span class="info-value">1,000 MWH = 1 USDT</span>
                     </div>
                     <div class="info-item">
-                        <span>BNB to MWH Rate:</span>
+                        <span>Swap Rate (BNB to MWH):</span>
                         <span class="info-value">1 BNB = 870,000 MWH</span>
                     </div>
                     <div class="info-item">
@@ -432,7 +454,7 @@
     </div>
 
     <!-- =========================================== -->
-    <!-- Earning Page -->
+    <!-- Earning Page - الأصلية بدون تعديل -->
     <!-- =========================================== -->
 
     <div id="earningPage" class="page hidden">
