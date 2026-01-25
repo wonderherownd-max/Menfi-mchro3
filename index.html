@@ -65,7 +65,7 @@
             </div>
         </div>
 
-        <!-- Mining Section - UPDATED -->
+        <!-- Mining Section - FIXED -->
         <div class="mining-section">
             <div class="mining-header">
                 <h3><i class="fas fa-hard-hat"></i> Mining Station</h3>
@@ -91,7 +91,7 @@
                 +120 MWH bonus on upgrade
             </div>
             
-            <!-- Energy Belt Added -->
+            <!-- Energy Belt -->
             <div class="energy-belt" id="energyBelt">
                 <div class="belt-fill" id="beltFill"></div>
                 <div class="belt-knob" id="beltKnob"></div>
@@ -102,12 +102,95 @@
             </div>
         </div>
 
-        <!-- Referral System - Simplified -->
+        <!-- MWH Wallet Section - NEW -->
+        <div class="wallet-section">
+            <div class="section-header">
+                <h3><i class="fas fa-wallet"></i> MWH Wallet</h3>
+                <div class="wallet-total">
+                    <i class="fas fa-chart-line"></i> Total Balance
+                </div>
+            </div>
+            
+            <div class="wallet-balances">
+                <div class="wallet-row">
+                    <div class="wallet-item">
+                        <div class="wallet-icon">🔷</div>
+                        <div class="wallet-info">
+                            <div class="wallet-name">MWH</div>
+                            <div class="wallet-amount" id="walletMWH">25,000</div>
+                            <div class="wallet-value" id="walletMWHValue">≈ $25.00</div>
+                        </div>
+                    </div>
+                    
+                    <div class="wallet-item">
+                        <div class="wallet-icon">💵</div>
+                        <div class="wallet-info">
+                            <div class="wallet-name">USDT</div>
+                            <div class="wallet-amount" id="walletUSDT">0</div>
+                            <div class="wallet-value" id="walletUSDTValue">≈ $0.00</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="wallet-row">
+                    <div class="wallet-item">
+                        <div class="wallet-icon">⚡</div>
+                        <div class="wallet-info">
+                            <div class="wallet-name">BNB</div>
+                            <div class="wallet-amount" id="walletBNB">0.0000</div>
+                            <div class="wallet-value" id="walletBNBValue">≈ $0.00</div>
+                        </div>
+                    </div>
+                    
+                    <div class="wallet-item">
+                        <div class="wallet-icon">🔶</div>
+                        <div class="wallet-info">
+                            <div class="wallet-name">TON</div>
+                            <div class="wallet-amount" id="walletTON">0</div>
+                            <div class="wallet-value">≈ $0.00</div>
+                        </div>
+                    </div>
+                    
+                    <div class="wallet-item">
+                        <div class="wallet-icon">Ξ</div>
+                        <div class="wallet-info">
+                            <div class="wallet-name">ETH</div>
+                            <div class="wallet-amount" id="walletETH">0.0000</div>
+                            <div class="wallet-value">≈ $0.00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="wallet-actions">
+                <button class="wallet-btn" id="swapBtn">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>Swap MWH</span>
+                </button>
+                
+                <button class="wallet-btn" id="depositBtn">
+                    <i class="fas fa-download"></i>
+                    <span>Deposit BNB</span>
+                </button>
+                
+                <button class="wallet-btn" id="withdrawBtn">
+                    <i class="fas fa-upload"></i>
+                    <span>Withdraw USDT</span>
+                </button>
+            </div>
+            
+            <div class="wallet-note">
+                <i class="fas fa-info-circle"></i>
+                <span>Minimum withdrawal: 50 USDT + 0.0005 BNB fee</span>
+            </div>
+        </div>
+
+        <!-- Referral System - UPDATED -->
         <div class="referral-section">
             <div class="section-header">
                 <h3><i class="fas fa-share-alt"></i> Referral Program</h3>
                 <div class="referral-bonus">
-                    <i class="fas fa-gift"></i> +10 MWH per referral
+                    <i class="fas fa-gift"></i> +50 MWH per referral
                 </div>
             </div>
             
@@ -126,7 +209,7 @@
                 </div>
             </div>
 
-            <!-- Referral Link - Simplified -->
+            <!-- Referral Link -->
             <div class="referral-link-container">
                 <div class="input-group">
                     <div class="input-icon">
@@ -151,7 +234,7 @@
             <!-- Simple Referral Message -->
             <div class="referral-info simple">
                 <h4><i class="fas fa-info-circle"></i> Share Your Unique Link</h4>
-                <p>Copy and share your referral link to get +10 MWH</p>
+                <p>Get +50 MWH for every friend who joins using your link</p>
             </div>
         </div>
 
@@ -177,6 +260,28 @@
                     <span>Remaining:</span>
                     <span id="remainingPoints">4,975 MWH</span>
                 </div>
+            </div>
+        </div>
+        
+        <!-- App Footer -->
+        <div class="app-footer">
+            <div class="footer-links">
+                <a href="#" class="footer-link" onclick="showComingSoon()">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Help</span>
+                </a>
+                <a href="#" class="footer-link" onclick="showComingSoon()">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Terms</span>
+                </a>
+                <a href="#" class="footer-link" onclick="showComingSoon()">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Privacy</span>
+                </a>
+            </div>
+            <div class="footer-copyright">
+                <p>VIP Mining Wealth © 2024</p>
+                <p id="connectionStatus">🟡 Connecting...</p>
             </div>
         </div>
     </div>
@@ -423,6 +528,33 @@
                 shareBtn.parentNode.replaceChild(newShareBtn, shareBtn);
                 document.getElementById('shareBtn').addEventListener('click', function() {
                     if (window.shareOnTelegram) window.shareOnTelegram();
+                });
+            }
+            
+            const swapBtn = document.getElementById('swapBtn');
+            if (swapBtn) {
+                const newSwapBtn = swapBtn.cloneNode(true);
+                swapBtn.parentNode.replaceChild(newSwapBtn, swapBtn);
+                document.getElementById('swapBtn').addEventListener('click', function() {
+                    if (window.openSwapModal) window.openSwapModal();
+                });
+            }
+            
+            const depositBtn = document.getElementById('depositBtn');
+            if (depositBtn) {
+                const newDepositBtn = depositBtn.cloneNode(true);
+                depositBtn.parentNode.replaceChild(newDepositBtn, depositBtn);
+                document.getElementById('depositBtn').addEventListener('click', function() {
+                    if (window.openDepositModal) window.openDepositModal();
+                });
+            }
+            
+            const withdrawBtn = document.getElementById('withdrawBtn');
+            if (withdrawBtn) {
+                const newWithdrawBtn = withdrawBtn.cloneNode(true);
+                withdrawBtn.parentNode.replaceChild(newWithdrawBtn, withdrawBtn);
+                document.getElementById('withdrawBtn').addEventListener('click', function() {
+                    if (window.openWithdrawalModal) window.openWithdrawalModal();
                 });
             }
             
