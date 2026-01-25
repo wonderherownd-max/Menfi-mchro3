@@ -540,9 +540,6 @@ function updateWalletUI() {
     
     // Update total balance
     updateTotalBalance();
-    
-    // Update withdrawal button and fee display
-    updateWithdrawalStatus();
 }
 
 function updateWalletValues() {
@@ -586,39 +583,6 @@ function updateTotalBalance() {
     
     if (document.getElementById('totalBalanceUSD')) {
         document.getElementById('totalBalanceUSD').textContent = `$${totalUSD.toFixed(2)}`;
-    }
-}
-
-function updateWithdrawalStatus() {
-    const usdtBalance = walletData.usdtBalance;
-    const bnbBalance = walletData.bnbBalance;
-    const withdrawBtn = document.getElementById('withdrawUSDTBtn');
-    const withdrawalInfo = document.getElementById('usdtWithdrawalInfo');
-    
-    if (!withdrawalInfo) return;
-    
-    if (usdtBalance >= CONFIG.MIN_WITHDRAWAL) {
-        withdrawalInfo.style.display = 'block';
-        
-        if (bnbBalance >= CONFIG.WITHDRAWAL_FEE) {
-            if (withdrawBtn) {
-                withdrawBtn.disabled = false;
-                withdrawBtn.innerHTML = '<i class="fas fa-upload"></i> Withdraw';
-            }
-        } else {
-            if (withdrawBtn) {
-                withdrawBtn.disabled = true;
-                withdrawBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Need BNB';
-            }
-        }
-    } else {
-        if (withdrawalInfo) {
-            withdrawalInfo.style.display = 'none';
-        }
-        if (withdrawBtn) {
-            withdrawBtn.disabled = true;
-            withdrawBtn.innerHTML = '<i class="fas fa-lock"></i> Withdraw';
-        }
     }
 }
 
@@ -868,90 +832,12 @@ function executeSwap(fromCurrency, toCurrency) {
 }
 
 // ============================================
-// Deposit System
-// ============================================
-
-function openDepositModal(currency) {
-    const isBNB = currency === 'BNB';
-    const isUSDT = currency === 'USDT';
-    
-    let minDeposit = '0.015 BNB';
-    let instructions = '';
-    
-    if (isBNB) {
-        instructions = `
-            <h4>⚠️ Important Instructions:</h4>
-            <ol>
-                <li>Send only <strong>BNB (BEP20)</strong> to this address</li>
-                <li>Minimum deposit: <strong>0.015 BNB</strong></li>
-                <li>Manual credit within <strong>2 minutes</strong></li>
-            </ol>
-        `;
-    } else if (isUSDT) {
-        minDeposit = '10 USDT';
-        instructions = `
-            <h4>⚠️ Important Instructions:</h4>
-            <ol>
-                <li>Send only <strong>USDT (BEP20)</strong> to this address</li>
-                <li>Minimum deposit: <strong>10 USDT</strong></li>
-                <li>Manual credit within <strong>2 minutes</strong></li>
-            </ol>
-        `;
-    }
-    
-    const modalHTML = `
-        <div class="modal-overlay" id="depositModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3><i class="fas fa-download"></i> Deposit ${currency}</h3>
-                    <button class="modal-close" onclick="closeModal()">×</button>
-                </div>
-                <div class="modal-body">
-                    <div class="deposit-info">
-                        <p>Send <strong>${currency} (BEP20 only)</strong> to this address:</p>
-                        <div class="deposit-address">
-                            <code>${CONFIG.DEPOSIT_ADDRESS}</code>
-                            <button class="copy-btn-small" onclick="copyToClipboard('${CONFIG.DEPOSIT_ADDRESS}')">
-                                <i class="far fa-copy"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="deposit-instructions">
-                            ${instructions}
-                        </div>
-                    </div>
-                    
-                    <div class="modal-actions">
-                        <button class="btn-secondary" onclick="closeModal()">Close</button>
-                        <button class="btn-primary" onclick="copyToClipboard('${CONFIG.DEPOSIT_ADDRESS}')">
-                            <i class="far fa-copy"></i> Copy Address
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-}
-
-// ============================================
-// Withdrawal System - التعديلات هنا
+// Withdrawal System - UPDATED VERSION
 // ============================================
 
 function openWithdrawalModal() {
     const usdtBalance = walletData.usdtBalance;
     const bnbBalance = walletData.bnbBalance;
-    
-    if (usdtBalance < CONFIG.MIN_WITHDRAWAL) {
-        showMessage(`Minimum withdrawal is ${CONFIG.MIN_WITHDRAWAL} USDT`, 'error');
-        return;
-    }
-    
-    if (bnbBalance < CONFIG.WITHDRAWAL_FEE) {
-        showMessage(`Need ${CONFIG.WITHDRAWAL_FEE} BNB for network fees`, 'error');
-        return;
-    }
     
     const modalHTML = `
         <div class="modal-overlay" id="withdrawalModal">
@@ -961,36 +847,64 @@ function openWithdrawalModal() {
                     <button class="modal-close" onclick="closeModal()">×</button>
                 </div>
                 <div class="modal-body">
-                    <div class="withdrawal-info">
-                        <p>Available: <strong>${usdtBalance.toFixed(2)} USDT</strong></p>
-                        <p>Network Fee: <strong>${CONFIG.WITHDRAWAL_FEE} BNB</strong></p>
-                        <p>Your BNB: <strong>${bnbBalance.toFixed(4)} BNB</strong></p>
+                    <div class="current-balance-info">
+                        <div class="balance-item">
+                            <i class="fas fa-coins"></i>
+                            <div>
+                                <div class="balance-label">USDT Balance</div>
+                                <div class="balance-amount">${usdtBalance.toFixed(2)} USDT</div>
+                            </div>
+                        </div>
+                        <div class="balance-item">
+                            <i class="fab fa-btc"></i>
+                            <div>
+                                <div class="balance-label">BNB Balance</div>
+                                <div class="balance-amount">${bnbBalance.toFixed(4)} BNB</div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="withdrawal-form">
-                        <!-- التعديل: تمت إضافة حقل عنوان المحفظة أولاً -->
                         <div class="form-group">
-                            <label>USDT Address (BEP20)</label>
+                            <label><i class="fas fa-wallet"></i> USDT Wallet Address (BEP20)</label>
                             <input type="text" 
                                    id="withdrawalAddress" 
                                    placeholder="0x..."
                                    oninput="validateWithdrawalAddress()">
                             <div class="form-hint">
-                                Enter your BEP20 USDT wallet address
+                                Your BEP20 USDT wallet address
                             </div>
                         </div>
                         
                         <div class="form-group">
-                            <label>USDT Amount</label>
-                            <input type="number" 
-                                   id="withdrawalAmount" 
-                                   value="${usdtBalance.toFixed(2)}"
-                                   min="${CONFIG.MIN_WITHDRAWAL}"
-                                   max="${usdtBalance}"
-                                   step="0.01"
-                                   oninput="validateWithdrawalAmount()">
-                            <div class="form-hint">
-                                Min: ${CONFIG.MIN_WITHDRAWAL} USDT
+                            <label><i class="fas fa-money-bill-wave"></i> Withdrawal Amount</label>
+                            <div class="amount-input">
+                                <input type="number" 
+                                       id="withdrawalAmount" 
+                                       value="${usdtBalance > 0 ? usdtBalance.toFixed(2) : '0'}"
+                                       min="0"
+                                       max="${usdtBalance}"
+                                       step="0.01"
+                                       oninput="validateWithdrawalAmount()">
+                                <div class="amount-max" onclick="setMaxWithdrawalAmount()">MAX</div>
+                            </div>
+                            <div class="amount-range">
+                                <div class="range-min">0</div>
+                                <div class="range-max">${usdtBalance.toFixed(2)}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="withdrawal-requirements">
+                            <h4><i class="fas fa-clipboard-check"></i> Withdrawal Requirements</h4>
+                            <div class="requirement ${usdtBalance >= CONFIG.MIN_WITHDRAWAL ? 'met' : 'not-met'}">
+                                <i class="fas ${usdtBalance >= CONFIG.MIN_WITHDRAWAL ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                                <span>Minimum withdrawal: ${CONFIG.MIN_WITHDRAWAL} USDT</span>
+                                <span class="requirement-status">${usdtBalance >= CONFIG.MIN_WITHDRAWAL ? '✓ Met' : '✗ Not met'}</span>
+                            </div>
+                            <div class="requirement ${bnbBalance >= CONFIG.WITHDRAWAL_FEE ? 'met' : 'not-met'}">
+                                <i class="fas ${bnbBalance >= CONFIG.WITHDRAWAL_FEE ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                                <span>Network fee: ${CONFIG.WITHDRAWAL_FEE} BNB</span>
+                                <span class="requirement-status">${bnbBalance >= CONFIG.WITHDRAWAL_FEE ? '✓ Available' : '✗ Insufficient'}</span>
                             </div>
                         </div>
                         
@@ -1002,7 +916,7 @@ function openWithdrawalModal() {
                         <div class="withdrawal-summary">
                             <div class="summary-row">
                                 <span>Amount to withdraw:</span>
-                                <span id="summaryAmount">${usdtBalance.toFixed(2)} USDT</span>
+                                <span id="summaryAmount">${usdtBalance > 0 ? usdtBalance.toFixed(2) : '0'} USDT</span>
                             </div>
                             <div class="summary-row">
                                 <span>Network fee:</span>
@@ -1010,7 +924,7 @@ function openWithdrawalModal() {
                             </div>
                             <div class="summary-row total">
                                 <span>Total cost:</span>
-                                <span>${usdtBalance.toFixed(2)} USDT + ${CONFIG.WITHDRAWAL_FEE} BNB</span>
+                                <span id="summaryTotal">${usdtBalance > 0 ? usdtBalance.toFixed(2) : '0'} USDT + ${CONFIG.WITHDRAWAL_FEE} BNB</span>
                             </div>
                         </div>
                     </div>
@@ -1018,7 +932,7 @@ function openWithdrawalModal() {
                     <div class="modal-actions">
                         <button class="btn-secondary" onclick="closeModal()">Cancel</button>
                         <button class="btn-primary" id="confirmWithdrawalBtn" onclick="submitWithdrawal()">
-                            Request Withdrawal
+                            <i class="fas fa-paper-plane"></i> Submit Withdrawal Request
                         </button>
                     </div>
                 </div>
@@ -1030,39 +944,59 @@ function openWithdrawalModal() {
     validateWithdrawalAmount();
 }
 
-function validateWithdrawalAmount() {
+function setMaxWithdrawalAmount() {
     const input = document.getElementById('withdrawalAmount');
-    const amount = parseFloat(input.value) || 0;
+    if (input) {
+        input.value = walletData.usdtBalance.toFixed(2);
+        validateWithdrawalAmount();
+    }
+}
+
+function validateWithdrawalAmount() {
+    const amountInput = document.getElementById('withdrawalAmount');
+    const amount = parseFloat(amountInput.value) || 0;
     const warning = document.getElementById('withdrawalWarning');
     const warningText = document.getElementById('withdrawalWarningText');
     const btn = document.getElementById('confirmWithdrawalBtn');
+    const summaryAmount = document.getElementById('summaryAmount');
+    const summaryTotal = document.getElementById('summaryTotal');
     
-    if (!warning || !btn) return;
+    if (!warning || !btn || !summaryAmount || !summaryTotal) return;
     
-    document.getElementById('summaryAmount').textContent = amount.toFixed(2) + ' USDT';
+    // Update summary
+    summaryAmount.textContent = amount.toFixed(2) + ' USDT';
+    summaryTotal.textContent = amount.toFixed(2) + ' USDT + ' + CONFIG.WITHDRAWAL_FEE + ' BNB';
     
+    // Reset
     warning.style.display = 'none';
     btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Withdrawal Request';
+    btn.style.opacity = '1';
     
-    if (amount < CONFIG.MIN_WITHDRAWAL) {
-        warningText.textContent = `Minimum withdrawal is ${CONFIG.MIN_WITHDRAWAL} USDT`;
-        warning.style.display = 'flex';
-        warning.style.color = '#ef4444';
-        btn.disabled = true;
-        return;
+    const errors = [];
+    
+    // Check minimum amount
+    if (amount > 0 && amount < CONFIG.MIN_WITHDRAWAL) {
+        errors.push(`Minimum withdrawal is ${CONFIG.MIN_WITHDRAWAL} USDT`);
     }
     
+    // Check balance
     if (amount > walletData.usdtBalance) {
-        warningText.textContent = `Insufficient USDT balance`;
-        warning.style.display = 'flex';
-        btn.disabled = true;
-        return;
+        errors.push(`Insufficient USDT balance (Available: ${walletData.usdtBalance.toFixed(2)} USDT)`);
     }
     
+    // Check BNB fee
     if (walletData.bnbBalance < CONFIG.WITHDRAWAL_FEE) {
-        warningText.textContent = `Insufficient BNB for fees`;
+        errors.push(`Insufficient BNB for network fee (Need: ${CONFIG.WITHDRAWAL_FEE} BNB)`);
+    }
+    
+    // Show errors
+    if (errors.length > 0) {
+        warningText.textContent = errors.join('. ');
         warning.style.display = 'flex';
         btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-ban"></i> Cannot Withdraw';
+        btn.style.opacity = '0.6';
     }
 }
 
@@ -1075,21 +1009,26 @@ function validateWithdrawalAddress() {
     if (!warning || !btn) return;
     
     if (!address) {
-        warningText.textContent = "Please enter your USDT address";
+        warningText.textContent = "Please enter your USDT wallet address";
         warning.style.display = 'flex';
         btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-ban"></i> Cannot Withdraw';
+        btn.style.opacity = '0.6';
         return false;
     }
     
     if (!address.startsWith('0x') || address.length !== 42) {
-        warningText.textContent = "Please enter a valid BEP20 address";
+        warningText.textContent = "Please enter a valid BEP20 address (must start with 0x and be 42 characters)";
         warning.style.display = 'flex';
         btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-ban"></i> Cannot Withdraw';
+        btn.style.opacity = '0.6';
         return false;
     }
     
-    warning.style.display = 'none';
-    btn.disabled = false;
+    // If there were previous errors, re-validate amount
+    validateWithdrawalAmount();
+    
     return true;
 }
 
@@ -1099,23 +1038,29 @@ function submitWithdrawal() {
     
     if (!validateWithdrawalAddress()) return;
     
+    const errors = [];
+    
+    // Validate amount
     if (amount < CONFIG.MIN_WITHDRAWAL) {
-        showMessage(`Minimum withdrawal is ${CONFIG.MIN_WITHDRAWAL} USDT`, 'error');
-        return;
+        errors.push(`Minimum withdrawal is ${CONFIG.MIN_WITHDRAWAL} USDT`);
     }
     
     if (amount > walletData.usdtBalance) {
-        showMessage('Insufficient USDT balance', 'error');
-        return;
+        errors.push('Insufficient USDT balance');
     }
     
     if (walletData.bnbBalance < CONFIG.WITHDRAWAL_FEE) {
-        showMessage(`Insufficient BNB for fees`, 'error');
+        errors.push(`Insufficient BNB for network fee`);
+    }
+    
+    if (errors.length > 0) {
+        showMessage(errors.join('. '), 'error');
         return;
     }
     
     const withdrawalRequest = {
         userId: userData.userId,
+        username: userData.username,
         amount: amount,
         address: address,
         fee: CONFIG.WITHDRAWAL_FEE,
@@ -1123,6 +1068,7 @@ function submitWithdrawal() {
         status: 'pending'
     };
     
+    // Update balances
     walletData.usdtBalance -= amount;
     walletData.bnbBalance -= CONFIG.WITHDRAWAL_FEE;
     walletData.totalWithdrawn += amount;
@@ -1136,7 +1082,7 @@ function submitWithdrawal() {
     }
     
     closeModal();
-    showMessage(`✅ Withdrawal request submitted for ${amount} USDT`, 'success');
+    showMessage(`✅ Withdrawal request submitted for ${amount.toFixed(2)} USDT`, 'success');
 }
 
 // ============================================
@@ -1821,7 +1767,6 @@ if (document.readyState === 'loading') {
 // ============================================
 
 window.openSwapModal = openSwapModal;
-window.openDepositModal = openDepositModal;
 window.openWithdrawalModal = openWithdrawalModal;
 window.updateWalletUI = updateWalletUI;
 window.showMessage = showMessage;
@@ -1834,6 +1779,7 @@ window.executeSwap = executeSwap;
 window.validateWithdrawalAmount = validateWithdrawalAmount;
 window.validateWithdrawalAddress = validateWithdrawalAddress;
 window.submitWithdrawal = submitWithdrawal;
+window.setMaxWithdrawalAmount = setMaxWithdrawalAmount;
 window.showNoHistoryMessage = window.showNoHistoryMessage || function() {};
 
 console.log("🎮 VIP Mining Wallet v6.1 loaded successfully");
