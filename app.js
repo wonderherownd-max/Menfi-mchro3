@@ -39,9 +39,9 @@ if (typeof firebase !== 'undefined') {
 
 // User Data - with verification flags
 let userData = {
-    balance: 100,
+    balance: 25, // Changed from 100 to 25 for safety
     referrals: 0,
-    totalEarned: 100,
+    totalEarned: 25, // Changed from 100 to 25
     rank: 'Beginner',
     userId: null,
     username: 'User',
@@ -54,20 +54,25 @@ let userData = {
     lastSaveTime: 0
 };
 
-// Configuration - UPDATED FOR 4 HOURS
+// Configuration - UPDATED WITH NEW RANKS AND MWH
 const CONFIG = {
     MINE_COOLDOWN: 14400000, // 4 hours (4 × 60 × 60 × 1000) = 14,400,000 ms
-    MINE_REWARD: 250, // Changed from 1 to 250
-    REFERRAL_REWARD: 25,
-    REFERRER_REWARD: 25,
     
+    // NEW RANK SYSTEM WITH MWH
     RANKS: [
-        { name: 'Beginner', min: 0, max: 199, reward: 250, power: '250/4h' },
-        { name: 'Professional', min: 200, max: 499, reward: 500, power: '500/4h' },
-        { name: 'Expert', min: 500, max: 999, reward: 750, power: '750/4h' },
-        { name: 'VIP', min: 1000, max: 9999, reward: 1250, power: '1250/4h' },
-        { name: 'Legend', min: 10000, max: Infinity, reward: 2500, power: '2500/4h' }
-    ]
+        { name: 'Beginner', min: 0, max: 4999, reward: 250, power: '250 MWH/4h' },
+        { name: 'Professional', min: 5000, max: 14999, reward: 370, power: '370 MWH/4h' },
+        { name: 'Expert', min: 15000, max: 29999, reward: 460, power: '460 MWH/4h' },
+        { name: 'VIP', min: 30000, max: 59999, reward: 575, power: '575 MWH/4h' },
+        { name: 'Legend', min: 60000, max: 119999, reward: 720, power: '720 MWH/4h' },
+        { name: 'Elite', min: 120000, max: Infinity, reward: 900, power: '900 MWH/4h' }
+    ],
+    
+    REFERRAL_REWARD: 5,  // Reduced from 25 to 5 for new user
+    REFERRER_REWARD: 10, // Reduced from 25 to 10 for referrer
+    
+    // Exchange rate
+    MWH_TO_USD: 0.001 // 1 MWH = $0.001
 };
 
 // DOM Elements
@@ -109,7 +114,7 @@ async function initApp() {
         
         // Show welcome message
         setTimeout(() => {
-            showMessage(`💰 Welcome ${userData.username}! Balance: ${userData.balance} points`, 'success');
+            showMessage(`💰 Welcome ${userData.username}! Balance: ${userData.balance} MWH`, 'success');
         }, 1000);
         
     } catch (error) {
@@ -125,7 +130,8 @@ function cacheElements() {
         'rewardAmount', 'referralLink', 'copyBtn', 'miningPower',
         'refCount', 'refEarned', 'refRank', 'progressFill',
         'nextRank', 'currentPoints', 'targetPoints', 'remainingPoints',
-        'connectionStatus', 'cooldownTimer', 'shareBtn'
+        'connectionStatus', 'cooldownTimer', 'shareBtn',
+        'balanceUSD', 'tokenPrice', 'nextRankBonus'
     ];
     
     elementIds.forEach(id => {
@@ -209,6 +215,11 @@ function updateUserUI() {
     
     // Update referral link
     updateReferralLink();
+    
+    // Update token price in header
+    if (elements.tokenPrice) {
+        elements.tokenPrice.textContent = "1 MWH ≈ $0.001";
+    }
 }
 
 // ============================================
@@ -329,7 +340,7 @@ function saveUserData() {
             username: userData.username,
             firstName: userData.firstName,
             saveTime: Date.now(),
-            version: '3.0'
+            version: '4.0' // Updated version for new rank system
         };
         
         console.log("💾 Saving data - Balance:", userData.balance, "Key:", storageKey);
@@ -519,11 +530,11 @@ async function processReferral(referralCode) {
                     return;
                 }
                 
-                // Reward for referred user (new user) - ONLY 25 points
+                // Reward for referred user (new user) - ONLY 5 MWH
                 userData.balance += CONFIG.REFERRAL_REWARD;
                 userData.totalEarned += CONFIG.REFERRAL_REWARD;
                 
-                // Reward for referrer - 25 points
+                // Reward for referrer - 10 MWH
                 await referrerDoc.ref.update({
                     referrals: firebase.firestore.FieldValue.increment(1),
                     referralEarnings: firebase.firestore.FieldValue.increment(CONFIG.REFERRER_REWARD),
@@ -531,16 +542,14 @@ async function processReferral(referralCode) {
                     totalEarned: firebase.firestore.FieldValue.increment(CONFIG.REFERRER_REWARD)
                 });
                 
-                // Update current user - ONLY set referredBy, NO bonus or referral increment
+                // Update current user - ONLY set referredBy
                 userData.referredBy = referralCode;
-                // ❌❌❌ لا نزيد userData.referrals هنا - هذا للمستخدم الجديد
-                // ❌❌❌ لا نزيد userData.referralEarnings هنا - هذه مكافأة للمُحيل
                 
                 // Immediate save
                 saveUserData();
                 updateUI();
                 
-                showMessage(`🎉 Referral successful! You got +${CONFIG.REFERRAL_REWARD} points and referrer got +${CONFIG.REFERRER_REWARD} points`, 'success');
+                showMessage(`🎉 Referral successful! You got +${CONFIG.REFERRAL_REWARD} MWH and referrer got +${CONFIG.REFERRER_REWARD} MWH`, 'success');
                 
                 await logReferralEvent(referrerData.userId, userData.userId, referralCode);
                 
@@ -551,15 +560,14 @@ async function processReferral(referralCode) {
         
         // Fallback to local storage
         userData.referredBy = referralCode;
-        // For local storage fallback: new user gets 25 points
-        userData.balance += CONFIG.REFERRAL_REWARD; // فقط 25 نقطة للمستخدم الجديد
+        // For local storage fallback: new user gets 5 MWH
+        userData.balance += CONFIG.REFERRAL_REWARD;
         userData.totalEarned += CONFIG.REFERRAL_REWARD;
-        // ❌❌❌ لا نزيد referralEarnings هنا لأنها للمُحيل
         
         saveUserData();
         updateUI();
         
-        showMessage(`🎉 Referral recorded! You got +${CONFIG.REFERRAL_REWARD} points`, 'success');
+        showMessage(`🎉 Referral recorded! You got +${CONFIG.REFERRAL_REWARD} MWH`, 'success');
         
         console.log("📝 Referral recorded (local storage)");
         return true;
@@ -592,11 +600,11 @@ async function logReferralEvent(referrerId, referredId, referralCode) {
 }
 
 // ============================================
-// Mining System - UPDATED FOR 4 HOURS
+// Mining System - UPDATED WITH NEW RANK SYSTEM
 // ============================================
 
 function minePoints() {
-    console.log("⛏️ Mining points... Current balance:", userData.balance);
+    console.log("⛏️ Mining MWH... Current balance:", userData.balance);
     
     if (!userData.userId) {
         showMessage('Please wait for user setup', 'error');
@@ -612,10 +620,11 @@ function minePoints() {
         return;
     }
     
+    // Get reward based on current rank
     const currentRank = CONFIG.RANKS.find(r => r.name === userData.rank) || CONFIG.RANKS[0];
     const reward = currentRank.reward;
     
-    console.log("📈 Before mining - Balance:", userData.balance);
+    console.log("📈 Before mining - Balance:", userData.balance, "Rank:", userData.rank, "Reward:", reward);
     
     // Update balance
     userData.balance += reward;
@@ -632,7 +641,7 @@ function minePoints() {
     updateUI();
     animateMineButton(reward);
     
-    showMessage(`⛏️ +${reward} points! Total: ${userData.balance}`, 'success');
+    showMessage(`⛏️ +${reward} MWH! Total: ${userData.balance} MWH`, 'success');
     checkRankUp();
     
     // Update belt immediately
@@ -651,7 +660,7 @@ function animateMineButton(reward) {
         </div>
         <div class="mine-text">
             <div class="mine-title">Claimed!</div>
-            <div class="mine-reward">+${reward} points</div>
+            <div class="mine-reward">+${reward} MWH</div>
             <div class="mine-subtitle">Come back in 4 hours</div>
         </div>
         <div class="mine-cooldown" id="cooldownTimer">4h</div>
@@ -672,7 +681,7 @@ function animateMineButton(reward) {
 }
 
 // ============================================
-// Energy Belt System - NEW
+// Energy Belt System
 // ============================================
 
 function updateEnergyBelt() {
@@ -794,7 +803,7 @@ function copyReferralLink() {
 
 function shareOnTelegram() {
     const refLink = generateReferralLink();
-    const shareText = `🚀 *Join VIP Mining Wealth PRO!*\n\n⛏️ *Mine 250 points every 4 hours*\n👥 *Get +25 BONUS points with my link*\n💰 *Earn 25 points for each referral*\n\n👉 ${refLink}\n\n💎 *Start earning now!* @VIPMainingPROBot`;
+    const shareText = `🚀 *Join VIP Mining Wealth PRO!*\n\n⛏️ *Mine 250 MWH every 4 hours*\n👥 *Get +5 MWH BONUS with my link*\n💰 *Earn 10 MWH for each referral*\n\n👉 ${refLink}\n\n💎 *Start earning now!* @VIPMainingPROBot`;
     
     const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(shareText)}`;
     
@@ -803,10 +812,13 @@ function shareOnTelegram() {
 }
 
 // ============================================
-// UI Updates
+// UI Updates - UPDATED WITH MWH AND USD VALUES
 // ============================================
 
 function updateUI() {
+    // Get current rank
+    const currentRank = CONFIG.RANKS.find(r => r.name === userData.rank) || CONFIG.RANKS[0];
+    
     // Update numbers
     if (elements.balance) {
         elements.balance.textContent = userData.balance.toLocaleString();
@@ -817,16 +829,15 @@ function updateUI() {
     }
     
     if (elements.totalEarned) {
-        elements.totalEarned.textContent = `${userData.totalEarned.toLocaleString()} Total`;
+        elements.totalEarned.textContent = `${userData.totalEarned.toLocaleString()} MWH`;
     }
     
     // Update rank
-    const currentRank = CONFIG.RANKS.find(r => r.name === userData.rank) || CONFIG.RANKS[0];
     if (elements.rankBadge) {
         elements.rankBadge.textContent = userData.rank;
     }
     
-    // Update mining info
+    // Update mining info with current rank reward
     if (elements.rewardAmount) {
         elements.rewardAmount.textContent = currentRank.reward;
     }
@@ -841,12 +852,15 @@ function updateUI() {
     }
     
     if (elements.refEarned) {
-        elements.refEarned.textContent = userData.referralEarnings.toLocaleString();
+        elements.refEarned.textContent = userData.referralEarnings.toLocaleString() + " MWH";
     }
     
     if (elements.refRank) {
         elements.refRank.textContent = userData.rank;
     }
+    
+    // Update USD balance
+    updateUSDBalance();
     
     // Update progress bar
     updateProgress();
@@ -859,6 +873,16 @@ function updateUI() {
     
     // Update energy belt
     updateEnergyBelt();
+}
+
+function updateUSDBalance() {
+    // Calculate USD value
+    const usdValue = (userData.balance * CONFIG.MWH_TO_USD).toFixed(3);
+    
+    // Update in balance card
+    if (elements.balanceUSD) {
+        elements.balanceUSD.textContent = `≈ $${usdValue}`;
+    }
 }
 
 function updateProgress() {
@@ -874,24 +898,32 @@ function updateProgress() {
         }
         
         if (elements.nextRank) {
-            elements.nextRank.textContent = `Next: ${nextRank.name} (${nextRank.min.toLocaleString()} points)`;
+            elements.nextRank.textContent = `Next: ${nextRank.name} (${nextRank.min.toLocaleString()} MWH)`;
         }
         
         if (elements.currentPoints) {
-            elements.currentPoints.textContent = userData.totalEarned.toLocaleString();
+            elements.currentPoints.textContent = `${userData.totalEarned.toLocaleString()} MWH`;
         }
         
         if (elements.targetPoints) {
-            elements.targetPoints.textContent = nextRank.min.toLocaleString();
+            elements.targetPoints.textContent = `${nextRank.min.toLocaleString()} MWH`;
         }
         
         if (elements.remainingPoints) {
-            elements.remainingPoints.textContent = Math.max(0, nextRank.min - userData.totalEarned).toLocaleString();
+            const remaining = Math.max(0, nextRank.min - userData.totalEarned);
+            elements.remainingPoints.textContent = `${remaining.toLocaleString()} MWH`;
+        }
+        
+        // Show next rank bonus
+        if (elements.nextRankBonus) {
+            const bonusIncrease = nextRank.reward - currentRank.reward;
+            elements.nextRankBonus.textContent = `+${bonusIncrease} MWH bonus on upgrade`;
         }
     } else {
         if (elements.progressFill) elements.progressFill.style.width = '100%';
         if (elements.nextRank) elements.nextRank.textContent = 'Highest Rank! 🏆';
-        if (elements.remainingPoints) elements.remainingPoints.textContent = '0';
+        if (elements.remainingPoints) elements.remainingPoints.textContent = '0 MWH';
+        if (elements.nextRankBonus) elements.nextRankBonus.textContent = 'Max rank achieved!';
     }
 }
 
@@ -906,7 +938,11 @@ function checkRankUp() {
         userData.rank = newRank.name;
         saveUserData();
         updateUI();
-        showMessage(`🏆 Rank Up! ${oldRank} → ${newRank.name}`, 'success');
+        
+        const oldReward = currentRank ? currentRank.reward : 250;
+        const increase = newRank.reward - oldReward;
+        
+        showMessage(`🏆 Rank Up! ${oldRank} → ${newRank.name} (+${increase} MWH bonus!)`, 'success');
     }
 }
 
@@ -1144,4 +1180,4 @@ window.debugStorage = function() {
 };
 
 console.log("🎮 VIP Mining App loaded successfully");
-console.log("✅ Energy belt system activated (250 points every 4 hours)");
+console.log("✅ New rank system activated with MWH tokens");
