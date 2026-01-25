@@ -1,5 +1,5 @@
 // ============================================
-// VIP Mining Mini App - COMPLETE UPDATE v5.0
+// VIP Mining Mini App - PROFESSIONAL WALLET v6.0
 // ============================================
 
 // Telegram WebApp
@@ -37,7 +37,7 @@ if (typeof firebase !== 'undefined') {
     }
 }
 
-// User Data - with verification flags
+// User Data
 let userData = {
     balance: 25,
     referrals: 0,
@@ -54,7 +54,7 @@ let userData = {
     lastSaveTime: 0
 };
 
-// Wallet Data - NEW SYSTEM
+// Professional Wallet Data
 let walletData = {
     mwhBalance: 25,
     usdtBalance: 0,
@@ -62,14 +62,14 @@ let walletData = {
     tonBalance: 0,
     ethBalance: 0,
     totalWithdrawn: 0,
-    pendingWithdrawals: []
+    pendingWithdrawals: [],
+    lastUpdate: Date.now()
 };
 
-// Configuration - UPDATED WITH NEW REFERRAL REWARDS
+// Configuration
 const CONFIG = {
-    MINE_COOLDOWN: 14400000, // 4 hours
+    MINE_COOLDOWN: 14400000,
     
-    // NEW RANK SYSTEM WITH MWH
     RANKS: [
         { name: 'Beginner', min: 0, max: 4999, reward: 250, power: '250 MWH/4h' },
         { name: 'Professional', min: 5000, max: 14999, reward: 370, power: '370 MWH/4h' },
@@ -79,25 +79,23 @@ const CONFIG = {
         { name: 'Elite', min: 120000, max: Infinity, reward: 900, power: '900 MWH/4h' }
     ],
     
-    // UPDATED REFERRAL REWARDS (User: 0, Referrer: 50)
-    REFERRAL_REWARD: 0,   // New user gets 0 MWH
-    REFERRER_REWARD: 50,  // Referrer gets 50 MWH
+    REFERRAL_REWARD: 0,
+    REFERRER_REWARD: 50,
     
-    // Exchange rate
-    MWH_TO_USD: 0.001, // 1 MWH = $0.001
+    MWH_TO_USD: 0.001,
+    BNB_TO_USD: 400,
+    TON_TO_USD: 2,
+    ETH_TO_USD: 3000,
     
-    // Wallet limits
-    MIN_SWAP: 10000,     // Minimum 10,000 MWH for swap
-    MIN_WITHDRAWAL: 50,  // Minimum 50 USDT for withdrawal
-    MIN_DEPOSIT_USDT: 10, // Minimum 10 USDT deposit
-    MIN_DEPOSIT_BNB: 0.015, // Minimum 0.015 BNB deposit
-    WITHDRAWAL_FEE: 0.0005, // Fixed BNB fee
+    MIN_SWAP: 10000,
+    MIN_WITHDRAWAL: 50,
+    MIN_DEPOSIT_USDT: 10,
+    MIN_DEPOSIT_BNB: 0.015,
+    WITHDRAWAL_FEE: 0.0005,
     
-    // Deposit address (COMMON FOR ALL USERS)
     DEPOSIT_ADDRESS: "0x790CAB511055F63db2F30AD227f7086bA3B6376a",
     
-    // Swap rate (Fixed)
-    SWAP_RATE: 1000 // 1000 MWH = 1 USDT
+    SWAP_RATE: 1000
 };
 
 // DOM Elements
@@ -108,7 +106,7 @@ const elements = {};
 // ============================================
 
 async function initApp() {
-    console.log("🚀 Starting VIP Mining App v5.0...");
+    console.log("🚀 Starting VIP Mining App v6.0...");
     
     try {
         // Cache DOM elements
@@ -156,11 +154,7 @@ function cacheElements() {
         'refCount', 'refEarned', 'refRank', 'progressFill',
         'nextRank', 'currentPoints', 'targetPoints', 'remainingPoints',
         'connectionStatus', 'cooldownTimer', 'shareBtn',
-        'balanceUSD', 'tokenPrice', 'nextRankBonus',
-        // Wallet elements
-        'walletMWH', 'walletUSDT', 'walletBNB', 'walletTON', 'walletETH',
-        'walletMWHValue', 'walletUSDTValue', 'walletBNBValue',
-        'swapBtn', 'depositBtn', 'withdrawBtn'
+        'balanceUSD', 'tokenPrice', 'nextRankBonus'
     ];
     
     elementIds.forEach(id => {
@@ -252,7 +246,7 @@ function updateUserUI() {
 }
 
 // ============================================
-// Referral System - UPDATED
+// Referral System
 // ============================================
 
 function generateReferralLink() {
@@ -270,10 +264,6 @@ function updateReferralLink() {
         console.log("🔗 Updated referral link:", refLink);
     }
 }
-
-// ============================================
-// Updated Referral Processing (50/0 System)
-// ============================================
 
 function checkForReferral() {
     console.log("🔍 Checking for referral...");
@@ -405,7 +395,7 @@ async function logReferralEvent(referrerId, referredId, referralCode) {
 }
 
 // ============================================
-// Mining System - FIXED REWARD DISPLAY
+// Mining System
 // ============================================
 
 function minePoints() {
@@ -446,13 +436,14 @@ function minePoints() {
     
     // Immediate save
     saveUserData();
+    saveWalletData();
     updateUI();
     animateMineButton(reward);
     
     showMessage(`⛏️ +${reward} MWH! Total: ${userData.balance} MWH`, 'success');
     checkRankUp();
     
-    // Update belt immediately
+    // Update energy belt
     setTimeout(updateEnergyBelt, 100);
 }
 
@@ -490,14 +481,12 @@ function animateMineButton(reward) {
 }
 
 // ============================================
-// Wallet System - NEW
+// Professional Wallet System
 // ============================================
 
 function initWallet() {
-    // Sync MWH balance
     walletData.mwhBalance = userData.balance;
     
-    // Load wallet data from localStorage
     const savedWallet = localStorage.getItem(`vip_wallet_${userData.userId}`);
     if (savedWallet) {
         try {
@@ -517,49 +506,122 @@ function initWallet() {
 }
 
 function updateWalletUI() {
-    // Update wallet balances in UI
-    if (elements.walletMWH) {
-        elements.walletMWH.textContent = walletData.mwhBalance.toLocaleString();
+    // Update MWH balance
+    if (document.getElementById('walletMWH')) {
+        document.getElementById('walletMWH').textContent = formatNumber(walletData.mwhBalance);
     }
     
-    if (elements.walletUSDT) {
-        elements.walletUSDT.textContent = walletData.usdtBalance.toLocaleString();
+    // Update USDT balance
+    if (document.getElementById('walletUSDT')) {
+        document.getElementById('walletUSDT').textContent = formatNumber(walletData.usdtBalance, 2);
     }
     
-    if (elements.walletBNB) {
-        elements.walletBNB.textContent = walletData.bnbBalance.toFixed(4);
+    // Update BNB balance
+    if (document.getElementById('walletBNB')) {
+        document.getElementById('walletBNB').textContent = walletData.bnbBalance.toFixed(4);
     }
     
-    if (elements.walletTON) {
-        elements.walletTON.textContent = walletData.tonBalance.toLocaleString();
+    // Update TON balance
+    if (document.getElementById('walletTON')) {
+        document.getElementById('walletTON').textContent = formatNumber(walletData.tonBalance);
     }
     
-    if (elements.walletETH) {
-        elements.walletETH.textContent = walletData.ethBalance.toFixed(4);
+    // Update ETH balance
+    if (document.getElementById('walletETH')) {
+        document.getElementById('walletETH').textContent = walletData.ethBalance.toFixed(4);
     }
     
-    // Update values in USD
+    // Update USD values
     updateWalletValues();
     
-    // Update withdrawal button state
-    updateWithdrawalButton();
+    // Update total balance
+    updateTotalBalance();
+    
+    // Update withdrawal button and fee display
+    updateWithdrawalStatus();
 }
 
 function updateWalletValues() {
     // Calculate USD values
     const mwhUSD = (walletData.mwhBalance * CONFIG.MWH_TO_USD).toFixed(2);
-    const bnbUSD = (walletData.bnbBalance * 400).toFixed(2); // Approx BNB price
+    const usdtUSD = walletData.usdtBalance.toFixed(2);
+    const bnbUSD = (walletData.bnbBalance * CONFIG.BNB_TO_USD).toFixed(2);
+    const tonUSD = (walletData.tonBalance * CONFIG.TON_TO_USD).toFixed(2);
+    const ethUSD = (walletData.ethBalance * CONFIG.ETH_TO_USD).toFixed(2);
     
-    if (elements.walletMWHValue) {
-        elements.walletMWHValue.textContent = `≈ $${mwhUSD}`;
+    // Update display
+    if (document.getElementById('walletMWHValue')) {
+        document.getElementById('walletMWHValue').textContent = `≈ $${mwhUSD}`;
     }
     
-    if (elements.walletUSDTValue) {
-        elements.walletUSDTValue.textContent = `≈ $${walletData.usdtBalance.toFixed(2)}`;
+    if (document.getElementById('walletUSDTValue')) {
+        document.getElementById('walletUSDTValue').textContent = `≈ $${usdtUSD}`;
     }
     
-    if (elements.walletBNBValue) {
-        elements.walletBNBValue.textContent = `≈ $${bnbUSD}`;
+    if (document.getElementById('walletBNBValue')) {
+        document.getElementById('walletBNBValue').textContent = `≈ $${bnbUSD}`;
+    }
+    
+    if (document.getElementById('walletTONValue')) {
+        document.getElementById('walletTONValue').textContent = `≈ $${tonUSD}`;
+    }
+    
+    if (document.getElementById('walletETHValue')) {
+        document.getElementById('walletETHValue').textContent = `≈ $${ethUSD}`;
+    }
+}
+
+function updateTotalBalance() {
+    const mwhUSD = walletData.mwhBalance * CONFIG.MWH_TO_USD;
+    const usdtUSD = walletData.usdtBalance;
+    const bnbUSD = walletData.bnbBalance * CONFIG.BNB_TO_USD;
+    const tonUSD = walletData.tonBalance * CONFIG.TON_TO_USD;
+    const ethUSD = walletData.ethBalance * CONFIG.ETH_TO_USD;
+    
+    const totalUSD = mwhUSD + usdtUSD + bnbUSD + tonUSD + ethUSD;
+    
+    if (document.getElementById('totalBalanceUSD')) {
+        document.getElementById('totalBalanceUSD').textContent = `$${totalUSD.toFixed(2)}`;
+    }
+}
+
+function updateWithdrawalStatus() {
+    const usdtBalance = walletData.usdtBalance;
+    const bnbBalance = walletData.bnbBalance;
+    const withdrawBtn = document.getElementById('withdrawUSDTBtn');
+    const withdrawalInfo = document.getElementById('usdtWithdrawalInfo');
+    const withdrawalFee = document.getElementById('usdtWithdrawalFee');
+    
+    if (!withdrawalInfo) return;
+    
+    if (usdtBalance >= CONFIG.MIN_WITHDRAWAL) {
+        withdrawalInfo.style.display = 'block';
+        
+        if (bnbBalance >= CONFIG.WITHDRAWAL_FEE) {
+            if (withdrawalFee) {
+                withdrawalFee.style.display = 'block';
+            }
+            if (withdrawBtn) {
+                withdrawBtn.disabled = false;
+                withdrawBtn.innerHTML = '<i class="fas fa-upload"></i> Withdraw';
+            }
+        } else {
+            if (withdrawalFee) {
+                withdrawalFee.style.display = 'block';
+            }
+            if (withdrawBtn) {
+                withdrawBtn.disabled = true;
+                withdrawBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Need BNB';
+            }
+        }
+    } else {
+        if (withdrawalInfo) {
+            withdrawalInfo.style.display = 'none';
+        }
+        if (withdrawBtn) {
+            withdrawBtn.disabled = true;
+            withdrawBtn.innerHTML = '<i class="fas fa-lock"></i> Withdraw';
+        }
     }
 }
 
@@ -567,34 +629,37 @@ function updateWalletValues() {
 // Swap System (MWH ↔ USDT)
 // ============================================
 
-function openSwapModal() {
-    // Create swap modal
+function openSwapModal(currency) {
+    const isMWHtoUSDT = currency === 'MWH';
+    const fromCurrency = isMWHtoUSDT ? 'MWH' : 'USDT';
+    const toCurrency = isMWHtoUSDT ? 'USDT' : 'MWH';
+    const fromBalance = isMWHtoUSDT ? walletData.mwhBalance : walletData.usdtBalance;
+    const toBalance = isMWHtoUSDT ? walletData.usdtBalance : walletData.mwhBalance;
+    
     const modalHTML = `
         <div class="modal-overlay" id="swapModal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>⚡ Swap MWH to USDT</h3>
-                    <button class="modal-close" onclick="closeSwapModal()">×</button>
+                    <h3><i class="fas fa-exchange-alt"></i> Swap ${fromCurrency} to ${toCurrency}</h3>
+                    <button class="modal-close" onclick="closeModal()">×</button>
                 </div>
                 <div class="modal-body">
                     <div class="swap-info">
                         <p>Fixed Rate: <strong>1,000 MWH = 1 USDT</strong></p>
-                        <p>Minimum Swap: <strong>10,000 MWH</strong></p>
+                        <p>Minimum Swap: <strong>${CONFIG.MIN_SWAP.toLocaleString()} MWH</strong></p>
+                        <p>Available: <strong>${formatNumber(fromBalance)} ${fromCurrency}</strong></p>
                     </div>
                     
                     <div class="swap-inputs">
                         <div class="swap-from">
-                            <label>From (MWH)</label>
+                            <label>From (${fromCurrency})</label>
                             <div class="input-with-max">
                                 <input type="number" id="swapFromAmount" 
                                        placeholder="Enter amount" 
-                                       min="${CONFIG.MIN_SWAP}" 
-                                       step="1000"
-                                       oninput="calculateSwap()">
-                                <button class="max-btn" onclick="setMaxSwap()">MAX</button>
-                            </div>
-                            <div class="balance-info">
-                                Available: ${walletData.mwhBalance.toLocaleString()} MWH
+                                       min="${isMWHtoUSDT ? CONFIG.MIN_SWAP : '0.01'}" 
+                                       step="${isMWHtoUSDT ? '1000' : '0.01'}"
+                                       oninput="calculateSwap('${fromCurrency}', '${toCurrency}')">
+                                <button class="max-btn" onclick="setMaxSwap('${fromCurrency}')">MAX</button>
                             </div>
                         </div>
                         
@@ -603,11 +668,19 @@ function openSwapModal() {
                         </div>
                         
                         <div class="swap-to">
-                            <label>To (USDT)</label>
-                            <input type="text" id="swapToAmount" readonly placeholder="0.00">
-                            <div class="balance-info">
-                                Will receive: <span id="swapReceive">0</span> USDT
-                            </div>
+                            <label>To (${toCurrency})</label>
+                            <input type="text" id="swapToAmount" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="swap-details">
+                        <div class="detail-row">
+                            <span>Rate:</span>
+                            <span>1,000 MWH = 1 USDT</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>You receive:</span>
+                            <span id="swapReceive">0 ${toCurrency}</span>
                         </div>
                     </div>
                     
@@ -617,8 +690,9 @@ function openSwapModal() {
                     </div>
                     
                     <div class="swap-actions">
-                        <button class="btn-secondary" onclick="closeSwapModal()">Cancel</button>
-                        <button class="btn-primary" id="confirmSwapBtn" onclick="executeSwap()" disabled>
+                        <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+                        <button class="btn-primary" id="confirmSwapBtn" 
+                                onclick="executeSwap('${fromCurrency}', '${toCurrency}')" disabled>
                             Confirm Swap
                         </button>
                     </div>
@@ -627,125 +701,123 @@ function openSwapModal() {
         </div>
     `;
     
-    // Add modal to body
     document.body.insertAdjacentHTML('beforeend', modalHTML);
-    
-    // Focus on input
     setTimeout(() => {
         const input = document.getElementById('swapFromAmount');
         if (input) input.focus();
-        calculateSwap();
+        calculateSwap(fromCurrency, toCurrency);
     }, 100);
 }
 
-function closeSwapModal() {
-    const modal = document.getElementById('swapModal');
-    if (modal) {
-        modal.remove();
-    }
-}
-
-function calculateSwap() {
+function calculateSwap(fromCurrency, toCurrency) {
     const fromAmount = parseFloat(document.getElementById('swapFromAmount').value) || 0;
-    const toAmount = fromAmount / CONFIG.SWAP_RATE;
+    let toAmount = 0;
     
-    // Update to amount
-    document.getElementById('swapToAmount').value = toAmount.toFixed(2);
-    document.getElementById('swapReceive').textContent = toAmount.toFixed(2);
+    if (fromCurrency === 'MWH') {
+        toAmount = fromAmount / CONFIG.SWAP_RATE;
+    } else {
+        toAmount = fromAmount * CONFIG.SWAP_RATE;
+    }
     
-    // Get button and warning elements
+    document.getElementById('swapToAmount').value = toAmount.toFixed(fromCurrency === 'MWH' ? 2 : 0);
+    document.getElementById('swapReceive').textContent = `${toAmount.toFixed(fromCurrency === 'MWH' ? 2 : 0)} ${toCurrency}`;
+    
     const confirmBtn = document.getElementById('confirmSwapBtn');
     const warning = document.getElementById('swapWarning');
     const warningText = document.getElementById('swapWarningText');
     
-    // Reset
     confirmBtn.disabled = true;
     warning.style.display = 'none';
     
-    // Validations
     if (fromAmount <= 0) {
         warningText.textContent = "Please enter an amount";
         warning.style.display = 'flex';
         return;
     }
     
-    if (fromAmount < CONFIG.MIN_SWAP) {
+    const fromBalance = fromCurrency === 'MWH' ? walletData.mwhBalance : walletData.usdtBalance;
+    
+    if (fromCurrency === 'MWH' && fromAmount < CONFIG.MIN_SWAP) {
         warningText.textContent = `Minimum swap is ${CONFIG.MIN_SWAP.toLocaleString()} MWH`;
         warning.style.display = 'flex';
         return;
     }
     
-    if (fromAmount > walletData.mwhBalance) {
-        warningText.textContent = `Insufficient MWH balance. Available: ${walletData.mwhBalance.toLocaleString()} MWH`;
+    if (fromAmount > fromBalance) {
+        warningText.textContent = `Insufficient ${fromCurrency} balance`;
         warning.style.display = 'flex';
         return;
     }
     
-    // All validations passed
     confirmBtn.disabled = false;
 }
 
-function setMaxSwap() {
+function setMaxSwap(currency) {
     const input = document.getElementById('swapFromAmount');
     if (input) {
-        input.value = walletData.mwhBalance;
-        calculateSwap();
+        const maxBalance = currency === 'MWH' ? walletData.mwhBalance : walletData.usdtBalance;
+        input.value = currency === 'MWH' ? maxBalance : maxBalance.toFixed(2);
+        
+        const toCurrency = currency === 'MWH' ? 'USDT' : 'MWH';
+        calculateSwap(currency, toCurrency);
     }
 }
 
-function executeSwap() {
+function executeSwap(fromCurrency, toCurrency) {
     const fromAmount = parseFloat(document.getElementById('swapFromAmount').value);
-    const toAmount = fromAmount / CONFIG.SWAP_RATE;
+    const toAmount = parseFloat(document.getElementById('swapToAmount').value);
     
-    // Final validation
-    if (fromAmount < CONFIG.MIN_SWAP) {
-        showMessage(`Minimum swap is ${CONFIG.MIN_SWAP.toLocaleString()} MWH`, 'error');
-        return;
+    if (fromCurrency === 'MWH') {
+        if (fromAmount < CONFIG.MIN_SWAP) {
+            showMessage(`Minimum swap is ${CONFIG.MIN_SWAP.toLocaleString()} MWH`, 'error');
+            return;
+        }
+        
+        if (fromAmount > walletData.mwhBalance) {
+            showMessage('Insufficient MWH balance', 'error');
+            return;
+        }
+        
+        walletData.mwhBalance -= fromAmount;
+        walletData.usdtBalance += toAmount;
+        
+    } else {
+        if (fromAmount > walletData.usdtBalance) {
+            showMessage('Insufficient USDT balance', 'error');
+            return;
+        }
+        
+        walletData.usdtBalance -= fromAmount;
+        walletData.mwhBalance += toAmount;
     }
     
-    if (fromAmount > walletData.mwhBalance) {
-        showMessage('Insufficient MWH balance', 'error');
-        return;
-    }
-    
-    // Execute swap
-    walletData.mwhBalance -= fromAmount;
-    walletData.usdtBalance += toAmount;
-    
-    // Update user balance
     userData.balance = walletData.mwhBalance;
     
-    // Save
     saveWalletData();
     saveUserData();
     
-    // Update UI
     updateWalletUI();
     updateUI();
     
-    // Close modal and show success
-    closeSwapModal();
-    showMessage(`✅ Swapped ${fromAmount.toLocaleString()} MWH to ${toAmount.toFixed(2)} USDT`, 'success');
-    
-    // Log transaction
-    logTransaction('SWAP', fromAmount, 'MWH', toAmount, 'USDT');
+    closeModal();
+    showMessage(`✅ Swapped ${formatNumber(fromAmount)} ${fromCurrency} to ${formatNumber(toAmount)} ${toCurrency}`, 'success');
 }
 
 // ============================================
 // Deposit System
 // ============================================
 
-function openDepositModal() {
+function openDepositModal(currency) {
     const modalHTML = `
         <div class="modal-overlay" id="depositModal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>📥 Deposit BNB</h3>
-                    <button class="modal-close" onclick="closeDepositModal()">×</button>
+                    <h3><i class="fas fa-download"></i> Deposit ${currency}</h3>
+                    <button class="modal-close" onclick="closeModal()">×</button>
                 </div>
                 <div class="modal-body">
                     <div class="deposit-info">
-                        <p>Send <strong>BNB (BEP20 only)</strong> to this address:</p>
+                        <p>Send <strong>${currency} (BEP20 only)</strong> to this address:</p>
                         <div class="deposit-address">
                             <code>${CONFIG.DEPOSIT_ADDRESS}</code>
                             <button class="copy-btn-small" onclick="copyToClipboard('${CONFIG.DEPOSIT_ADDRESS}')">
@@ -755,9 +827,9 @@ function openDepositModal() {
                         
                         <div class="qr-code-placeholder">
                             <div style="text-align: center; padding: 20px; background: #f8fafc; border-radius: 10px;">
-                                <div style="color: #666; font-size: 14px;">QR Code Placeholder</div>
+                                <div style="color: #666; font-size: 14px;">QR Code</div>
                                 <div style="font-size: 12px; color: #999; margin-top: 10px;">
-                                    (QR Code would be generated here)
+                                    Scan to deposit ${currency}
                                 </div>
                             </div>
                         </div>
@@ -765,22 +837,17 @@ function openDepositModal() {
                         <div class="deposit-instructions">
                             <h4>⚠️ Important Instructions:</h4>
                             <ol>
-                                <li>Send only <strong>BNB (BEP20)</strong> to this address</li>
-                                <li>Minimum deposit: <strong>${CONFIG.MIN_DEPOSIT_BNB} BNB</strong></li>
+                                <li>Send only <strong>${currency} (BEP20)</strong> to this address</li>
+                                <li>Minimum deposit: <strong>${currency === 'BNB' ? CONFIG.MIN_DEPOSIT_BNB : CONFIG.MIN_DEPOSIT_USDT} ${currency}</strong></li>
                                 <li>Manual credit within <strong>2 hours</strong></li>
                                 <li>Contact support if not credited after 2 hours</li>
                                 <li>This is a <strong>shared address</strong> for all users</li>
                             </ol>
                         </div>
-                        
-                        <div class="deposit-note">
-                            <i class="fas fa-info-circle"></i>
-                            <span>After sending, BNB balance will be updated manually by admin</span>
-                        </div>
                     </div>
                     
                     <div class="modal-actions">
-                        <button class="btn-secondary" onclick="closeDepositModal()">Close</button>
+                        <button class="btn-secondary" onclick="closeModal()">Close</button>
                         <button class="btn-primary" onclick="copyToClipboard('${CONFIG.DEPOSIT_ADDRESS}')">
                             <i class="far fa-copy"></i> Copy Address
                         </button>
@@ -793,53 +860,14 @@ function openDepositModal() {
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 }
 
-function closeDepositModal() {
-    const modal = document.getElementById('depositModal');
-    if (modal) {
-        modal.remove();
-    }
-}
-
 // ============================================
 // Withdrawal System
 // ============================================
-
-function updateWithdrawalButton() {
-    const btn = elements.withdrawBtn;
-    if (!btn) return;
-    
-    const usdtBalance = walletData.usdtBalance;
-    const bnbBalance = walletData.bnbBalance;
-    
-    // Reset button
-    btn.disabled = false;
-    btn.className = 'action-btn';
-    
-    if (usdtBalance < CONFIG.MIN_WITHDRAWAL) {
-        // Case 1: Less than 50 USDT
-        btn.innerHTML = `<i class="fas fa-lock"></i> Need ${CONFIG.MIN_WITHDRAWAL} USDT`;
-        btn.style.background = '#ef4444';
-        btn.disabled = true;
-        return;
-    }
-    
-    if (bnbBalance < CONFIG.WITHDRAWAL_FEE) {
-        // Case 2: Has USDT but no BNB for fees
-        btn.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Need ${CONFIG.WITHDRAWAL_FEE} BNB`;
-        btn.style.background = '#f59e0b';
-        return;
-    }
-    
-    // Case 3: Ready to withdraw
-    btn.innerHTML = `<i class="fas fa-wallet"></i> Withdraw USDT`;
-    btn.style.background = '#22c55e';
-}
 
 function openWithdrawalModal() {
     const usdtBalance = walletData.usdtBalance;
     const bnbBalance = walletData.bnbBalance;
     
-    // Final validation
     if (usdtBalance < CONFIG.MIN_WITHDRAWAL) {
         showMessage(`Minimum withdrawal is ${CONFIG.MIN_WITHDRAWAL} USDT`, 'error');
         return;
@@ -854,13 +882,13 @@ function openWithdrawalModal() {
         <div class="modal-overlay" id="withdrawalModal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>📤 Withdraw USDT</h3>
-                    <button class="modal-close" onclick="closeWithdrawalModal()">×</button>
+                    <h3><i class="fas fa-upload"></i> Withdraw USDT</h3>
+                    <button class="modal-close" onclick="closeModal()">×</button>
                 </div>
                 <div class="modal-body">
                     <div class="withdrawal-info">
                         <p>Available: <strong>${usdtBalance.toFixed(2)} USDT</strong></p>
-                        <p>Network Fee: <strong>${CONFIG.WITHDRAWAL_FEE} BNB</strong> (Fixed)</p>
+                        <p>Network Fee: <strong>${CONFIG.WITHDRAWAL_FEE} BNB</strong></p>
                         <p>Your BNB: <strong>${bnbBalance.toFixed(4)} BNB</strong></p>
                     </div>
                     
@@ -875,7 +903,7 @@ function openWithdrawalModal() {
                                    step="0.01"
                                    oninput="validateWithdrawalAmount()">
                             <div class="form-hint">
-                                Min: ${CONFIG.MIN_WITHDRAWAL} USDT, Max: ${usdtBalance.toFixed(2)} USDT
+                                Min: ${CONFIG.MIN_WITHDRAWAL} USDT
                             </div>
                         </div>
                         
@@ -890,8 +918,12 @@ function openWithdrawalModal() {
                             </div>
                         </div>
                         
+                        <div class="withdrawal-warning" id="withdrawalWarning" style="display: none;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span id="withdrawalWarningText"></span>
+                        </div>
+                        
                         <div class="withdrawal-summary">
-                            <h4>Summary:</h4>
                             <div class="summary-row">
                                 <span>Amount to withdraw:</span>
                                 <span id="summaryAmount">${usdtBalance.toFixed(2)} USDT</span>
@@ -900,20 +932,15 @@ function openWithdrawalModal() {
                                 <span>Network fee:</span>
                                 <span>${CONFIG.WITHDRAWAL_FEE} BNB</span>
                             </div>
-                            <div class="summary-row">
-                                <span>You will receive:</span>
-                                <span id="summaryReceive">${usdtBalance.toFixed(2)} USDT</span>
+                            <div class="summary-row total">
+                                <span>Total cost:</span>
+                                <span>${usdtBalance.toFixed(2)} USDT + ${CONFIG.WITHDRAWAL_FEE} BNB</span>
                             </div>
-                        </div>
-                        
-                        <div class="withdrawal-warning" id="withdrawalWarning" style="display: none;">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <span id="withdrawalWarningText"></span>
                         </div>
                     </div>
                     
                     <div class="modal-actions">
-                        <button class="btn-secondary" onclick="closeWithdrawalModal()">Cancel</button>
+                        <button class="btn-secondary" onclick="closeModal()">Cancel</button>
                         <button class="btn-primary" id="confirmWithdrawalBtn" onclick="submitWithdrawal()">
                             Request Withdrawal
                         </button>
@@ -927,30 +954,20 @@ function openWithdrawalModal() {
     validateWithdrawalAmount();
 }
 
-function closeWithdrawalModal() {
-    const modal = document.getElementById('withdrawalModal');
-    if (modal) {
-        modal.remove();
-    }
-}
-
 function validateWithdrawalAmount() {
     const input = document.getElementById('withdrawalAmount');
     const amount = parseFloat(input.value) || 0;
-    const usdtBalance = walletData.usdtBalance;
     const warning = document.getElementById('withdrawalWarning');
     const warningText = document.getElementById('withdrawalWarningText');
     const btn = document.getElementById('confirmWithdrawalBtn');
     
-    // Update summary
-    document.getElementById('summaryAmount').textContent = amount.toFixed(2) + ' USDT';
-    document.getElementById('summaryReceive').textContent = amount.toFixed(2) + ' USDT';
+    if (!warning || !btn) return;
     
-    // Hide warning by default
+    document.getElementById('summaryAmount').textContent = amount.toFixed(2) + ' USDT';
+    
     warning.style.display = 'none';
     btn.disabled = false;
     
-    // Validations
     if (amount < CONFIG.MIN_WITHDRAWAL) {
         warningText.textContent = `Minimum withdrawal is ${CONFIG.MIN_WITHDRAWAL} USDT`;
         warning.style.display = 'flex';
@@ -958,16 +975,15 @@ function validateWithdrawalAmount() {
         return;
     }
     
-    if (amount > usdtBalance) {
-        warningText.textContent = `Insufficient USDT balance. Available: ${usdtBalance.toFixed(2)} USDT`;
+    if (amount > walletData.usdtBalance) {
+        warningText.textContent = `Insufficient USDT balance`;
         warning.style.display = 'flex';
         btn.disabled = true;
         return;
     }
     
-    // Check BNB balance for fees
     if (walletData.bnbBalance < CONFIG.WITHDRAWAL_FEE) {
-        warningText.textContent = `Insufficient BNB for fees. Need ${CONFIG.WITHDRAWAL_FEE} BNB`;
+        warningText.textContent = `Insufficient BNB for fees`;
         warning.style.display = 'flex';
         btn.disabled = true;
     }
@@ -979,6 +995,8 @@ function validateWithdrawalAddress() {
     const warningText = document.getElementById('withdrawalWarningText');
     const btn = document.getElementById('confirmWithdrawalBtn');
     
+    if (!warning || !btn) return;
+    
     if (!address) {
         warningText.textContent = "Please enter your USDT address";
         warning.style.display = 'flex';
@@ -986,9 +1004,8 @@ function validateWithdrawalAddress() {
         return false;
     }
     
-    // Basic address validation (starts with 0x and has 42 chars)
     if (!address.startsWith('0x') || address.length !== 42) {
-        warningText.textContent = "Please enter a valid BEP20 address (0x...)";
+        warningText.textContent = "Please enter a valid BEP20 address";
         warning.style.display = 'flex';
         btn.disabled = true;
         return false;
@@ -1003,10 +1020,7 @@ function submitWithdrawal() {
     const amount = parseFloat(document.getElementById('withdrawalAmount').value);
     const address = document.getElementById('withdrawalAddress').value.trim();
     
-    // Final validations
-    if (!validateWithdrawalAddress()) {
-        return;
-    }
+    if (!validateWithdrawalAddress()) return;
     
     if (amount < CONFIG.MIN_WITHDRAWAL) {
         showMessage(`Minimum withdrawal is ${CONFIG.MIN_WITHDRAWAL} USDT`, 'error');
@@ -1019,11 +1033,10 @@ function submitWithdrawal() {
     }
     
     if (walletData.bnbBalance < CONFIG.WITHDRAWAL_FEE) {
-        showMessage(`Insufficient BNB for fees. Need ${CONFIG.WITHDRAWAL_FEE} BNB`, 'error');
+        showMessage(`Insufficient BNB for fees`, 'error');
         return;
     }
     
-    // Create withdrawal request
     const withdrawalRequest = {
         userId: userData.userId,
         amount: amount,
@@ -1033,30 +1046,376 @@ function submitWithdrawal() {
         status: 'pending'
     };
     
-    // Update balances
     walletData.usdtBalance -= amount;
     walletData.bnbBalance -= CONFIG.WITHDRAWAL_FEE;
     walletData.totalWithdrawn += amount;
-    
-    // Add to pending withdrawals
     walletData.pendingWithdrawals.push(withdrawalRequest);
     
-    // Save
     saveWalletData();
     updateWalletUI();
-    updateWithdrawalButton();
     
-    // Save to Firebase if available
     if (db) {
         saveWithdrawalToFirebase(withdrawalRequest);
     }
     
-    // Close modal and show success
-    closeWithdrawalModal();
-    showMessage(`✅ Withdrawal request submitted! ${amount} USDT will be sent within 24-48 hours`, 'success');
+    closeModal();
+    showMessage(`✅ Withdrawal request submitted for ${amount} USDT`, 'success');
+}
+
+// ============================================
+// Utility Functions
+// ============================================
+
+function closeModal() {
+    const modal = document.querySelector('.modal-overlay');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text)
+        .then(() => {
+            showMessage('✅ Copied to clipboard!', 'success');
+        })
+        .catch(err => {
+            console.error('Copy error:', err);
+            showMessage('❌ Failed to copy', 'error');
+        });
+}
+
+function formatNumber(num, decimals = 0) {
+    return num.toLocaleString(undefined, {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+    });
+}
+
+function showMessage(text, type = 'info') {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}`;
+    messageDiv.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 
+                         type === 'error' ? 'exclamation-circle' : 
+                         type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+        <span>${text}</span>
+    `;
     
-    // Log transaction
-    logTransaction('WITHDRAWAL', amount, 'USDT', CONFIG.WITHDRAWAL_FEE, 'BNB');
+    messageDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-100px);
+        background: ${type === 'success' ? '#10b981' : 
+                     type === 'error' ? '#ef4444' : 
+                     type === 'warning' ? '#f59e0b' : '#3b82f6'};
+        color: white;
+        padding: 12px 24px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        z-index: 2000;
+        opacity: 0;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        font-weight: 500;
+    `;
+    
+    document.body.appendChild(messageDiv);
+    
+    setTimeout(() => {
+        messageDiv.style.opacity = '1';
+        messageDiv.style.transform = 'translateX(-50%) translateY(0)';
+    }, 10);
+    
+    setTimeout(() => {
+        messageDiv.style.opacity = '0';
+        messageDiv.style.transform = 'translateX(-50%) translateY(-100px)';
+        setTimeout(() => {
+            if (messageDiv.parentNode) {
+                messageDiv.parentNode.removeChild(messageDiv);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// ============================================
+// Energy Belt System
+// ============================================
+
+function updateEnergyBelt() {
+    const energyBelt = document.getElementById('energyBelt');
+    const beltFill = document.getElementById('beltFill');
+    const beltKnob = document.getElementById('beltKnob');
+    const mineBtn = document.getElementById('mineBtn');
+    const cooldownTimer = document.getElementById('cooldownTimer');
+    
+    if (!energyBelt || !beltFill || !beltKnob || !mineBtn) return;
+    
+    const now = Date.now();
+    const timeSinceLastMine = now - userData.lastMineTime;
+    const cooldown = CONFIG.MINE_COOLDOWN;
+    
+    // Calculate fill percentage (0 to 100)
+    let fillPercentage = 0;
+    
+    if (userData.lastMineTime > 0) {
+        fillPercentage = Math.min((timeSinceLastMine / cooldown) * 100, 100);
+    } else {
+        fillPercentage = 100; // First time, ready immediately
+    }
+    
+    // Update visual elements
+    beltFill.style.width = `${fillPercentage}%`;
+    beltKnob.style.left = `${fillPercentage}%`;
+    
+    // Check if ready
+    const isReady = timeSinceLastMine >= cooldown || userData.lastMineTime === 0;
+    
+    if (isReady) {
+        // Ready to claim
+        energyBelt.classList.add('belt-ready');
+        energyBelt.classList.remove('belt-emptying');
+        mineBtn.classList.add('mine-ready');
+        mineBtn.disabled = false;
+        
+        if (cooldownTimer) {
+            cooldownTimer.textContent = 'READY';
+            cooldownTimer.style.color = '#22c55e';
+            cooldownTimer.style.background = 'rgba(34, 197, 94, 0.1)';
+        }
+    } else {
+        // Waiting
+        energyBelt.classList.remove('belt-ready');
+        mineBtn.classList.remove('mine-ready');
+        mineBtn.disabled = true;
+        
+        // Update cooldown timer
+        if (cooldownTimer) {
+            const timeLeft = cooldown - timeSinceLastMine;
+            const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            
+            cooldownTimer.textContent = `${hours}h ${minutes}m`;
+            cooldownTimer.style.color = '#ef4444';
+            cooldownTimer.style.background = 'rgba(239, 68, 68, 0.1)';
+        }
+    }
+}
+
+function animateBeltEmpty() {
+    const energyBelt = document.getElementById('energyBelt');
+    if (energyBelt) {
+        energyBelt.classList.add('belt-emptying');
+        setTimeout(() => {
+            energyBelt.classList.remove('belt-emptying');
+        }, 1000);
+    }
+}
+
+// ============================================
+// UI Updates
+// ============================================
+
+function updateUI() {
+    // Get current rank
+    const currentRank = CONFIG.RANKS.find(r => r.name === userData.rank) || CONFIG.RANKS[0];
+    
+    // Update numbers
+    if (elements.balance) {
+        elements.balance.textContent = userData.balance.toLocaleString();
+    }
+    
+    if (elements.referrals) {
+        elements.referrals.textContent = `${userData.referrals} Referrals`;
+    }
+    
+    if (elements.totalEarned) {
+        elements.totalEarned.textContent = `${userData.totalEarned.toLocaleString()} MWH`;
+    }
+    
+    // Update rank
+    if (elements.rankBadge) {
+        elements.rankBadge.textContent = userData.rank;
+    }
+    
+    // FIXED: Update mining info with current rank reward
+    if (elements.rewardAmount) {
+        elements.rewardAmount.textContent = currentRank.reward;
+    }
+    
+    if (elements.miningPower) {
+        elements.miningPower.innerHTML = `<i class="fas fa-bolt"></i> Yield: ${currentRank.power}`;
+    }
+    
+    // Update referral statistics
+    if (elements.refCount) {
+        elements.refCount.textContent = userData.referrals;
+    }
+    
+    if (elements.refEarned) {
+        elements.refEarned.textContent = userData.referralEarnings.toLocaleString() + " MWH";
+    }
+    
+    if (elements.refRank) {
+        elements.refRank.textContent = userData.rank;
+    }
+    
+    // Update USD balance
+    updateUSDBalance();
+    
+    // Update progress bar
+    updateProgress();
+    
+    // Update referral link
+    updateReferralLink();
+    
+    // Update wallet balance
+    updateWalletUI();
+    
+    // Update energy belt
+    updateEnergyBelt();
+}
+
+function updateUSDBalance() {
+    // Calculate USD value
+    const usdValue = (userData.balance * CONFIG.MWH_TO_USD).toFixed(3);
+    
+    // Update in balance card
+    if (elements.balanceUSD) {
+        elements.balanceUSD.textContent = `≈ $${usdValue}`;
+    }
+}
+
+function updateProgress() {
+    const currentRank = CONFIG.RANKS.find(r => r.name === userData.rank) || CONFIG.RANKS[0];
+    const nextRank = CONFIG.RANKS[CONFIG.RANKS.indexOf(currentRank) + 1];
+    
+    if (nextRank) {
+        const progress = ((userData.totalEarned - currentRank.min) / (nextRank.min - currentRank.min)) * 100;
+        const clampedProgress = Math.min(progress, 100);
+        
+        if (elements.progressFill) {
+            elements.progressFill.style.width = `${clampedProgress}%`;
+        }
+        
+        if (elements.nextRank) {
+            elements.nextRank.textContent = `Next: ${nextRank.name} (${nextRank.min.toLocaleString()} MWH)`;
+        }
+        
+        if (elements.currentPoints) {
+            elements.currentPoints.textContent = `${userData.totalEarned.toLocaleString()} MWH`;
+        }
+        
+        if (elements.targetPoints) {
+            elements.targetPoints.textContent = `${nextRank.min.toLocaleString()} MWH`;
+        }
+        
+        if (elements.remainingPoints) {
+            const remaining = Math.max(0, nextRank.min - userData.totalEarned);
+            elements.remainingPoints.textContent = `${remaining.toLocaleString()} MWH`;
+        }
+        
+        // Show next rank bonus
+        if (elements.nextRankBonus) {
+            const bonusIncrease = nextRank.reward - currentRank.reward;
+            elements.nextRankBonus.textContent = `+${bonusIncrease} MWH bonus on upgrade`;
+        }
+    } else {
+        if (elements.progressFill) elements.progressFill.style.width = '100%';
+        if (elements.nextRank) elements.nextRank.textContent = 'Highest Rank! 🏆';
+        if (elements.remainingPoints) elements.remainingPoints.textContent = '0 MWH';
+        if (elements.nextRankBonus) elements.nextRankBonus.textContent = 'Max rank achieved!';
+    }
+}
+
+function checkRankUp() {
+    const currentRank = CONFIG.RANKS.find(r => r.name === userData.rank);
+    const newRank = CONFIG.RANKS.find(r => 
+        userData.totalEarned >= r.min && userData.totalEarned <= r.max
+    );
+    
+    if (newRank && newRank.name !== userData.rank) {
+        const oldRank = userData.rank;
+        userData.rank = newRank.name;
+        saveUserData();
+        updateUI();
+        
+        const oldReward = currentRank ? currentRank.reward : 250;
+        const increase = newRank.reward - oldReward;
+        
+        showMessage(`🏆 Rank Up! ${oldRank} → ${newRank.name} (+${increase} MWH bonus!)`, 'success');
+    }
+}
+
+function updateConnectionStatus() {
+    if (elements.connectionStatus) {
+        if (db) {
+            elements.connectionStatus.textContent = '🟢 Connected to Firebase';
+            elements.connectionStatus.style.color = '#22c55e';
+        } else {
+            elements.connectionStatus.textContent = '🟡 Local Storage Only';
+            elements.connectionStatus.style.color = '#f59e0b';
+        }
+    }
+}
+
+// ============================================
+// Event Listeners
+// ============================================
+
+function setupEventListeners() {
+    console.log("🎯 Setting up event listeners...");
+    
+    // Mine button
+    if (elements.mineBtn) {
+        elements.mineBtn.addEventListener('click', minePoints);
+        console.log("✅ Mine button listener added");
+    }
+    
+    // Copy button
+    if (elements.copyBtn) {
+        elements.copyBtn.addEventListener('click', copyReferralLink);
+        console.log("✅ Copy button listener added");
+    }
+    
+    // Share button
+    if (elements.shareBtn) {
+        elements.shareBtn.addEventListener('click', shareOnTelegram);
+        console.log("✅ Share button listener added");
+    }
+    
+    console.log("✅ Event listeners setup complete");
+}
+
+function copyReferralLink() {
+    const refLink = generateReferralLink();
+    
+    navigator.clipboard.writeText(refLink)
+        .then(() => {
+            showMessage('✅ Link copied to clipboard!', 'success');
+            if (elements.copyBtn) {
+                elements.copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    elements.copyBtn.innerHTML = '<i class="far fa-copy"></i>';
+                }, 2000);
+            }
+        })
+        .catch(err => {
+            console.error('Copy error:', err);
+            showMessage('❌ Failed to copy link', 'error');
+        });
+}
+
+function shareOnTelegram() {
+    const refLink = generateReferralLink();
+    const shareText = `🚀 *Join VIP Mining Wealth PRO!*\n\n⛏️ *Mine 250 MWH every 4 hours*\n👥 *Get +50 MWH BONUS with my link*\n💰 *Earn 50 MWH for each referral*\n\n👉 ${refLink}\n\n💎 *Start earning now!* @VIPMainingPROBot`;
+    
+    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(shareText)}`;
+    
+    window.open(shareUrl, '_blank');
+    showMessage('📱 Opening Telegram...', 'info');
 }
 
 // ============================================
@@ -1158,7 +1517,7 @@ function saveUserData() {
             username: userData.username,
             firstName: userData.firstName,
             saveTime: Date.now(),
-            version: '5.0'
+            version: '6.0'
         };
         
         console.log("💾 Saving user data - Balance:", userData.balance);
@@ -1194,6 +1553,7 @@ function saveWalletData() {
         const storageKey = `vip_wallet_${userData.userId}`;
         
         const dataToSave = {
+            mwhBalance: walletData.mwhBalance,
             usdtBalance: walletData.usdtBalance,
             bnbBalance: walletData.bnbBalance,
             tonBalance: walletData.tonBalance,
@@ -1359,398 +1719,6 @@ function saveWithdrawalToFirebase(withdrawalRequest) {
 }
 
 // ============================================
-// Transaction Logging
-// ============================================
-
-function logTransaction(type, amount, fromCurrency, fee, feeCurrency) {
-    const transaction = {
-        type: type,
-        userId: userData.userId,
-        amount: amount,
-        fromCurrency: fromCurrency,
-        fee: fee,
-        feeCurrency: feeCurrency,
-        timestamp: Date.now(),
-        status: 'completed'
-    };
-    
-    // Save locally
-    const transactions = JSON.parse(localStorage.getItem(`vip_transactions_${userData.userId}`) || '[]');
-    transactions.push(transaction);
-    localStorage.setItem(`vip_transactions_${userData.userId}`, JSON.stringify(transactions));
-    
-    // Save to Firebase if available
-    if (db) {
-        db.collection('transactions').add({
-            ...transaction,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        }).catch(error => {
-            console.error("❌ Transaction logging error:", error);
-        });
-    }
-}
-
-// ============================================
-// Energy Belt System
-// ============================================
-
-function updateEnergyBelt() {
-    const energyBelt = document.getElementById('energyBelt');
-    const beltFill = document.getElementById('beltFill');
-    const beltKnob = document.getElementById('beltKnob');
-    const mineBtn = document.getElementById('mineBtn');
-    const cooldownTimer = document.getElementById('cooldownTimer');
-    
-    if (!energyBelt || !beltFill || !beltKnob || !mineBtn) return;
-    
-    const now = Date.now();
-    const timeSinceLastMine = now - userData.lastMineTime;
-    const cooldown = CONFIG.MINE_COOLDOWN;
-    
-    // Calculate fill percentage (0 to 100)
-    let fillPercentage = 0;
-    
-    if (userData.lastMineTime > 0) {
-        fillPercentage = Math.min((timeSinceLastMine / cooldown) * 100, 100);
-    } else {
-        fillPercentage = 100; // First time, ready immediately
-    }
-    
-    // Update visual elements
-    beltFill.style.width = `${fillPercentage}%`;
-    beltKnob.style.left = `${fillPercentage}%`;
-    
-    // Check if ready
-    const isReady = timeSinceLastMine >= cooldown || userData.lastMineTime === 0;
-    
-    if (isReady) {
-        // Ready to claim
-        energyBelt.classList.add('belt-ready');
-        energyBelt.classList.remove('belt-emptying');
-        mineBtn.classList.add('mine-ready');
-        mineBtn.disabled = false;
-        
-        if (cooldownTimer) {
-            cooldownTimer.textContent = 'READY';
-            cooldownTimer.style.color = '#22c55e';
-            cooldownTimer.style.background = 'rgba(34, 197, 94, 0.1)';
-        }
-    } else {
-        // Waiting
-        energyBelt.classList.remove('belt-ready');
-        mineBtn.classList.remove('mine-ready');
-        mineBtn.disabled = true;
-        
-        // Update cooldown timer
-        if (cooldownTimer) {
-            const timeLeft = cooldown - timeSinceLastMine;
-            const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-            
-            cooldownTimer.textContent = `${hours}h ${minutes}m`;
-            cooldownTimer.style.color = '#ef4444';
-            cooldownTimer.style.background = 'rgba(239, 68, 68, 0.1)';
-        }
-    }
-}
-
-function animateBeltEmpty() {
-    const energyBelt = document.getElementById('energyBelt');
-    if (energyBelt) {
-        energyBelt.classList.add('belt-emptying');
-        setTimeout(() => {
-            energyBelt.classList.remove('belt-emptying');
-        }, 1000);
-    }
-}
-
-// ============================================
-// UI Updates
-// ============================================
-
-function updateUI() {
-    // Get current rank
-    const currentRank = CONFIG.RANKS.find(r => r.name === userData.rank) || CONFIG.RANKS[0];
-    
-    // Update numbers
-    if (elements.balance) {
-        elements.balance.textContent = userData.balance.toLocaleString();
-    }
-    
-    if (elements.referrals) {
-        elements.referrals.textContent = `${userData.referrals} Referrals`;
-    }
-    
-    if (elements.totalEarned) {
-        elements.totalEarned.textContent = `${userData.totalEarned.toLocaleString()} MWH`;
-    }
-    
-    // Update rank
-    if (elements.rankBadge) {
-        elements.rankBadge.textContent = userData.rank;
-    }
-    
-    // FIXED: Update mining info with current rank reward
-    if (elements.rewardAmount) {
-        elements.rewardAmount.textContent = currentRank.reward; // This is correct
-    }
-    
-    if (elements.miningPower) {
-        elements.miningPower.innerHTML = `<i class="fas fa-bolt"></i> Yield: ${currentRank.power}`;
-    }
-    
-    // Update referral statistics
-    if (elements.refCount) {
-        elements.refCount.textContent = userData.referrals;
-    }
-    
-    if (elements.refEarned) {
-        elements.refEarned.textContent = userData.referralEarnings.toLocaleString() + " MWH";
-    }
-    
-    if (elements.refRank) {
-        elements.refRank.textContent = userData.rank;
-    }
-    
-    // Update USD balance
-    updateUSDBalance();
-    
-    // Update progress bar
-    updateProgress();
-    
-    // Update referral link
-    updateReferralLink();
-    
-    // Update wallet balance
-    updateWalletUI();
-    
-    // Update energy belt
-    updateEnergyBelt();
-}
-
-function updateUSDBalance() {
-    // Calculate USD value
-    const usdValue = (userData.balance * CONFIG.MWH_TO_USD).toFixed(3);
-    
-    // Update in balance card
-    if (elements.balanceUSD) {
-        elements.balanceUSD.textContent = `≈ $${usdValue}`;
-    }
-}
-
-function updateProgress() {
-    const currentRank = CONFIG.RANKS.find(r => r.name === userData.rank) || CONFIG.RANKS[0];
-    const nextRank = CONFIG.RANKS[CONFIG.RANKS.indexOf(currentRank) + 1];
-    
-    if (nextRank) {
-        const progress = ((userData.totalEarned - currentRank.min) / (nextRank.min - currentRank.min)) * 100;
-        const clampedProgress = Math.min(progress, 100);
-        
-        if (elements.progressFill) {
-            elements.progressFill.style.width = `${clampedProgress}%`;
-        }
-        
-        if (elements.nextRank) {
-            elements.nextRank.textContent = `Next: ${nextRank.name} (${nextRank.min.toLocaleString()} MWH)`;
-        }
-        
-        if (elements.currentPoints) {
-            elements.currentPoints.textContent = `${userData.totalEarned.toLocaleString()} MWH`;
-        }
-        
-        if (elements.targetPoints) {
-            elements.targetPoints.textContent = `${nextRank.min.toLocaleString()} MWH`;
-        }
-        
-        if (elements.remainingPoints) {
-            const remaining = Math.max(0, nextRank.min - userData.totalEarned);
-            elements.remainingPoints.textContent = `${remaining.toLocaleString()} MWH`;
-        }
-        
-        // Show next rank bonus
-        if (elements.nextRankBonus) {
-            const bonusIncrease = nextRank.reward - currentRank.reward;
-            elements.nextRankBonus.textContent = `+${bonusIncrease} MWH bonus on upgrade`;
-        }
-    } else {
-        if (elements.progressFill) elements.progressFill.style.width = '100%';
-        if (elements.nextRank) elements.nextRank.textContent = 'Highest Rank! 🏆';
-        if (elements.remainingPoints) elements.remainingPoints.textContent = '0 MWH';
-        if (elements.nextRankBonus) elements.nextRankBonus.textContent = 'Max rank achieved!';
-    }
-}
-
-function checkRankUp() {
-    const currentRank = CONFIG.RANKS.find(r => r.name === userData.rank);
-    const newRank = CONFIG.RANKS.find(r => 
-        userData.totalEarned >= r.min && userData.totalEarned <= r.max
-    );
-    
-    if (newRank && newRank.name !== userData.rank) {
-        const oldRank = userData.rank;
-        userData.rank = newRank.name;
-        saveUserData();
-        updateUI();
-        
-        const oldReward = currentRank ? currentRank.reward : 250;
-        const increase = newRank.reward - oldReward;
-        
-        showMessage(`🏆 Rank Up! ${oldRank} → ${newRank.name} (+${increase} MWH bonus!)`, 'success');
-    }
-}
-
-function updateConnectionStatus() {
-    if (elements.connectionStatus) {
-        if (db) {
-            elements.connectionStatus.textContent = '🟢 Connected to Firebase';
-            elements.connectionStatus.style.color = '#22c55e';
-        } else {
-            elements.connectionStatus.textContent = '🟡 Local Storage Only';
-            elements.connectionStatus.style.color = '#f59e0b';
-        }
-    }
-}
-
-// ============================================
-// Event Listeners
-// ============================================
-
-function setupEventListeners() {
-    console.log("🎯 Setting up event listeners...");
-    
-    // Mine button
-    if (elements.mineBtn) {
-        elements.mineBtn.addEventListener('click', minePoints);
-        console.log("✅ Mine button listener added");
-    }
-    
-    // Copy button
-    if (elements.copyBtn) {
-        elements.copyBtn.addEventListener('click', copyReferralLink);
-        console.log("✅ Copy button listener added");
-    }
-    
-    // Share button
-    if (elements.shareBtn) {
-        elements.shareBtn.addEventListener('click', shareOnTelegram);
-        console.log("✅ Share button listener added");
-    }
-    
-    // Wallet buttons
-    if (elements.swapBtn) {
-        elements.swapBtn.addEventListener('click', openSwapModal);
-        console.log("✅ Swap button listener added");
-    }
-    
-    if (elements.depositBtn) {
-        elements.depositBtn.addEventListener('click', openDepositModal);
-        console.log("✅ Deposit button listener added");
-    }
-    
-    if (elements.withdrawBtn) {
-        elements.withdrawBtn.addEventListener('click', openWithdrawalModal);
-        console.log("✅ Withdraw button listener added");
-    }
-    
-    console.log("✅ Event listeners setup complete");
-}
-
-function copyReferralLink() {
-    const refLink = generateReferralLink();
-    
-    navigator.clipboard.writeText(refLink)
-        .then(() => {
-            showMessage('✅ Link copied to clipboard!', 'success');
-            if (elements.copyBtn) {
-                elements.copyBtn.innerHTML = '<i class="fas fa-check"></i>';
-                setTimeout(() => {
-                    elements.copyBtn.innerHTML = '<i class="far fa-copy"></i>';
-                }, 2000);
-            }
-        })
-        .catch(err => {
-            console.error('Copy error:', err);
-            showMessage('❌ Failed to copy link', 'error');
-        });
-}
-
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text)
-        .then(() => {
-            showMessage('✅ Address copied to clipboard!', 'success');
-        })
-        .catch(err => {
-            console.error('Copy error:', err);
-            showMessage('❌ Failed to copy', 'error');
-        });
-}
-
-function shareOnTelegram() {
-    const refLink = generateReferralLink();
-    const shareText = `🚀 *Join VIP Mining Wealth PRO!*\n\n⛏️ *Mine 250 MWH every 4 hours*\n👥 *Get +50 MWH BONUS with my link*\n💰 *Earn 50 MWH for each referral*\n\n👉 ${refLink}\n\n💎 *Start earning now!* @VIPMainingPROBot`;
-    
-    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(shareText)}`;
-    
-    window.open(shareUrl, '_blank');
-    showMessage('📱 Opening Telegram...', 'info');
-}
-
-// ============================================
-// Utility Functions
-// ============================================
-
-function showMessage(text, type = 'info') {
-    console.log(`💬 ${type.toUpperCase()}: ${text}`);
-    
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${type}`;
-    messageDiv.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : 
-                         type === 'error' ? 'exclamation-circle' : 
-                         type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
-        <span>${text}</span>
-    `;
-    
-    messageDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%) translateY(-100px);
-        background: ${type === 'success' ? '#10b981' : 
-                     type === 'error' ? '#ef4444' : 
-                     type === 'warning' ? '#f59e0b' : '#3b82f6'};
-        color: white;
-        padding: 12px 24px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        z-index: 2000;
-        opacity: 0;
-        transition: all 0.3s ease;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        font-weight: 500;
-    `;
-    
-    document.body.appendChild(messageDiv);
-    
-    setTimeout(() => {
-        messageDiv.style.opacity = '1';
-        messageDiv.style.transform = 'translateX(-50%) translateY(0)';
-    }, 10);
-    
-    setTimeout(() => {
-        messageDiv.style.opacity = '0';
-        messageDiv.style.transform = 'translateX(-50%) translateY(-100px)';
-        setTimeout(() => {
-            if (messageDiv.parentNode) {
-                messageDiv.parentNode.removeChild(messageDiv);
-            }
-        }, 300);
-    }, 3000);
-}
-
-// ============================================
 // Application Startup
 // ============================================
 
@@ -1783,32 +1751,23 @@ if (document.readyState === 'loading') {
     initApp();
 }
 
-// Export for debugging and HTML access
-window.userData = userData;
-window.walletData = walletData;
-window.showMessage = showMessage;
-window.generateReferralLink = generateReferralLink;
-window.processReferral = processReferral;
-window.saveUserData = saveUserData;
-window.updateWalletUI = updateWalletUI;
+// ============================================
+// Export Functions for HTML
+// ============================================
+
 window.openSwapModal = openSwapModal;
 window.openDepositModal = openDepositModal;
 window.openWithdrawalModal = openWithdrawalModal;
-window.switchPageFixed = switchPageFixed;
-window.reinitializeEventListeners = reinitializeEventListeners;
+window.updateWalletUI = updateWalletUI;
+window.showMessage = showMessage;
+window.switchToPage = window.switchToPage || function(page) {};
+window.closeModal = closeModal;
+window.copyToClipboard = copyToClipboard;
+window.calculateSwap = calculateSwap;
+window.setMaxSwap = setMaxSwap;
+window.executeSwap = executeSwap;
+window.validateWithdrawalAmount = validateWithdrawalAmount;
+window.validateWithdrawalAddress = validateWithdrawalAddress;
+window.submitWithdrawal = submitWithdrawal;
 
-// Debug function
-window.debugStorage = function() {
-    console.log("🔍 === STORAGE DEBUG ===");
-    console.log("User ID:", userData.userId);
-    console.log("User balance:", userData.balance);
-    console.log("Wallet USDT:", walletData.usdtBalance);
-    console.log("Wallet BNB:", walletData.bnbBalance);
-    console.log("Version: 5.0 - Complete Update");
-    console.log("🔍 === END DEBUG ===");
-};
-
-console.log("🎮 VIP Mining App v5.0 loaded successfully");
-console.log("✅ New referral system: 50/0");
-console.log("✅ Wallet system activated");
-console.log("✅ Fixed mining reward display");
+console.log("🎮 VIP Mining Wallet v6.0 loaded successfully");
