@@ -369,13 +369,47 @@ body {
 }
 
 /* =========================================== */
-/* 🏁 End of New Additions */
+/* 🆕 Updated Header with Token Price */
 /* =========================================== */
+
+/* سعر التوكن في الهيدر */
+.token-price {
+    font-size: 11px;
+    color: #22c55e;
+    font-weight: 600;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(34, 197, 94, 0.1);
+    padding: 3px 8px;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+/* زيادة ارتفاع الهيدر قليلاً */
+.app-header.compact {
+    height: 78px;
+    padding: 12px 20px;
+}
+
+/* تعديل الشعار */
+.logo > div {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.logo h1 {
+    font-size: 18px;
+    line-height: 1.2;
+    margin-bottom: 0;
+}
 
 /* ====== Header - UPDATED PROFESSIONAL DESIGN ====== */
 .app-header {
-    height: 70px;
-    padding: 0 20px;
+    height: 78px;
+    padding: 12px 20px;
     margin-bottom: 20px;
     display: flex;
     align-items: center;
@@ -408,7 +442,7 @@ body {
 }
 
 .logo h1 {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     background: linear-gradient(90deg, #fbbf24, #f59e0b);
     -webkit-background-clip: text;
@@ -463,7 +497,7 @@ body {
     opacity: 0.8;
 }
 
-/* ====== Balance Card ====== */
+/* ====== Balance Card - Updated with USD Value ====== */
 .balance-card {
     background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
     border-radius: 20px;
@@ -524,11 +558,26 @@ body {
     text-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
 }
 
-.balance-sub {
+/* قيمة الدولار تحت الرصيد */
+.balance-value {
     text-align: center;
-    color: #94a3b8;
-    font-size: 14px;
     margin-bottom: 20px;
+}
+
+.balance-sub {
+    font-size: 14px;
+    color: #94a3b8;
+    margin-bottom: 4px;
+}
+
+.balance-usd {
+    font-size: 16px;
+    font-weight: 700;
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
+    padding: 4px 12px;
+    border-radius: 10px;
+    display: inline-block;
 }
 
 .balance-stats {
@@ -550,7 +599,7 @@ body {
     color: #60a5fa;
 }
 
-/* ====== Mining Section ====== */
+/* ====== Mining Section - Updated ====== */
 .mining-section {
     background: rgba(30, 41, 59, 0.8);
     border-radius: 20px;
@@ -687,6 +736,19 @@ body {
     font-weight: 700;
     min-width: 60px;
     text-align: center;
+}
+
+/* مكافأة الرتبة التالية */
+.next-rank-bonus {
+    text-align: center;
+    color: #f59e0b;
+    font-size: 13px;
+    font-weight: 600;
+    margin: 10px 0;
+    padding: 6px 12px;
+    background: rgba(245, 158, 11, 0.1);
+    border-radius: 10px;
+    border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
 .mining-tip {
@@ -1091,6 +1153,14 @@ body {
     font-size: 14px;
 }
 
+/* تعديل نصوص الرتب في قسم التقدم */
+#currentPoints,
+#targetPoints,
+#remainingPoints {
+    color: #fbbf24;
+    font-weight: 600;
+}
+
 /* ====== Footer ====== */
 .app-footer {
     text-align: center;
@@ -1217,8 +1287,8 @@ body {
     }
     
     .app-header {
-        padding: 15px;
-        height: 65px;
+        padding: 12px 15px;
+        height: 75px;
     }
     
     .logo i {
@@ -1227,7 +1297,12 @@ body {
     }
     
     .logo h1 {
-        font-size: 18px;
+        font-size: 16px;
+    }
+    
+    .token-price {
+        font-size: 10px;
+        padding: 2px 6px;
     }
     
     .user-avatar {
@@ -1253,6 +1328,11 @@ body {
         font-size: 40px;
     }
     
+    .balance-usd {
+        font-size: 14px;
+        padding: 3px 10px;
+    }
+    
     .referral-stats,
     .progress-stats,
     .bonus-grid {
@@ -1273,6 +1353,12 @@ body {
     .mining-section {
         padding: 20px;
         padding-bottom: 35px;
+    }
+    
+    .next-rank-bonus {
+        font-size: 12px;
+        padding: 5px 10px;
+        margin: 8px 0;
     }
     
     .energy-belt {
@@ -1335,6 +1421,10 @@ body {
         font-size: 36px;
     }
     
+    .balance-usd {
+        font-size: 13px;
+    }
+    
     .mine-reward {
         font-size: 18px !important;
     }
@@ -1344,8 +1434,8 @@ body {
     }
     
     .app-header {
-        height: 60px;
-        padding: 0 15px;
+        height: 70px;
+        padding: 10px 15px;
     }
     
     .logo {
@@ -1358,7 +1448,11 @@ body {
     }
     
     .logo h1 {
-        font-size: 16px;
+        font-size: 15px;
+    }
+    
+    .token-price {
+        font-size: 9px;
     }
     
     .user-avatar {
@@ -1379,6 +1473,10 @@ body {
     .mining-section {
         padding: 15px;
         padding-bottom: 30px;
+    }
+    
+    .next-rank-bonus {
+        font-size: 11px;
     }
     
     .energy-belt {
