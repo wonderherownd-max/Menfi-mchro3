@@ -83,14 +83,14 @@ const CONFIG = {
     REFERRER_REWARD: 50,
     
     MWH_TO_USD: 0.001,
-    BNB_TO_USD: 875, // Updated BNB price
+    BNB_TO_USD: 875,
     TON_TO_USD: 1.6,
     ETH_TO_USD: 3000,
     
     // Swap Rates
     MIN_SWAP: 10000,
-    MWH_TO_USDT_RATE: 1000, // 1,000 MWH = 1 USDT
-    BNB_TO_MWH_RATE: 870000, // 1 BNB = 870,000 MWH (NEW)
+    MWH_TO_USDT_RATE: 1000,
+    BNB_TO_MWH_RATE: 870000,
     
     // Withdrawal & Deposit Limits
     MIN_WITHDRAWAL: 50,
