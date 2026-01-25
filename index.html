@@ -175,6 +175,28 @@
                 </div>
             </div>
         </div>
+        
+        <!-- App Footer -->
+        <div class="app-footer">
+            <div class="footer-links">
+                <a href="#" class="footer-link" onclick="showComingSoon()">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Help</span>
+                </a>
+                <a href="#" class="footer-link" onclick="showComingSoon()">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Terms</span>
+                </a>
+                <a href="#" class="footer-link" onclick="showComingSoon()">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Privacy</span>
+                </a>
+            </div>
+            <div class="footer-copyright">
+                <p>VIP Mining Wealth © 2024</p>
+                <p id="connectionStatus">🟡 Connecting...</p>
+            </div>
+        </div>
     </div>
 
     <!-- =========================================== -->
@@ -182,7 +204,7 @@
     <!-- =========================================== -->
 
     <div id="walletPage" class="page hidden">
-        <div class="page-header compact">
+        <div class="page-header">
             <div class="back-btn" onclick="switchToPage('home')">
                 <i class="fas fa-arrow-left"></i>
             </div>
@@ -192,11 +214,11 @@
         <div class="wallet-container">
             <!-- Total Balance -->
             <div class="total-balance-card">
-                <div class="total-balance-label compact">
+                <div class="total-balance-label">
                     <i class="fas fa-chart-line"></i> Total Balance
                 </div>
                 <div class="total-balance-amount" id="totalBalanceUSD">$0.00</div>
-                <div class="total-balance-sub compact">All assets combined</div>
+                <div class="total-balance-sub">All assets combined</div>
             </div>
 
             <!-- Cryptocurrency Cards -->
@@ -367,6 +389,39 @@
                 </div>
             </div>
 
+            <!-- Quick Actions -->
+            <div class="wallet-quick-actions">
+                <div class="action-title">
+                    <i class="fas fa-bolt"></i> Quick Actions
+                </div>
+                <div class="actions-grid">
+                    <div class="quick-action" onclick="openSwapModal('MWH')">
+                        <div class="action-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <div class="action-text">Swap MWH</div>
+                    </div>
+                    <div class="quick-action" onclick="openDepositModal('BNB')">
+                        <div class="action-icon">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <div class="action-text">Deposit BNB</div>
+                    </div>
+                    <div class="quick-action" onclick="openWithdrawalModal()">
+                        <div class="action-icon">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <div class="action-text">Withdraw USDT</div>
+                    </div>
+                    <div class="quick-action" onclick="showComingSoon()">
+                        <div class="action-icon">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <div class="action-text">History</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Wallet Info -->
             <div class="wallet-info-card">
                 <div class="info-header">
@@ -400,7 +455,7 @@
     <!-- =========================================== -->
 
     <div id="earningPage" class="page hidden">
-        <div class="page-header compact">
+        <div class="page-header">
             <div class="back-btn" onclick="switchToPage('home')">
                 <i class="fas fa-arrow-left"></i>
             </div>
