@@ -175,7 +175,6 @@
                 </div>
             </div>
         </div>
-        <!-- تم حذف الفوتر App Footer -->
     </div>
 
     <!-- =========================================== -->
@@ -191,7 +190,7 @@
         </div>
         
         <div class="wallet-container">
-            <!-- Total Balance -->
+            <!-- Total Balance - Compact Version -->
             <div class="total-balance-card compact">
                 <div class="total-balance-label">
                     <i class="fas fa-chart-line"></i> Assets
@@ -200,7 +199,7 @@
                 <div class="total-balance-sub">Total Balance</div>
             </div>
 
-            <!-- Quick Actions (تم تعديل الهيدر) -->
+            <!-- Quick Actions - Compact Version -->
             <div class="wallet-quick-actions compact">
                 <div class="action-title">
                     <i class="fas fa-bolt"></i> Quick Actions
@@ -233,25 +232,28 @@
                 </div>
             </div>
 
-            <!-- Cryptocurrency Cards -->
+            <!-- Cryptocurrency Cards - Original Structure with Compact Height -->
             <div class="crypto-grid">
                 <!-- MWH Card -->
-                <div class="crypto-card compact" id="mwhCard">
-                    <div class="crypto-header compact">
-                        <div class="crypto-title">
-                            <div class="crypto-name-value">
-                                <span class="crypto-name">MWH Token</span>
-                                <span class="crypto-total-value" id="walletMWHValue">$0.025</span>
-                            </div>
-                            <div class="crypto-balance-display">
-                                <span class="balance-label">Balance:</span>
-                                <span class="balance-amount-compact" id="walletMWH">25</span>
-                                <span class="balance-currency">MWH</span>
-                            </div>
-                            <div class="crypto-price-left">
-                                1 MWH ≈ $0.001 · MineWealth
-                            </div>
+                <div class="crypto-card compact">
+                    <div class="crypto-header">
+                        <div class="crypto-icon">
+                            <i class="fas fa-gem"></i>
                         </div>
+                        <div class="crypto-title">
+                            <h3>MWH Token</h3>
+                            <div class="crypto-symbol">MineWealth</div>
+                        </div>
+                        <div class="crypto-price">
+                            1 MWH ≈ $0.001
+                        </div>
+                    </div>
+                    <div class="crypto-balance">
+                        <div class="balance-amount" id="walletMWH">0</div>
+                        <div class="balance-currency">MWH</div>
+                    </div>
+                    <div class="crypto-value" id="walletMWHValue">
+                        ≈ $0.00
                     </div>
                     <div class="crypto-actions">
                         <button class="action-btn-small" onclick="openSwapModal('MWH')">
@@ -264,27 +266,34 @@
                 </div>
 
                 <!-- USDT Card -->
-                <div class="crypto-card compact" id="usdtCard">
-                    <div class="crypto-header compact">
-                        <div class="crypto-title">
-                            <div class="crypto-name-value">
-                                <span class="crypto-name">USDT</span>
-                                <span class="crypto-total-value" id="walletUSDTValue">$0.00</span>
-                            </div>
-                            <div class="crypto-balance-display">
-                                <span class="balance-label">Balance:</span>
-                                <span class="balance-amount-compact" id="walletUSDT">0</span>
-                                <span class="balance-currency">USDT</span>
-                            </div>
-                            <div class="crypto-price-left">
-                                1 USDT ≈ $1.00 · Tether
-                            </div>
+                <div class="crypto-card compact">
+                    <div class="crypto-header">
+                        <div class="crypto-icon usdt">
+                            <i class="fas fa-coins"></i>
                         </div>
+                        <div class="crypto-title">
+                            <h3>Tether</h3>
+                            <div class="crypto-symbol">USDT</div>
+                        </div>
+                        <div class="crypto-price">
+                            1 USDT ≈ $1.00
+                        </div>
+                    </div>
+                    <div class="crypto-balance">
+                        <div class="balance-amount" id="walletUSDT">0</div>
+                        <div class="balance-currency">USDT</div>
+                    </div>
+                    <div class="crypto-value" id="walletUSDTValue">
+                        ≈ $0.00
                     </div>
                     <div class="crypto-withdrawal-info" id="usdtWithdrawalInfo" style="display: none;">
                         <div class="withdrawal-minimum">
                             <i class="fas fa-info-circle"></i>
                             Min withdrawal: 50 USDT
+                        </div>
+                        <div class="withdrawal-fee" id="usdtWithdrawalFee" style="display: none;">
+                            <i class="fas fa-gas-pump"></i>
+                            Network fee: 0.0005 BNB
                         </div>
                     </div>
                     <div class="crypto-actions">
@@ -301,22 +310,25 @@
                 </div>
 
                 <!-- BNB Card -->
-                <div class="crypto-card compact" id="bnbCard">
-                    <div class="crypto-header compact">
-                        <div class="crypto-title">
-                            <div class="crypto-name-value">
-                                <span class="crypto-name">BNB</span>
-                                <span class="crypto-total-value" id="walletBNBValue">$0.00</span>
-                            </div>
-                            <div class="crypto-balance-display">
-                                <span class="balance-label">Balance:</span>
-                                <span class="balance-amount-compact" id="walletBNB">0.0000</span>
-                                <span class="balance-currency">BNB</span>
-                            </div>
-                            <div class="crypto-price-left">
-                                1 BNB ≈ $875 · Binance Coin
-                            </div>
+                <div class="crypto-card compact">
+                    <div class="crypto-header">
+                        <div class="crypto-icon bnb">
+                            <i class="fas fa-bolt"></i>
                         </div>
+                        <div class="crypto-title">
+                            <h3>Binance Coin</h3>
+                            <div class="crypto-symbol">BNB</div>
+                        </div>
+                        <div class="crypto-price">
+                            1 BNB ≈ $875
+                        </div>
+                    </div>
+                    <div class="crypto-balance">
+                        <div class="balance-amount" id="walletBNB">0.0000</div>
+                        <div class="balance-currency">BNB</div>
+                    </div>
+                    <div class="crypto-value" id="walletBNBValue">
+                        ≈ $0.00
                     </div>
                     <div class="crypto-actions">
                         <button class="action-btn-small" onclick="openDepositModal('BNB')">
@@ -329,22 +341,25 @@
                 </div>
 
                 <!-- TON Card -->
-                <div class="crypto-card compact" id="tonCard">
-                    <div class="crypto-header compact">
-                        <div class="crypto-title">
-                            <div class="crypto-name-value">
-                                <span class="crypto-name">TON</span>
-                                <span class="crypto-total-value" id="walletTONValue">$0.00</span>
-                            </div>
-                            <div class="crypto-balance-display">
-                                <span class="balance-label">Balance:</span>
-                                <span class="balance-amount-compact" id="walletTON">0</span>
-                                <span class="balance-currency">TON</span>
-                            </div>
-                            <div class="crypto-price-left">
-                                1 TON ≈ $1.6 · Toncoin
-                            </div>
+                <div class="crypto-card compact">
+                    <div class="crypto-header">
+                        <div class="crypto-icon ton">
+                            <i class="fas fa-rocket"></i>
                         </div>
+                        <div class="crypto-title">
+                            <h3>Toncoin</h3>
+                            <div class="crypto-symbol">TON</div>
+                        </div>
+                        <div class="crypto-price">
+                            1 TON ≈ $1.6
+                        </div>
+                    </div>
+                    <div class="crypto-balance">
+                        <div class="balance-amount" id="walletTON">0</div>
+                        <div class="balance-currency">TON</div>
+                    </div>
+                    <div class="crypto-value" id="walletTONValue">
+                        ≈ $0.00
                     </div>
                     <div class="crypto-actions">
                         <button class="action-btn-small disabled" onclick="showComingSoon()">
@@ -357,22 +372,25 @@
                 </div>
 
                 <!-- ETH Card -->
-                <div class="crypto-card compact" id="ethCard">
-                    <div class="crypto-header compact">
-                        <div class="crypto-title">
-                            <div class="crypto-name-value">
-                                <span class="crypto-name">ETH</span>
-                                <span class="crypto-total-value" id="walletETHValue">$0.00</span>
-                            </div>
-                            <div class="crypto-balance-display">
-                                <span class="balance-label">Balance:</span>
-                                <span class="balance-amount-compact" id="walletETH">0.0000</span>
-                                <span class="balance-currency">ETH</span>
-                            </div>
-                            <div class="crypto-price-left">
-                                1 ETH ≈ $3,000.00 · Ethereum
-                            </div>
+                <div class="crypto-card compact">
+                    <div class="crypto-header">
+                        <div class="crypto-icon eth">
+                            <i class="fab fa-ethereum"></i>
                         </div>
+                        <div class="crypto-title">
+                            <h3>Ethereum</h3>
+                            <div class="crypto-symbol">ETH</div>
+                        </div>
+                        <div class="crypto-price">
+                            1 ETH ≈ $3,000.00
+                        </div>
+                    </div>
+                    <div class="crypto-balance">
+                        <div class="balance-amount" id="walletETH">0.0000</div>
+                        <div class="balance-currency">ETH</div>
+                    </div>
+                    <div class="crypto-value" id="walletETHValue">
+                        ≈ $0.00
                     </div>
                     <div class="crypto-actions">
                         <button class="action-btn-small disabled" onclick="showComingSoon()">
@@ -401,8 +419,8 @@
                         <span class="info-value">1,000 MWH = 1 USDT</span>
                     </div>
                     <div class="info-item">
-                        <span>BNB Deposit:</span>
-                        <span class="info-value">Min 0.015 BNB</span>
+                        <span>BNB to MWH Rate:</span>
+                        <span class="info-value">1 BNB = 870,000 MWH</span>
                     </div>
                     <div class="info-item">
                         <span>Network:</span>
