@@ -996,7 +996,7 @@ function openDepositModal(currency) {
                         </div>
                         <div class="network-info">
                             <i class="fas fa-network-wired"></i>
-                            <span>Network: BEP20 (BNB Smart Chain)</span>
+                            <span>Minimum deposit 10 USDT</span>
                         </div>
                     </div>
                     
