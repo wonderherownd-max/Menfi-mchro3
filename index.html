@@ -176,6 +176,22 @@
             </div>
         </div>
         
+        <!-- History Button -->
+        <div class="wallet-info-card" style="margin-top: 15px;">
+            <div class="info-header">
+                <i class="fas fa-history"></i>
+                <h4>Transaction History</h4>
+            </div>
+            <div class="info-content">
+                <div class="info-item">
+                    <span>View all your transactions:</span>
+                    <button class="action-btn-small" onclick="showTransactionHistory()" style="margin-top: 10px;">
+                        <i class="fas fa-history"></i> View History
+                    </button>
+                </div>
+            </div>
+        </div>
+        
         <!-- App Footer - سيتم حذفه في CSS -->
         <div class="app-footer">
             <div class="footer-links">
@@ -246,7 +262,7 @@
                         </div>
                         <div class="action-text">Withdraw USDT</div>
                     </div>
-                    <div class="quick-action" onclick="showNoHistoryMessage()">
+                    <div class="quick-action" onclick="showTransactionHistory()">
                         <div class="action-icon">
                             <i class="fas fa-history"></i>
                         </div>
@@ -610,32 +626,20 @@
             }
         }
         
-        function initializeHomePage() {
-            const homePage = document.querySelector('.container');
-            if (homePage) {
-                homePage.classList.remove('hidden');
-                homePage.classList.add('active');
-            }
-            
-            document.querySelectorAll('.nav-item').forEach(item => {
-                const text = item.querySelector('span').textContent.toLowerCase();
-                if (text.includes('home')) {
-                    item.classList.add('active');
-                } else {
-                    item.classList.remove('active');
-                }
-            });
-        }
-        
-        function showNoHistoryMessage() {
-            if (window.showMessage) {
-                window.showMessage('📭 No transaction history available yet', 'info');
+        function showTransactionHistory() {
+            if (window.showTransactionHistory) {
+                window.showTransactionHistory();
             } else {
-                console.log('📭 No transaction history available yet');
+                console.log('📭 Transaction history feature loading...');
+                setTimeout(() => {
+                    if (window.showTransactionHistory) {
+                        window.showTransactionHistory();
+                    } else {
+                        console.log('❌ Transaction history function not available');
+                    }
+                }, 500);
             }
         }
-        
-        window.showNoHistoryMessage = showNoHistoryMessage;
         
         function showComingSoon() {
             if (window.showMessage) {
@@ -647,6 +651,7 @@
         
         window.switchToPage = switchToPage;
         window.showComingSoon = showComingSoon;
+        window.showTransactionHistory = showTransactionHistory;
         
         console.log("✅ Navigation system ready");
     </script>
