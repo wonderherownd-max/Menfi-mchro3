@@ -233,11 +233,12 @@
                         </div>
                         <div class="action-text">Swap MWH</div>
                     </div>
-                    <div class="quick-action" onclick="openDepositModal('BNB')">
+                    <!-- تعديل زر Deposit BNB ليكون Deposit USDT في الكويق اكشنز -->
+                    <div class="quick-action" onclick="openDepositModal('USDT')">
                         <div class="action-icon">
                             <i class="fas fa-download"></i>
                         </div>
-                        <div class="action-text">Deposit BNB</div>
+                        <div class="action-text">Deposit USDT</div>
                     </div>
                     <div class="quick-action" onclick="openWithdrawalModal()">
                         <div class="action-icon">
@@ -254,7 +255,7 @@
                 </div>
             </div>
 
-            <!-- Cryptocurrency Cards - الأصلية مع إضافة Deposit لـ USDT و Swap لـ BNB -->
+            <!-- Cryptocurrency Cards -->
             <div class="crypto-grid">
                 <!-- MWH Card -->
                 <div class="crypto-card" id="mwhCard">
@@ -281,13 +282,13 @@
                         <button class="action-btn-small" onclick="openSwapModal('MWH')">
                             <i class="fas fa-exchange-alt"></i> Swap
                         </button>
-                        <button class="action-btn-small" onclick="showComingSoon()">
+                        <button class="action-btn-small disabled" onclick="showComingSoon()">
                             <i class="fas fa-download"></i> Receive
                         </button>
                     </div>
                 </div>
 
-                <!-- USDT Card - مع إضافة زر Deposit -->
+                <!-- USDT Card -->
                 <div class="crypto-card" id="usdtCard">
                     <div class="crypto-header">
                         <div class="crypto-icon usdt">
@@ -322,6 +323,7 @@
                         <button class="action-btn-small" onclick="openSwapModal('USDT')">
                             <i class="fas fa-exchange-alt"></i> Swap
                         </button>
+                        <!-- زر الإيداع يعمل الآن -->
                         <button class="action-btn-small" onclick="openDepositModal('USDT')">
                             <i class="fas fa-download"></i> Deposit
                         </button>
@@ -331,7 +333,7 @@
                     </div>
                 </div>
 
-                <!-- BNB Card - مع إضافة زر Swap -->
+                <!-- BNB Card -->
                 <div class="crypto-card" id="bnbCard">
                     <div class="crypto-header">
                         <div class="crypto-icon bnb">
@@ -353,6 +355,7 @@
                         ≈ $0.00
                     </div>
                     <div class="crypto-actions">
+                        <!-- زر الإيداع يعمل الآن -->
                         <button class="action-btn-small" onclick="openDepositModal('BNB')">
                             <i class="fas fa-download"></i> Deposit
                         </button>
@@ -454,7 +457,7 @@
     </div>
 
     <!-- =========================================== -->
-    <!-- Earning Page - الأصلية بدون تعديل -->
+    <!-- Earning Page -->
     <!-- =========================================== -->
 
     <div id="earningPage" class="page hidden">
