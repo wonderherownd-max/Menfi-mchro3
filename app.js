@@ -996,7 +996,7 @@ function openDepositModal(currency) {
                         </div>
                         <div class="network-info">
                             <i class="fas fa-network-wired"></i>
-                            <span>Minimum deposit 10 USDT</span>
+                            <span>Minimum deposit ${currency === 'USDT' ? '10 USDT' : '0.015 BNB'}</span>
                         </div>
                     </div>
                     
@@ -1067,7 +1067,7 @@ function openDepositModal(currency) {
                             <i class="fas fa-clock"></i>
                             <div>
                                 <div class="info-label">Review Time</div>
-                                <div class="info-value">12-24 hours (manual review)</div>
+                                <div class="info-value">1-5 Minutes(Confirmation 20 networks)</div>
                             </div>
                         </div>
                     </div>
@@ -1079,7 +1079,7 @@ function openDepositModal(currency) {
                         </div>
                         <div class="note-content">
                             <strong>Note:</strong> Your deposit will be manually reviewed by our team.
-                            The balance will be added to your account only after verification.
+                            The balance will be added to your account instant after verification.
                             Check your transaction status in the History section.
                         </div>
                     </div>
