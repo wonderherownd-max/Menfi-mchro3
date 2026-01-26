@@ -2931,43 +2931,64 @@ body {
 
 @media (max-width: 480px) {
     body {
-        padding: 15px;
-        padding-bottom: 80px;
-    }
-    
-    .container {
-        padding-bottom: 20px;
-    }
-    
-    .app-header {
-        padding: 12px 15px;
-        height: 75px;
-    }
-    
-    .logo i {
-        font-size: 22px;
-        padding: 8px;
-    }
-    
-    .logo h1 {
-        font-size: 16px;
-    }
-    
-    .token-price {
-        font-size: 10px;
-        padding: 2px 6px;
-    }
-    
-    .user-avatar {
-        width: 36px;
-        height: 36px;
-        font-size: 14px;
-    }
-    
-    .username {
-        font-size: 13px;
-        max-width: 90px;
-    }
+    padding: 15px;
+    padding-bottom: 80px;
+}
+
+.container {
+    padding-bottom: 20px;
+}
+
+.app-header {
+    padding: 12px 15px;
+    height: 75px;
+}
+
+.logo i {
+    font-size: 22px;
+    padding: 8px;
+}
+
+.logo h1 {
+    font-size: 16px;
+}
+
+.token-price {
+    font-size: 10px;
+    padding: 2px 6px;
+}
+
+.user-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+}
+
+.username {
+    font-size: 13px;
+    max-width: 90px;
+}
+
+/* =============================== */
+/* توسيع حقل مبلغ السحب هنا */
+/* =============================== */
+#withdrawalAmount {
+    width: 280px !important;
+    min-width: 280px !important;
+    max-width: 95% !important;
+    font-size: 18px !important;
+    letter-spacing: 1px !important;
+}
+
+.amount-input-with-max {
+    width: 100% !important;
+}
+
+.form-input, 
+.amount-input {
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
     
     .user-id {
         font-size: 10px;
