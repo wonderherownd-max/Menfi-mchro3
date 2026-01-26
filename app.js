@@ -2727,3 +2727,7 @@ window.submitDepositRequest = submitDepositRequest;
 window.switchHistoryTab = switchHistoryTab;
 
 console.log("🎮 VIP Mining Wallet v6.3 loaded successfully");
+// ============================================
+// Export Functions for HTML - إضافة التاريخ
+// ============================================
+window.showTransactionHistory = showTransactionHistory;
