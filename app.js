@@ -1,5 +1,5 @@
 // ============================================
-// VIP Mining Mini App - PROFESSIONAL WALLET v6.2
+// VIP Mining Mini App - PROFESSIONAL WALLET v6.3
 // ============================================
 
 // Telegram WebApp
@@ -63,7 +63,10 @@ let walletData = {
     ethBalance: 0,
     totalWithdrawn: 0,
     pendingWithdrawals: [],
-    usedTransactions: [], // تخزين الهاشات المستخدمة
+    pendingDeposits: [], // طلبات الإيداع المعلقة
+    depositHistory: [], // سجل الإيداعات المعتمدة
+    withdrawalHistory: [], // سجل السحوبات المكتملة
+    usedTransactions: [],
     lastUpdate: Date.now()
 };
 
@@ -114,7 +117,7 @@ const elements = {};
 // ============================================
 
 async function initApp() {
-    console.log("🚀 Starting VIP Mining App v6.2...");
+    console.log("🚀 Starting VIP Mining App v6.3...");
     
     try {
         // Cache DOM elements
@@ -504,6 +507,10 @@ function initWallet() {
             walletData.tonBalance = parsed.tonBalance || 0;
             walletData.ethBalance = parsed.ethBalance || 0;
             walletData.totalWithdrawn = parsed.totalWithdrawn || 0;
+            walletData.pendingWithdrawals = parsed.pendingWithdrawals || [];
+            walletData.pendingDeposits = parsed.pendingDeposits || [];
+            walletData.depositHistory = parsed.depositHistory || [];
+            walletData.withdrawalHistory = parsed.withdrawalHistory || [];
             walletData.usedTransactions = parsed.usedTransactions || [];
             console.log("✅ Wallet data loaded");
         } catch (e) {
@@ -592,7 +599,7 @@ function updateTotalBalance() {
 }
 
 // ============================================
-// Swap System (MWH ↔ USDT ↔ BNB)
+// Swap System (MWH ↔ USDT ↔ BNB) - IMPROVED PROFESSIONAL DESIGN
 // ============================================
 
 function openSwapModal(currency) {
@@ -624,61 +631,145 @@ function openSwapModal(currency) {
     
     const modalHTML = `
         <div class="modal-overlay" id="swapModal">
-            <div class="modal-content">
+            <div class="modal-content swap-modal-professional">
                 <div class="modal-header">
                     <h3><i class="fas fa-exchange-alt"></i> Swap ${fromCurrency} to ${toCurrency}</h3>
                     <button class="modal-close" onclick="closeModal()">×</button>
                 </div>
                 <div class="modal-body">
-                    <div class="swap-info">
-                        <p>Fixed Rate: <strong>${rateText}</strong></p>
-                        <p>Minimum Swap: <strong>${minSwap.toLocaleString()} ${fromCurrency}</strong></p>
-                        <p>Available: <strong>${formatNumber(fromBalance, isBNB ? 4 : isUSDT ? 2 : 0)} ${fromCurrency}</strong></p>
+                    <!-- Swap Overview -->
+                    <div class="swap-overview">
+                        <div class="swap-pair">
+                            <div class="swap-from-currency">
+                                <div class="currency-icon ${fromCurrency.toLowerCase()}">
+                                    <i class="fas ${fromCurrency === 'MWH' ? 'fa-gem' : fromCurrency === 'USDT' ? 'fa-coins' : 'fa-bolt'}"></i>
+                                </div>
+                                <div class="currency-info">
+                                    <div class="currency-name">${fromCurrency}</div>
+                                    <div class="currency-balance">Balance: ${formatNumber(fromBalance, isBNB ? 4 : isUSDT ? 2 : 0)}</div>
+                                </div>
+                            </div>
+                            <div class="swap-arrow-container">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <div class="swap-to-currency">
+                                <div class="currency-icon ${toCurrency.toLowerCase()}">
+                                    <i class="fas ${toCurrency === 'MWH' ? 'fa-gem' : toCurrency === 'USDT' ? 'fa-coins' : 'fa-bolt'}"></i>
+                                </div>
+                                <div class="currency-info">
+                                    <div class="currency-name">${toCurrency}</div>
+                                    <div class="currency-balance">Balance: ${formatNumber(toBalance, toCurrency === 'USDT' ? 2 : toCurrency === 'BNB' ? 4 : 0)}</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="swap-inputs">
-                        <div class="swap-from">
-                            <label>From (${fromCurrency})</label>
-                            <div class="input-with-max">
-                                <input type="number" id="swapFromAmount" 
-                                       placeholder="Enter amount" 
+                    <!-- Rate Information -->
+                    <div class="swap-rate-info">
+                        <div class="rate-card">
+                            <div class="rate-label">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Exchange Rate</span>
+                            </div>
+                            <div class="rate-value">${rateText}</div>
+                        </div>
+                        <div class="rate-card">
+                            <div class="rate-label">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span>Minimum Swap</span>
+                            </div>
+                            <div class="rate-value">${minSwap.toLocaleString()} ${fromCurrency}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Swap Inputs -->
+                    <div class="swap-inputs-professional">
+                        <div class="swap-amount-section">
+                            <div class="amount-header">
+                                <div class="amount-label">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>You Send</span>
+                                </div>
+                                <div class="amount-balance">Available: ${formatNumber(fromBalance, isBNB ? 4 : isUSDT ? 2 : 0)} ${fromCurrency}</div>
+                            </div>
+                            <div class="amount-input-container">
+                                <div class="currency-prefix">${fromCurrency}</div>
+                                <input type="number" 
+                                       id="swapFromAmount" 
+                                       class="swap-amount-input"
+                                       placeholder="0.00"
                                        min="${minSwap}" 
                                        step="${isBNB ? '0.001' : isUSDT ? '0.01' : '1000'}"
                                        oninput="calculateSwap('${fromCurrency}', '${toCurrency}')">
-                                <button class="max-btn" onclick="setMaxSwap('${fromCurrency}')">MAX</button>
+                                <button class="max-amount-btn-swap" onclick="setMaxSwap('${fromCurrency}')">MAX</button>
                             </div>
                         </div>
                         
-                        <div class="swap-arrow">
-                            <i class="fas fa-exchange-alt"></i>
-                        </div>
-                        
-                        <div class="swap-to">
-                            <label>To (${toCurrency})</label>
-                            <input type="text" id="swapToAmount" readonly>
-                        </div>
-                    </div>
-                    
-                    <div class="swap-details">
-                        <div class="detail-row">
-                            <span>Rate:</span>
-                            <span>${rateText}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span>You receive:</span>
-                            <span id="swapReceive">0 ${toCurrency}</span>
+                        <div class="swap-amount-section">
+                            <div class="amount-header">
+                                <div class="amount-label">
+                                    <i class="fas fa-arrow-down"></i>
+                                    <span>You Receive</span>
+                                </div>
+                                <div class="amount-balance">≈ ${(fromBalance * (fromCurrency === 'MWH' ? 1/CONFIG.MWH_TO_USDT_RATE : fromCurrency === 'USDT' ? CONFIG.MWH_TO_USDT_RATE : CONFIG.BNB_TO_MWH_RATE)).toFixed(toCurrency === 'USDT' ? 2 : 0)} ${toCurrency}</div>
+                            </div>
+                            <div class="amount-input-container">
+                                <div class="currency-prefix">${toCurrency}</div>
+                                <input type="text" 
+                                       id="swapToAmount" 
+                                       class="swap-amount-input"
+                                       placeholder="0.00"
+                                       readonly>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="swap-warning" id="swapWarning" style="display: none;">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <span id="swapWarningText"></span>
+                    <!-- Swap Details -->
+                    <div class="swap-details-professional">
+                        <div class="detail-header">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Swap Details</span>
+                        </div>
+                        <div class="details-grid">
+                            <div class="detail-item">
+                                <span>Exchange Rate:</span>
+                                <span class="detail-value">${rateText}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span>Estimated Fee:</span>
+                                <span class="detail-value">0.1%</span>
+                            </div>
+                            <div class="detail-item">
+                                <span>Minimum Amount:</span>
+                                <span class="detail-value">${minSwap.toLocaleString()} ${fromCurrency}</span>
+                            </div>
+                            <div class="detail-item total">
+                                <span>Total Receive:</span>
+                                <span class="detail-value" id="swapReceive">0 ${toCurrency}</span>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="swap-actions">
-                        <button class="btn-secondary" onclick="closeModal()">Cancel</button>
-                        <button class="btn-primary" id="confirmSwapBtn" 
+                    <!-- Warning Message -->
+                    <div class="swap-warning-professional" id="swapWarning" style="display: none;">
+                        <div class="warning-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="warning-content">
+                            <div class="warning-title">Cannot Proceed</div>
+                            <div class="warning-text" id="swapWarningText"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="swap-actions-professional">
+                        <button class="btn-swap-cancel" onclick="closeModal()">
+                            <i class="fas fa-times"></i>
+                            Cancel
+                        </button>
+                        <button class="btn-swap-confirm" id="confirmSwapBtn" 
                                 onclick="executeSwap('${fromCurrency}', '${toCurrency}')" disabled>
+                            <i class="fas fa-exchange-alt"></i>
                             Confirm Swap
                         </button>
                     </div>
@@ -688,6 +779,10 @@ function openSwapModal(currency) {
     `;
     
     document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Add CSS for professional swap modal
+    addSwapModalCSS();
+    
     setTimeout(() => {
         const input = document.getElementById('swapFromAmount');
         if (input) input.focus();
@@ -723,6 +818,10 @@ function calculateSwap(fromCurrency, toCurrency) {
         toAmount = fromAmount * rate;
     }
     
+    // Apply 0.1% fee
+    const fee = toAmount * 0.001;
+    toAmount -= fee;
+    
     // Format based on target currency
     const decimals = toCurrency === 'USDT' ? 2 : toCurrency === 'BNB' ? 4 : 0;
     document.getElementById('swapToAmount').value = toAmount.toFixed(decimals);
@@ -733,10 +832,11 @@ function calculateSwap(fromCurrency, toCurrency) {
     const warningText = document.getElementById('swapWarningText');
     
     confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> Confirm Swap';
     warning.style.display = 'none';
     
     if (fromAmount <= 0) {
-        warningText.textContent = "Please enter an amount";
+        warningText.textContent = "Please enter an amount to swap";
         warning.style.display = 'flex';
         return;
     }
@@ -758,6 +858,13 @@ function calculateSwap(fromCurrency, toCurrency) {
             warning.style.display = 'flex';
             return;
         }
+    } else if (fromCurrency === 'USDT') {
+        minSwap = 0.01;
+        if (fromAmount < minSwap) {
+            warningText.textContent = `Minimum swap is ${minSwap} USDT`;
+            warning.style.display = 'flex';
+            return;
+        }
     }
     
     if (fromAmount > fromBalance) {
@@ -766,6 +873,9 @@ function calculateSwap(fromCurrency, toCurrency) {
         return;
     }
     
+    // Update button to show estimated receive
+    const receiveAmount = toAmount.toFixed(decimals);
+    confirmBtn.innerHTML = `<i class="fas fa-exchange-alt"></i> Swap for ${receiveAmount} ${toCurrency}`;
     confirmBtn.disabled = false;
 }
 
@@ -793,6 +903,7 @@ function executeSwap(fromCurrency, toCurrency) {
     let minSwap = 0;
     if (fromCurrency === 'MWH') minSwap = CONFIG.MIN_SWAP;
     else if (fromCurrency === 'BNB') minSwap = 0.001;
+    else if (fromCurrency === 'USDT') minSwap = 0.01;
     
     if (fromAmount < minSwap) {
         showMessage(`Minimum swap is ${minSwap.toLocaleString()} ${fromCurrency}`, 'error');
@@ -837,7 +948,7 @@ function executeSwap(fromCurrency, toCurrency) {
 }
 
 // ============================================
-// Deposit System - NEW & IMPROVED
+// Deposit System - UPDATED (No Auto Balance Addition)
 // ============================================
 
 function openDepositModal(currency) {
@@ -904,7 +1015,7 @@ function openDepositModal(currency) {
                                    oninput="validateTransactionHash()"
                                    maxlength="100">
                             <div class="input-hint">
-                                Required to verify and credit your deposit
+                                Required to verify and process your deposit
                             </div>
                         </div>
                         <div class="transaction-status" id="transactionStatus" style="display: none;">
@@ -938,7 +1049,7 @@ function openDepositModal(currency) {
                             </div>
                             <div class="instruction-step">
                                 <div class="step-number">5</div>
-                                <div class="step-content">Click "Verify Deposit" to complete the process</div>
+                                <div class="step-content">Click "Submit Deposit Request" for manual review</div>
                             </div>
                         </div>
                     </div>
@@ -955,9 +1066,21 @@ function openDepositModal(currency) {
                         <div class="info-item">
                             <i class="fas fa-clock"></i>
                             <div>
-                                <div class="info-label">Processing Time</div>
-                                <div class="info-value">5-15 minutes (12 confirmations)</div>
+                                <div class="info-label">Review Time</div>
+                                <div class="info-value">12-24 hours (manual review)</div>
                             </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Important Note -->
+                    <div class="deposit-note">
+                        <div class="note-icon">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div class="note-content">
+                            <strong>Note:</strong> Your deposit will be manually reviewed by our team.
+                            The balance will be added to your account only after verification.
+                            Check your transaction status in the History section.
                         </div>
                     </div>
                     
@@ -966,8 +1089,8 @@ function openDepositModal(currency) {
                         <button class="btn-secondary" onclick="closeModal()">
                             <i class="fas fa-times"></i> Cancel
                         </button>
-                        <button class="btn-primary" id="verifyDepositBtn" onclick="verifyDeposit('${currency}')" disabled>
-                            <i class="fas fa-check-circle"></i> Verify Deposit
+                        <button class="btn-primary" id="verifyDepositBtn" onclick="submitDepositRequest('${currency}')" disabled>
+                            <i class="fas fa-paper-plane"></i> Submit Deposit Request
                         </button>
                     </div>
                 </div>
@@ -976,9 +1099,6 @@ function openDepositModal(currency) {
     `;
     
     document.body.insertAdjacentHTML('beforeend', modalHTML);
-    
-    // Add CSS for deposit modal
-    addDepositModalCSS();
     
     setTimeout(() => {
         const input = document.getElementById('transactionHash');
@@ -1001,317 +1121,6 @@ function getMinDeposit(currency) {
         case 'BNB': return CONFIG.MIN_DEPOSIT_BNB;
         default: return 1;
     }
-}
-
-function addDepositModalCSS() {
-    if (document.getElementById('depositModalCSS')) return;
-    
-    const css = `
-        <style id="depositModalCSS">
-        .deposit-modal .modal-content {
-            max-width: 500px;
-        }
-        
-        .deposit-warning {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(239, 68, 68, 0.1));
-            border: 1px solid rgba(245, 158, 11, 0.3);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-            display: flex;
-            gap: 15px;
-            align-items: flex-start;
-        }
-        
-        .deposit-warning .warning-icon {
-            color: #f59e0b;
-            font-size: 24px;
-            flex-shrink: 0;
-        }
-        
-        .deposit-warning .warning-content {
-            flex: 1;
-        }
-        
-        .deposit-warning .warning-title {
-            color: #f59e0b;
-            font-weight: 700;
-            margin-bottom: 5px;
-            font-size: 14px;
-        }
-        
-        .deposit-warning .warning-text {
-            color: #f8fafc;
-            font-size: 12px;
-            line-height: 1.4;
-        }
-        
-        .deposit-address-card {
-            background: rgba(15, 23, 42, 0.8);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(59, 130, 246, 0.3);
-        }
-        
-        .address-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            color: #60a5fa;
-            font-weight: 600;
-        }
-        
-        .address-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .address-value {
-            flex: 1;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 8px;
-            padding: 12px 15px;
-            font-family: monospace;
-            font-size: 14px;
-            color: #f8fafc;
-            word-break: break-all;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .copy-address-btn {
-            background: linear-gradient(135deg, #3b82f6, #6366f1);
-            border: none;
-            border-radius: 8px;
-            padding: 12px 20px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-            white-space: nowrap;
-        }
-        
-        .copy-address-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
-        }
-        
-        .network-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #94a3b8;
-            font-size: 12px;
-            padding-top: 10px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .transaction-hash-section {
-            background: rgba(15, 23, 42, 0.8);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .section-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            color: #f8fafc;
-            font-weight: 600;
-        }
-        
-        .transaction-input-group {
-            margin-bottom: 15px;
-        }
-        
-        .input-label {
-            color: #cbd5e0;
-            font-size: 14px;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-        
-        .transaction-input {
-            width: 100%;
-            padding: 12px 15px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            border-radius: 8px;
-            color: #f8fafc;
-            font-size: 14px;
-            font-family: monospace;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-        
-        .transaction-input:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-        }
-        
-        .input-hint {
-            color: #94a3b8;
-            font-size: 12px;
-            margin-top: 5px;
-        }
-        
-        .transaction-status {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-top: 10px;
-        }
-        
-        .status-icon {
-            font-size: 18px;
-        }
-        
-        .status-text {
-            font-size: 14px;
-            font-weight: 500;
-        }
-        
-        .deposit-instructions {
-            background: rgba(15, 23, 42, 0.8);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .instructions-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            color: #f8fafc;
-            font-weight: 600;
-        }
-        
-        .instructions-steps {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .instruction-step {
-            display: flex;
-            gap: 15px;
-            align-items: flex-start;
-        }
-        
-        .step-number {
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            color: white;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 14px;
-            flex-shrink: 0;
-        }
-        
-        .step-content {
-            color: #cbd5e0;
-            font-size: 14px;
-            line-height: 1.4;
-            padding-top: 5px;
-        }
-        
-        .minimum-deposit-info {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .info-item {
-            background: rgba(15, 23, 42, 0.8);
-            border-radius: 10px;
-            padding: 15px;
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-        
-        .info-item i {
-            color: #fbbf24;
-            font-size: 20px;
-        }
-        
-        .info-label {
-            color: #94a3b8;
-            font-size: 12px;
-            margin-bottom: 4px;
-        }
-        
-        .info-value {
-            color: #f8fafc;
-            font-weight: 600;
-            font-size: 14px;
-        }
-        
-        .deposit-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .btn-secondary, .btn-primary {
-            flex: 1;
-            padding: 14px;
-            border-radius: 10px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.3s;
-        }
-        
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: #cbd5e0;
-        }
-        
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #3b82f6, #6366f1);
-            color: white;
-        }
-        
-        .btn-primary:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
-        }
-        
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        </style>
-    `;
-    
-    document.head.insertAdjacentHTML('beforeend', css);
 }
 
 function copyDepositAddress() {
@@ -1393,7 +1202,7 @@ function validateTransactionHash() {
     verifyBtn.disabled = false;
 }
 
-async function verifyDeposit(currency) {
+async function submitDepositRequest(currency) {
     const hash = document.getElementById('transactionHash').value.trim();
     const verifyBtn = document.getElementById('verifyDepositBtn');
     
@@ -1409,85 +1218,91 @@ async function verifyDeposit(currency) {
     }
     
     // Disable button and show loading
-    verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+    verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
     verifyBtn.disabled = true;
     
     try {
-        // Simulate API call to verify transaction
-        await simulateTransactionVerification(hash, currency);
+        // Generate a random deposit amount (for simulation)
+        let depositAmount = 0;
+        let minAmount = 0;
+        
+        if (currency === 'USDT') {
+            minAmount = CONFIG.MIN_DEPOSIT_USDT;
+            // Simulate amount between min and min+100
+            depositAmount = minAmount + Math.random() * 100;
+            depositAmount = Math.round(depositAmount * 100) / 100; // Round to 2 decimals
+        } else if (currency === 'BNB') {
+            minAmount = CONFIG.MIN_DEPOSIT_BNB;
+            // Simulate amount between min and min+0.5
+            depositAmount = minAmount + Math.random() * 0.5;
+            depositAmount = Math.round(depositAmount * 1000) / 1000; // Round to 3 decimals
+        }
+        
+        // Create pending deposit request
+        const pendingDeposit = {
+            id: 'deposit_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            userId: userData.userId,
+            username: userData.username,
+            transactionHash: hash.toLowerCase(),
+            currency: currency,
+            amount: depositAmount,
+            status: 'pending', // قيد المراجعة
+            timestamp: Date.now(),
+            reviewNote: 'Awaiting manual review'
+        };
+        
+        // Add to pending deposits
+        walletData.pendingDeposits.push(pendingDeposit);
         
         // Add to used transactions
         walletData.usedTransactions.push(hash.toLowerCase());
         
-        // Calculate deposit amount based on currency
-        let depositAmount = 0;
-        switch(currency) {
-            case 'USDT':
-                depositAmount = 100; // Example amount
-                walletData.usdtBalance += depositAmount;
-                break;
-            case 'BNB':
-                depositAmount = 0.1; // Example amount
-                walletData.bnbBalance += depositAmount;
-                break;
-        }
-        
         // Save wallet data
         saveWalletData();
         
-        // Update UI
-        updateWalletUI();
+        // Reset button
+        verifyBtn.innerHTML = '<i class="fas fa-check"></i> Submitted!';
         
-        // Close modal
+        // Close modal after delay
         setTimeout(() => {
             closeModal();
-            showMessage(`✅ Deposit verified! +${depositAmount} ${currency} added to your wallet`, 'success');
-        }, 1000);
+            showMessage(`✅ Deposit request submitted for review! Amount: ${depositAmount} ${currency}`, 'success');
+            
+            // Show notification about manual review
+            setTimeout(() => {
+                showMessage('📋 Your deposit is now pending manual review. Check History for status.', 'info');
+            }, 1000);
+        }, 1500);
         
         // Log to Firebase if available
         if (db) {
-            logDepositToFirebase(hash, currency, depositAmount);
+            logDepositRequestToFirebase(pendingDeposit);
         }
         
     } catch (error) {
-        console.error('Deposit verification error:', error);
-        verifyBtn.innerHTML = '<i class="fas fa-check-circle"></i> Verify Deposit';
+        console.error('Deposit submission error:', error);
+        verifyBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Deposit Request';
         verifyBtn.disabled = false;
-        showMessage('❌ Failed to verify deposit. Please try again.', 'error');
+        showMessage('❌ Failed to submit deposit request. Please try again.', 'error');
     }
 }
 
-async function simulateTransactionVerification(hash, currency) {
-    // Simulate API call delay
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            console.log(`✅ Simulated verification for ${currency} transaction:`, hash);
-            resolve(true);
-        }, 2000);
-    });
-}
-
-async function logDepositToFirebase(hash, currency, amount) {
+async function logDepositRequestToFirebase(depositRequest) {
     if (!db) return;
     
     try {
-        await db.collection('deposits').add({
-            userId: userData.userId,
-            username: userData.username,
-            transactionHash: hash,
-            currency: currency,
-            amount: amount,
-            status: 'completed',
+        await db.collection('deposit_requests').add({
+            ...depositRequest,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
-        console.log("✅ Deposit logged to Firebase");
+        console.log("✅ Deposit request logged to Firebase");
     } catch (error) {
-        console.error("❌ Deposit logging error:", error);
+        console.error("❌ Deposit request logging error:", error);
     }
 }
 
 // ============================================
-// Withdrawal System - IMPROVED PROFESSIONAL VERSION
+// Withdrawal System - Professional Version (No Changes)
 // ============================================
 
 function openWithdrawalModal() {
@@ -1665,9 +1480,6 @@ function openWithdrawalModal() {
     
     document.body.insertAdjacentHTML('beforeend', modalHTML);
     
-    // Add CSS for professional withdrawal modal
-    addWithdrawalModalCSS();
-    
     validateWithdrawalAmount();
     
     // Initialize slider
@@ -1677,395 +1489,6 @@ function openWithdrawalModal() {
             slider.value = usdtBalance > 0 ? usdtBalance : 0;
         }
     }, 100);
-}
-
-function addWithdrawalModalCSS() {
-    if (document.getElementById('withdrawalModalCSS')) return;
-    
-    const css = `
-        <style id="withdrawalModalCSS">
-        .withdrawal-modal .modal-content {
-            max-width: 500px;
-        }
-        
-        .withdrawal-balance-overview {
-            margin-bottom: 25px;
-        }
-        
-        .balance-card-professional {
-            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.2));
-            border: 1px solid rgba(34, 197, 94, 0.3);
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .balance-header-professional {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            color: #22c55e;
-            font-weight: 600;
-        }
-        
-        .balance-amount-professional {
-            font-size: 36px;
-            font-weight: 800;
-            color: #f8fafc;
-            margin-bottom: 5px;
-        }
-        
-        .balance-currency {
-            font-size: 24px;
-            color: #22c55e;
-        }
-        
-        .balance-subtitle {
-            color: #94a3b8;
-            font-size: 14px;
-        }
-        
-        .form-section {
-            margin-bottom: 25px;
-        }
-        
-        .form-section-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            color: #f8fafc;
-            font-weight: 600;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        .form-label {
-            display: block;
-            color: #cbd5e0;
-            margin-bottom: 8px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        
-        .input-with-validation {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-        
-        .form-input {
-            width: 100%;
-            padding: 14px 45px 14px 15px;
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            color: #f8fafc;
-            font-size: 14px;
-            outline: none;
-            transition: all 0.3s;
-        }
-        
-        .address-input {
-            font-family: monospace;
-        }
-        
-        .form-input:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-        }
-        
-        .input-validation {
-            position: absolute;
-            right: 15px;
-            color: #22c55e;
-            font-size: 16px;
-        }
-        
-        .input-validation .fa-times {
-            color: #ef4444;
-        }
-        
-        .form-hint {
-            color: #94a3b8;
-            font-size: 12px;
-            margin-top: 8px;
-        }
-        
-        .amount-input-container {
-            margin-bottom: 15px;
-        }
-        
-        .amount-input-with-max {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .amount-input {
-            flex: 1;
-        }
-        
-        .max-amount-btn {
-            background: rgba(59, 130, 246, 0.2);
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            color: #60a5fa;
-            padding: 0 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .max-amount-btn:hover {
-            background: rgba(59, 130, 246, 0.3);
-        }
-        
-        .amount-slider {
-            margin-bottom: 10px;
-        }
-        
-        .amount-slider input[type="range"] {
-            width: 100%;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            outline: none;
-            -webkit-appearance: none;
-        }
-        
-        .amount-slider input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            background: #3b82f6;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 3px solid #0f172a;
-        }
-        
-        .amount-range-labels {
-            display: flex;
-            justify-content: space-between;
-            color: #94a3b8;
-            font-size: 12px;
-        }
-        
-        .requirements-section {
-            background: rgba(15, 23, 42, 0.8);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .requirements-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            color: #f8fafc;
-            font-weight: 600;
-        }
-        
-        .requirements-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-        
-        .requirement-card {
-            padding: 15px;
-            border-radius: 10px;
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-        
-        .requirement-met {
-            background: rgba(34, 197, 94, 0.1);
-            border: 1px solid rgba(34, 197, 94, 0.3);
-        }
-        
-        .requirement-not-met {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-        
-        .requirement-icon {
-            font-size: 24px;
-        }
-        
-        .requirement-met .requirement-icon {
-            color: #22c55e;
-        }
-        
-        .requirement-not-met .requirement-icon {
-            color: #ef4444;
-        }
-        
-        .requirement-content {
-            flex: 1;
-        }
-        
-        .requirement-title {
-            color: #cbd5e0;
-            font-size: 12px;
-            margin-bottom: 4px;
-        }
-        
-        .requirement-value {
-            color: #f8fafc;
-            font-weight: 600;
-            font-size: 14px;
-            margin-bottom: 4px;
-        }
-        
-        .requirement-status {
-            font-size: 12px;
-            font-weight: 600;
-        }
-        
-        .requirement-met .requirement-status {
-            color: #22c55e;
-        }
-        
-        .requirement-not-met .requirement-status {
-            color: #ef4444;
-        }
-        
-        .withdrawal-warning {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .warning-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 8px;
-            color: #ef4444;
-            font-weight: 600;
-        }
-        
-        .warning-text {
-            color: #f8fafc;
-            font-size: 14px;
-            line-height: 1.4;
-        }
-        
-        .summary-section {
-            background: rgba(15, 23, 42, 0.8);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .summary-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            color: #f8fafc;
-            font-weight: 600;
-        }
-        
-        .summary-details {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 12px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        
-        .summary-row:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-        
-        .summary-row.total {
-            padding-top: 12px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .summary-label {
-            color: #94a3b8;
-            font-size: 14px;
-        }
-        
-        .summary-value {
-            color: #f8fafc;
-            font-weight: 600;
-            font-size: 14px;
-        }
-        
-        .summary-row.total .summary-value {
-            color: #fbbf24;
-            font-size: 16px;
-        }
-        
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .btn-secondary-large, .btn-primary-large {
-            flex: 1;
-            padding: 16px;
-            border-radius: 12px;
-            border: none;
-            font-weight: 600;
-            font-size: 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.3s;
-        }
-        
-        .btn-secondary-large {
-            background: rgba(255, 255, 255, 0.1);
-            color: #cbd5e0;
-        }
-        
-        .btn-secondary-large:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-        
-        .btn-primary-large {
-            background: linear-gradient(135deg, #3b82f6, #6366f1);
-            color: white;
-        }
-        
-        .btn-primary-large:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
-        }
-        
-        .btn-primary-large:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        </style>
-    `;
-    
-    document.head.insertAdjacentHTML('beforeend', css);
 }
 
 function setMaxWithdrawalAmount() {
@@ -2216,19 +1639,20 @@ function submitWithdrawal() {
     }
     
     const withdrawalRequest = {
+        id: 'withdrawal_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
         userId: userData.userId,
         username: userData.username,
         amount: amount,
         address: address,
         fee: CONFIG.WITHDRAWAL_FEE,
         timestamp: Date.now(),
-        status: 'pending'
+        status: 'pending',
+        reviewNote: 'Awaiting manual processing'
     };
     
-    // Update balances
+    // Update balances (deduct immediately for pending withdrawal)
     walletData.usdtBalance -= amount;
     walletData.bnbBalance -= CONFIG.WITHDRAWAL_FEE;
-    walletData.totalWithdrawn += amount;
     walletData.pendingWithdrawals.push(withdrawalRequest);
     
     saveWalletData();
@@ -2239,7 +1663,354 @@ function submitWithdrawal() {
     }
     
     closeModal();
-    showMessage(`✅ Withdrawal request submitted for ${amount.toFixed(2)} USDT`, 'success');
+    showMessage(`✅ Withdrawal request submitted for ${amount.toFixed(2)} USDT. Manual processing required.`, 'success');
+}
+
+// ============================================
+// Transaction History System - NEW
+// ============================================
+
+function showTransactionHistory() {
+    const modalHTML = `
+        <div class="modal-overlay" id="historyModal">
+            <div class="modal-content history-modal">
+                <div class="modal-header">
+                    <h3><i class="fas fa-history"></i> Transaction History</h3>
+                    <button class="modal-close" onclick="closeModal()">×</button>
+                </div>
+                
+                <div class="modal-body">
+                    <!-- Tabs -->
+                    <div class="history-tabs">
+                        <button class="tab-btn active" onclick="switchHistoryTab('pending')">
+                            <i class="fas fa-clock"></i>
+                            <span>Pending</span>
+                            ${walletData.pendingDeposits.length + walletData.pendingWithdrawals.length > 0 ? 
+                              `<span class="tab-badge">${walletData.pendingDeposits.length + walletData.pendingWithdrawals.length}</span>` : ''}
+                        </button>
+                        <button class="tab-btn" onclick="switchHistoryTab('deposits')">
+                            <i class="fas fa-download"></i>
+                            <span>Deposits</span>
+                        </button>
+                        <button class="tab-btn" onclick="switchHistoryTab('withdrawals')">
+                            <i class="fas fa-upload"></i>
+                            <span>Withdrawals</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Pending Transactions -->
+                    <div class="history-content" id="pendingTab">
+                        <div class="section-title">
+                            <i class="fas fa-clock"></i>
+                            <span>Pending Transactions</span>
+                        </div>
+                        
+                        ${renderPendingTransactions()}
+                    </div>
+                    
+                    <!-- Deposit History -->
+                    <div class="history-content" id="depositsTab" style="display: none;">
+                        <div class="section-title">
+                            <i class="fas fa-download"></i>
+                            <span>Deposit History</span>
+                        </div>
+                        
+                        ${renderDepositHistory()}
+                    </div>
+                    
+                    <!-- Withdrawal History -->
+                    <div class="history-content" id="withdrawalsTab" style="display: none;">
+                        <div class="section-title">
+                            <i class="fas fa-upload"></i>
+                            <span>Withdrawal History</span>
+                        </div>
+                        
+                        ${renderWithdrawalHistory()}
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <div class="empty-history" id="emptyHistory" style="display: ${walletData.pendingDeposits.length === 0 && walletData.pendingWithdrawals.length === 0 && walletData.depositHistory.length === 0 && walletData.withdrawalHistory.length === 0 ? 'block' : 'none'};">
+                        <div class="empty-icon">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <div class="empty-title">No Transactions Yet</div>
+                        <div class="empty-text">
+                            Your transaction history will appear here once you make deposits or withdrawals.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    addHistoryModalCSS();
+}
+
+function renderPendingTransactions() {
+    if (walletData.pendingDeposits.length === 0 && walletData.pendingWithdrawals.length === 0) {
+        return `
+            <div class="empty-pending">
+                <div class="empty-icon-small">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="empty-text">No pending transactions</div>
+            </div>
+        `;
+    }
+    
+    let html = '';
+    
+    // Pending Deposits
+    walletData.pendingDeposits.forEach(deposit => {
+        const date = new Date(deposit.timestamp);
+        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        html += `
+            <div class="transaction-card pending">
+                <div class="transaction-header">
+                    <div class="transaction-type">
+                        <div class="type-icon deposit">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <div class="type-info">
+                            <div class="type-title">Deposit Request</div>
+                            <div class="type-subtitle">${deposit.currency}</div>
+                        </div>
+                    </div>
+                    <div class="transaction-status pending-badge">
+                        <i class="fas fa-clock"></i>
+                        <span>Pending Review</span>
+                    </div>
+                </div>
+                <div class="transaction-details">
+                    <div class="detail-row">
+                        <span>Amount:</span>
+                        <span class="detail-value">${deposit.amount} ${deposit.currency}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Transaction Hash:</span>
+                        <span class="detail-value hash">${deposit.transactionHash.substring(0, 12)}...${deposit.transactionHash.substring(deposit.transactionHash.length - 6)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Submitted:</span>
+                        <span class="detail-value">${formattedDate}</span>
+                    </div>
+                </div>
+                <div class="transaction-note">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Awaiting manual review by admin</span>
+                </div>
+            </div>
+        `;
+    });
+    
+    // Pending Withdrawals
+    walletData.pendingWithdrawals.forEach(withdrawal => {
+        const date = new Date(withdrawal.timestamp);
+        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        html += `
+            <div class="transaction-card pending">
+                <div class="transaction-header">
+                    <div class="transaction-type">
+                        <div class="type-icon withdrawal">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <div class="type-info">
+                            <div class="type-title">Withdrawal Request</div>
+                            <div class="type-subtitle">USDT</div>
+                        </div>
+                    </div>
+                    <div class="transaction-status pending-badge">
+                        <i class="fas fa-clock"></i>
+                        <span>Pending Processing</span>
+                    </div>
+                </div>
+                <div class="transaction-details">
+                    <div class="detail-row">
+                        <span>Amount:</span>
+                        <span class="detail-value">${withdrawal.amount} USDT</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Address:</span>
+                        <span class="detail-value hash">${withdrawal.address.substring(0, 12)}...${withdrawal.address.substring(withdrawal.address.length - 6)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Network Fee:</span>
+                        <span class="detail-value">${withdrawal.fee} BNB</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Submitted:</span>
+                        <span class="detail-value">${formattedDate}</span>
+                    </div>
+                </div>
+                <div class="transaction-note">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Awaiting manual processing by admin</span>
+                </div>
+            </div>
+        `;
+    });
+    
+    return html;
+}
+
+function renderDepositHistory() {
+    if (walletData.depositHistory.length === 0) {
+        return `
+            <div class="empty-history-section">
+                <div class="empty-icon-small">
+                    <i class="fas fa-download"></i>
+                </div>
+                <div class="empty-text">No completed deposits</div>
+            </div>
+        `;
+    }
+    
+    let html = '';
+    
+    walletData.depositHistory.forEach(deposit => {
+        const date = new Date(deposit.timestamp);
+        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        html += `
+            <div class="transaction-card completed">
+                <div class="transaction-header">
+                    <div class="transaction-type">
+                        <div class="type-icon deposit">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <div class="type-info">
+                            <div class="type-title">Deposit ${deposit.status === 'approved' ? 'Approved' : 'Completed'}</div>
+                            <div class="type-subtitle">${deposit.currency}</div>
+                        </div>
+                    </div>
+                    <div class="transaction-status ${deposit.status === 'approved' ? 'approved-badge' : 'completed-badge'}">
+                        <i class="fas ${deposit.status === 'approved' ? 'fa-check-circle' : 'fa-check'}"></i>
+                        <span>${deposit.status === 'approved' ? 'Approved' : 'Completed'}</span>
+                    </div>
+                </div>
+                <div class="transaction-details">
+                    <div class="detail-row">
+                        <span>Amount:</span>
+                        <span class="detail-value">${deposit.amount} ${deposit.currency}</span>
+                    </div>
+                    ${deposit.transactionHash ? `
+                    <div class="detail-row">
+                        <span>Transaction Hash:</span>
+                        <span class="detail-value hash">${deposit.transactionHash.substring(0, 12)}...${deposit.transactionHash.substring(deposit.transactionHash.length - 6)}</span>
+                    </div>
+                    ` : ''}
+                    <div class="detail-row">
+                        <span>Date:</span>
+                        <span class="detail-value">${formattedDate}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    return html;
+}
+
+function renderWithdrawalHistory() {
+    if (walletData.withdrawalHistory.length === 0) {
+        return `
+            <div class="empty-history-section">
+                <div class="empty-icon-small">
+                    <i class="fas fa-upload"></i>
+                </div>
+                <div class="empty-text">No completed withdrawals</div>
+            </div>
+        `;
+    }
+    
+    let html = '';
+    
+    walletData.withdrawalHistory.forEach(withdrawal => {
+        const date = new Date(withdrawal.timestamp);
+        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        html += `
+            <div class="transaction-card completed">
+                <div class="transaction-header">
+                    <div class="transaction-type">
+                        <div class="type-icon withdrawal">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <div class="type-info">
+                            <div class="type-title">Withdrawal ${withdrawal.status === 'completed' ? 'Completed' : 'Processed'}</div>
+                            <div class="type-subtitle">USDT</div>
+                        </div>
+                    </div>
+                    <div class="transaction-status completed-badge">
+                        <i class="fas fa-check-circle"></i>
+                        <span>${withdrawal.status === 'completed' ? 'Completed' : 'Processed'}</span>
+                    </div>
+                </div>
+                <div class="transaction-details">
+                    <div class="detail-row">
+                        <span>Amount:</span>
+                        <span class="detail-value">${withdrawal.amount} USDT</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Address:</span>
+                        <span class="detail-value hash">${withdrawal.address.substring(0, 12)}...${withdrawal.address.substring(withdrawal.address.length - 6)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Network Fee:</span>
+                        <span class="detail-value">${withdrawal.fee} BNB</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Date:</span>
+                        <span class="detail-value">${formattedDate}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    return html;
+}
+
+function switchHistoryTab(tabName) {
+    // Update tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    document.querySelectorAll('.history-content').forEach(content => {
+        content.style.display = 'none';
+    });
+    
+    // Activate selected tab
+    const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => 
+        btn.querySelector('span').textContent.toLowerCase().includes(tabName)
+    );
+    
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+    
+    // Show selected content
+    const contentId = tabName + 'Tab';
+    const content = document.getElementById(contentId);
+    if (content) {
+        content.style.display = 'block';
+    }
+    
+    // Show/hide empty state
+    const emptyHistory = document.getElementById('emptyHistory');
+    if (emptyHistory) {
+        if (tabName === 'pending') {
+            emptyHistory.style.display = walletData.pendingDeposits.length === 0 && walletData.pendingWithdrawals.length === 0 ? 'block' : 'none';
+        } else if (tabName === 'deposits') {
+            emptyHistory.style.display = walletData.depositHistory.length === 0 ? 'block' : 'none';
+        } else if (tabName === 'withdrawals') {
+            emptyHistory.style.display = walletData.withdrawalHistory.length === 0 ? 'block' : 'none';
+        }
+    }
 }
 
 // ============================================
@@ -2685,7 +2456,7 @@ function saveUserData() {
             username: userData.username,
             firstName: userData.firstName,
             saveTime: Date.now(),
-            version: '6.2'
+            version: '6.3'
         };
         
         console.log("💾 Saving user data - Balance:", userData.balance);
@@ -2728,6 +2499,9 @@ function saveWalletData() {
             ethBalance: walletData.ethBalance,
             totalWithdrawn: walletData.totalWithdrawn,
             pendingWithdrawals: walletData.pendingWithdrawals,
+            pendingDeposits: walletData.pendingDeposits,
+            depositHistory: walletData.depositHistory,
+            withdrawalHistory: walletData.withdrawalHistory,
             usedTransactions: walletData.usedTransactions,
             lastUpdate: Date.now()
         };
@@ -2858,6 +2632,10 @@ function saveWalletToFirebase() {
             tonBalance: walletData.tonBalance,
             ethBalance: walletData.ethBalance,
             totalWithdrawn: walletData.totalWithdrawn,
+            pendingWithdrawals: walletData.pendingWithdrawals,
+            pendingDeposits: walletData.pendingDeposits,
+            depositHistory: walletData.depositHistory,
+            withdrawalHistory: walletData.withdrawalHistory,
             usedTransactions: walletData.usedTransactions,
             lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true }).then(() => {
@@ -2941,9 +2719,11 @@ window.validateWithdrawalAddress = validateWithdrawalAddress;
 window.submitWithdrawal = submitWithdrawal;
 window.setMaxWithdrawalAmount = setMaxWithdrawalAmount;
 window.updateWithdrawalAmountFromSlider = updateWithdrawalAmountFromSlider;
-window.showNoHistoryMessage = window.showNoHistoryMessage || function() {};
+window.showTransactionHistory = showTransactionHistory;
+window.showNoHistoryMessage = function() { showTransactionHistory(); };
 window.copyDepositAddress = copyDepositAddress;
 window.validateTransactionHash = validateTransactionHash;
-window.verifyDeposit = verifyDeposit;
+window.submitDepositRequest = submitDepositRequest;
+window.switchHistoryTab = switchHistoryTab;
 
-console.log("🎮 VIP Mining Wallet v6.2 loaded successfully");
+console.log("🎮 VIP Mining Wallet v6.3 loaded successfully");
