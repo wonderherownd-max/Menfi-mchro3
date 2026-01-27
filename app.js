@@ -109,6 +109,224 @@ const CONFIG = {
     MIN_TRANSACTION_LENGTH: 64
 };
 
+// ============================================
+// FLOATING NOTIFICATION SYSTEM - NEW
+// ============================================
+
+// Notification messages array (200 messages - mixed deposit/withdraw)
+const NOTIFICATION_MESSAGES = [
+    "Withdraw successful: User ID 599****5486 -200 USDT",
+    "Withdraw successful: User ID 537****3870 -150 USDT",
+    "Withdraw successful: User ID 553****2730 -70 USDT",
+    "Deposit successful: User ID 848****9393 +100 USDT",
+    "Withdraw successful: User ID 966****1763 -80 USDT",
+    "Deposit successful: User ID 544****3751 +0.163 BNB",
+    "Deposit successful: User ID 271****3446 +0.025 BNB",
+    "Deposit successful: User ID 488****1536 +0.04 BNB",
+    "Deposit successful: User ID 490****4765 +0.463 BNB",
+    "Deposit successful: User ID 200****4324 +200 USDT",
+    "Withdraw successful: User ID 538****9231 -65 USDT",
+    "Withdraw successful: User ID 447****9577 -90 USDT",
+    "Withdraw successful: User ID 510****5431 -150 USDT",
+    "Withdraw successful: User ID 945****4413 -400 USDT",
+    "Deposit successful: User ID 722****8419 +0.081 BNB",
+    "Withdraw successful: User ID 535****7481 -120 USDT",
+    "Deposit successful: User ID 762****7750 +400 USDT",
+    "Deposit successful: User ID 911****5707 +100 USDT",
+    "Withdraw successful: User ID 603****2720 -75 USDT",
+    "Withdraw successful: User ID 888****8724 -120 USDT",
+    "Withdraw successful: User ID 275****6848 -90 USDT",
+    "Deposit successful: User ID 820****3853 +95 USDT",
+    "Deposit successful: User ID 797****9600 +0.463 BNB",
+    "Deposit successful: User ID 713****4991 +0.445 BNB",
+    "Deposit successful: User ID 915****6003 +0.142 BNB",
+    "Deposit successful: User ID 515****1941 +0.221 BNB",
+    "Deposit successful: User ID 709****2493 +85 USDT",
+    "Withdraw successful: User ID 712****2232 -85 USDT",
+    "Deposit successful: User ID 407****3765 +0.231 BNB",
+    "Deposit successful: User ID 875****3519 +80 USDT",
+    "Deposit successful: User ID 806****5674 +0.418 BNB",
+    "Withdraw successful: User ID 484****5745 -85 USDT",
+    "Deposit successful: User ID 209****4857 +0.105 BNB",
+    "Withdraw successful: User ID 346****6451 -400 USDT",
+    "Deposit successful: User ID 649****8499 +85 USDT",
+    "Withdraw successful: User ID 528****8768 -65 USDT",
+    "Deposit successful: User ID 674****2986 +0.287 BNB",
+    "Deposit successful: User ID 455****5127 +450 USDT",
+    "Deposit successful: User ID 336****1836 +450 USDT",
+    "Deposit successful: User ID 254****4683 +450 USDT",
+    "Deposit successful: User ID 827****1743 +250 USDT",
+    "Deposit successful: User ID 832****8543 +0.483 BNB",
+    "Deposit successful: User ID 264****4548 +90 USDT",
+    "Deposit successful: User ID 391****1341 +0.134 BNB",
+    "Deposit successful: User ID 395****2663 +0.106 BNB",
+    "Deposit successful: User ID 642****7536 +95 USDT",
+    "Deposit successful: User ID 230****4033 +0.387 BNB",
+    "Withdraw successful: User ID 906****1183 -55 USDT",
+    "Deposit successful: User ID 282****2796 +0.028 BNB",
+    "Deposit successful: User ID 848****7327 +0.482 BNB",
+    "Deposit successful: User ID 202****3599 +0.404 BNB",
+    "Withdraw successful: User ID 790****5955 -60 USDT",
+    "Deposit successful: User ID 858****3490 +0.301 BNB",
+    "Withdraw successful: User ID 411****1546 -60 USDT",
+    "Deposit successful: User ID 580****5388 +80 USDT",
+    "Deposit successful: User ID 664****5710 +350 USDT",
+    "Deposit successful: User ID 204****1455 +70 USDT",
+    "Deposit successful: User ID 922****3898 +95 USDT",
+    "Withdraw successful: User ID 115****7935 -55 USDT",
+    "Withdraw successful: User ID 454****9499 -60 USDT",
+    "Deposit successful: User ID 548****6236 +0.3 BNB",
+    "Deposit successful: User ID 838****6789 +55 USDT",
+    "Deposit successful: User ID 356****6757 +0.419 BNB",
+    "Deposit successful: User ID 995****6562 +75 USDT",
+    "Deposit successful: User ID 560****3520 +0.022 BNB",
+    "Deposit successful: User ID 696****5638 +0.386 BNB",
+    "Deposit successful: User ID 629****8757 +0.428 BNB",
+    "Deposit successful: User ID 266****4986 +0.107 BNB",
+    "Withdraw successful: User ID 206****9193 -300 USDT",
+    "Deposit successful: User ID 295****7108 +350 USDT",
+    "Deposit successful: User ID 654****7297 +120 USDT",
+    "Deposit successful: User ID 429****1784 +0.348 BNB",
+    "Deposit successful: User ID 710****4523 +250 USDT",
+    "Withdraw successful: User ID 857****9454 -55 USDT",
+    "Withdraw successful: User ID 887****7465 -55 USDT",
+    "Withdraw successful: User ID 679****6626 -65 USDT",
+    "Deposit successful: User ID 727****6172 +65 USDT",
+    "Withdraw successful: User ID 230****2890 -50 USDT",
+    "Withdraw successful: User ID 275****5250 -200 USDT",
+    "Deposit successful: User ID 449****7729 +0.436 BNB",
+    "Withdraw successful: User ID 940****6719 -95 USDT",
+    "Deposit successful: User ID 741****2038 +0.246 BNB",
+    "Withdraw successful: User ID 463****5716 -80 USDT",
+    "Withdraw successful: User ID 752****9577 -450 USDT",
+    "Withdraw successful: User ID 148****8577 -60 USDT",
+    "Withdraw successful: User ID 877****9691 -65 USDT",
+    "Withdraw successful: User ID 259****3530 -300 USDT",
+    "Withdraw successful: User ID 679****5994 -55 USDT",
+    "Deposit successful: User ID 247****5109 +75 USDT",
+    "Deposit successful: User ID 891****2652 +0.209 BNB",
+    "Withdraw successful: User ID 358****6307 -90 USDT",
+    "Deposit successful: User ID 799****7712 +400 USDT",
+    "Withdraw successful: User ID 628****8276 -300 USDT",
+    "Deposit successful: User ID 543****4119 +200 USDT",
+    "Withdraw successful: User ID 321****8372 -90 USDT",
+    "Deposit successful: User ID 187****9293 +0.334 BNB",
+    "Deposit successful: User ID 831****2264 +0.036 BNB",
+    "Deposit successful: User ID 487****5143 +0.029 BNB",
+    "Withdraw successful: User ID 863****9862 -250 USDT",
+    "Withdraw successful: User ID 814****6727 -150 USDT",
+    "Withdraw successful: User ID 363****1635 -55 USDT",
+    "Deposit successful: User ID 206****6775 +55 USDT",
+    "Deposit successful: User ID 756****2564 +350 USDT",
+    "Withdraw successful: User ID 763****6682 -150 USDT",
+    "Withdraw successful: User ID 588****3006 -75 USDT",
+    "Deposit successful: User ID 475****5219 +95 USDT",
+    "Withdraw successful: User ID 893****5949 -50 USDT",
+    "Withdraw successful: User ID 121****7474 -100 USDT",
+    "Deposit successful: User ID 921****7042 +0.446 BNB",
+    "Deposit successful: User ID 204****7806 +0.382 BNB",
+    "Withdraw successful: User ID 363****3070 -200 USDT",
+    "Withdraw successful: User ID 757****1974 -450 USDT",
+    "Withdraw successful: User ID 482****7999 -250 USDT",
+    "Withdraw successful: User ID 171****3009 -250 USDT",
+    "Deposit successful: User ID 592****8793 +0.049 BNB",
+    "Deposit successful: User ID 800****8171 +0.348 BNB",
+    "Withdraw successful: User ID 410****2681 -50 USDT",
+    "Withdraw successful: User ID 749****8570 -120 USDT",
+    "Withdraw successful: User ID 726****9389 -55 USDT",
+    "Withdraw successful: User ID 812****2303 -65 USDT",
+    "Deposit successful: User ID 227****2705 +0.475 BNB",
+    "Withdraw successful: User ID 549****9448 -450 USDT",
+    "Withdraw successful: User ID 882****3914 -350 USDT",
+    "Deposit successful: User ID 572****7404 +80 USDT",
+    "Deposit successful: User ID 639****1542 +95 USDT",
+    "Deposit successful: User ID 969****6420 +55 USDT",
+    "Deposit successful: User ID 437****6942 +350 USDT",
+    "Withdraw successful: User ID 918****3276 -100 USDT",
+    "Deposit successful: User ID 741****3121 +0.433 BNB",
+    "Deposit successful: User ID 790****2041 +0.477 BNB",
+    "Deposit successful: User ID 511****4848 +0.215 BNB",
+    "Withdraw successful: User ID 140****6211 -150 USDT",
+    "Deposit successful: User ID 911****8637 +0.441 BNB",
+    "Deposit successful: User ID 813****7922 +0.077 BNB",
+    "Deposit successful: User ID 993****1794 +0.361 BNB",
+    "Withdraw successful: User ID 274****4827 -350 USDT",
+    "Withdraw successful: User ID 535****2753 -300 USDT",
+    "Deposit successful: User ID 469****2509 +60 USDT",
+    "Withdraw successful: User ID 694****9745 -55 USDT",
+    "Deposit successful: User ID 458****4573 +350 USDT",
+    "Deposit successful: User ID 285****5704 +200 USDT",
+    "Deposit successful: User ID 216****6670 +0.339 BNB",
+    "Withdraw successful: User ID 495****9773 -50 USDT",
+    "Deposit successful: User ID 850****2348 +0.187 BNB",
+    "Deposit successful: User ID 124****8601 +0.374 BNB",
+    "Deposit successful: User ID 983****8249 +0.256 BNB",
+    "Deposit successful: User ID 171****3881 +0.411 BNB",
+    "Withdraw successful: User ID 872****5176 -60 USDT",
+    "Deposit successful: User ID 900****9338 +70 USDT",
+    "Withdraw successful: User ID 765****1319 -70 USDT",
+    "Deposit successful: User ID 748****8995 +70 USDT",
+    "Withdraw successful: User ID 918****4649 -70 USDT",
+    "Withdraw successful: User ID 487****2122 -150 USDT",
+    "Deposit successful: User ID 865****3585 +250 USDT",
+    "Deposit successful: User ID 668****8148 +0.273 BNB",
+    // Additional 50 withdrawal messages
+    "Withdraw successful: User ID 732****5491 -87.5 USDT",
+    "Withdraw successful: User ID 419****3876 -106.8 USDT",
+    "Withdraw successful: User ID 655****2943 -142.3 USDT",
+    "Withdraw successful: User ID 288****8472 -93.7 USDT",
+    "Withdraw successful: User ID 177****6354 -78.9 USDT",
+    "Withdraw successful: User ID 833****1928 -115.2 USDT",
+    "Withdraw successful: User ID 944****4567 -163.5 USDT",
+    "Withdraw successful: User ID 611****7389 -71.4 USDT",
+    "Withdraw successful: User ID 499****2651 -128.6 USDT",
+    "Withdraw successful: User ID 322****9145 -96.3 USDT",
+    "Withdraw successful: User ID 755****6832 -152.7 USDT",
+    "Withdraw successful: User ID 188****4973 -67.8 USDT",
+    "Withdraw successful: User ID 933****1246 -134.9 USDT",
+    "Withdraw successful: User ID 634****5728 -89.2 USDT",
+    "Withdraw successful: User ID 277****9147 -112.4 USDT",
+    "Withdraw successful: User ID 519****6385 -76.5 USDT",
+    "Withdraw successful: User ID 864****2719 -143.8 USDT",
+    "Withdraw successful: User ID 791****3452 -97.6 USDT",
+    "Withdraw successful: User ID 612****4891 -124.7 USDT",
+    "Withdraw successful: User ID 389****7365 -68.9 USDT",
+    "Withdraw successful: User ID 955****1824 -136.2 USDT",
+    "Withdraw successful: User ID 238****5937 -92.1 USDT",
+    "Withdraw successful: User ID 671****8243 -117.8 USDT",
+    "Withdraw successful: User ID 423****1578 -73.6 USDT",
+    "Withdraw successful: User ID 789****2645 -148.9 USDT",
+    "Withdraw successful: User ID 356****9172 -101.3 USDT",
+    "Withdraw successful: User ID 842****6354 -129.4 USDT",
+    "Withdraw successful: User ID 234****7891 -70.7 USDT",
+    "Withdraw successful: User ID 678****1426 -137.6 USDT",
+    "Withdraw successful: User ID 915****3789 -94.5 USDT",
+    "Withdraw successful: User ID 567****9214 -119.2 USDT",
+    "Withdraw successful: User ID 392****6548 -75.8 USDT",
+    "Withdraw successful: User ID 823****1967 -153.1 USDT",
+    "Withdraw successful: User ID 741****5832 -104.7 USDT",
+    "Withdraw successful: User ID 258****4369 -131.8 USDT",
+    "Withdraw successful: User ID 934****2715 -72.4 USDT",
+    "Withdraw successful: User ID 675****9843 -138.9 USDT",
+    "Withdraw successful: User ID 416****7281 -96.8 USDT",
+    "Withdraw successful: User ID 782****3594 -120.7 USDT",
+    "Withdraw successful: User ID 349****8926 -77.3 USDT",
+    "Withdraw successful: User ID 897****1438 -155.4 USDT",
+    "Withdraw successful: User ID 631****4765 -108.2 USDT",
+    "Withdraw successful: User ID 284****6197 -133.5 USDT",
+    "Withdraw successful: User ID 968****3254 -74.1 USDT",
+    "Withdraw successful: User ID 752****8379 -140.3 USDT",
+    "Withdraw successful: User ID 437****5642 -99.2 USDT",
+    "Withdraw successful: User ID 819****2961 -122.6 USDT",
+    "Withdraw successful: User ID 365****7458 -78.7 USDT"
+];
+
+// Notification system variables
+let currentNotificationIndex = 0;
+let notificationTimer = null;
+let isNotificationActive = false;
+let notificationTimeout = null;
+
 // DOM Elements
 const elements = {};
 
@@ -140,6 +358,9 @@ async function initApp() {
         
         // Check for referrals
         checkForReferral();
+        
+        // Initialize notification system
+        initNotificationSystem();
         
         // Mark as initialized
         userData.isInitialized = true;
@@ -174,6 +395,276 @@ function cacheElements() {
     
     console.log("✅ Cached", elementIds.length, "DOM elements");
 }
+
+// ============================================
+// NOTIFICATION SYSTEM FUNCTIONS
+// ============================================
+
+function initNotificationSystem() {
+    console.log("🔔 Initializing notification system...");
+    
+    // Reset index to start from beginning
+    currentNotificationIndex = 0;
+    
+    // Check if we're on Home page initially
+    const homePage = document.querySelector('.container.active');
+    if (homePage && !homePage.classList.contains('hidden')) {
+        startNotificationTimer();
+    }
+}
+
+function startNotificationTimer() {
+    if (isNotificationActive) {
+        console.log("🔔 Notification timer already active");
+        return;
+    }
+    
+    console.log("🔔 Starting notification timer");
+    isNotificationActive = true;
+    
+    // Show first notification immediately
+    setTimeout(() => {
+        showNextNotification();
+    }, 3000);
+}
+
+function stopNotificationTimer() {
+    console.log("🔔 Stopping notification timer");
+    isNotificationActive = false;
+    
+    if (notificationTimer) {
+        clearTimeout(notificationTimer);
+        notificationTimer = null;
+    }
+    
+    if (notificationTimeout) {
+        clearTimeout(notificationTimeout);
+        notificationTimeout = null;
+    }
+    
+    // Hide notification bar
+    const notificationBar = document.getElementById('floatingNotification');
+    if (notificationBar) {
+        notificationBar.classList.remove('show');
+        notificationBar.classList.remove('notification-deposit');
+        notificationBar.classList.remove('notification-withdraw');
+    }
+}
+
+function showNextNotification() {
+    if (!isNotificationActive) {
+        console.log("🔔 Notifications not active");
+        return;
+    }
+    
+    const notificationBar = document.getElementById('floatingNotification');
+    if (!notificationBar) {
+        console.error("❌ Notification bar element not found");
+        return;
+    }
+    
+    // Get next notification message
+    const message = NOTIFICATION_MESSAGES[currentNotificationIndex];
+    
+    // Update notification bar
+    notificationBar.innerHTML = `<span>${message}</span>`;
+    
+    // Determine color based on message type
+    const colorClass = getNotificationColor(message);
+    notificationBar.className = 'notification-bar';
+    notificationBar.classList.add(colorClass);
+    
+    // Show notification with animation
+    setTimeout(() => {
+        notificationBar.classList.add('show');
+        notificationBar.classList.add('moving');
+    }, 100);
+    
+    console.log(`🔔 Showing notification ${currentNotificationIndex + 1}/${NOTIFICATION_MESSAGES.length}: ${message}`);
+    
+    // Move to next notification (loop back to start if at end)
+    currentNotificationIndex++;
+    if (currentNotificationIndex >= NOTIFICATION_MESSAGES.length) {
+        currentNotificationIndex = 0;
+    }
+    
+    // Schedule next notification after 65 seconds (5 seconds show + 60 seconds wait)
+    notificationTimer = setTimeout(() => {
+        // Hide current notification
+        notificationBar.classList.remove('show');
+        notificationBar.classList.remove('moving');
+        
+        // Wait for fade out animation
+        notificationTimeout = setTimeout(() => {
+            showNextNotification();
+        }, 500);
+    }, 5000); // Show for 5 seconds
+}
+
+function getNotificationColor(message) {
+    // Determine color based on message content
+    if (message.includes('+') && (message.includes('BNB') || message.includes('USDT'))) {
+        return 'notification-deposit'; // Blue for deposits
+    } else if (message.includes('-') && message.includes('USDT')) {
+        return 'notification-withdraw'; // Green for withdrawals
+    }
+    return 'notification-deposit'; // Default to blue
+}
+
+function checkAndShowNotification() {
+    // Check if we're on Home page
+    const homePage = document.querySelector('.container.active');
+    if (homePage && !homePage.classList.contains('hidden')) {
+        if (!isNotificationActive) {
+            startNotificationTimer();
+        }
+    } else {
+        if (isNotificationActive) {
+            stopNotificationTimer();
+        }
+    }
+}
+
+// ============================================
+// TRANSACTION HISTORY IMPROVEMENT
+// ============================================
+
+function showTransactionHistory() {
+    console.log("📜 Showing transaction history");
+    
+    // Check if there are any transactions
+    const hasTransactions = 
+        walletData.pendingDeposits.length > 0 ||
+        walletData.pendingWithdrawals.length > 0 ||
+        walletData.depositHistory.length > 0 ||
+        walletData.withdrawalHistory.length > 0;
+    
+    if (!hasTransactions) {
+        // Show "No Transactions Yet" message
+        const modalHTML = `
+            <div class="modal-overlay" id="historyModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3><i class="fas fa-history"></i> Transaction History</h3>
+                        <button class="modal-close" onclick="closeModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="empty-history" style="display: block;">
+                            <div class="empty-icon">
+                                <i class="fas fa-inbox"></i>
+                            </div>
+                            <div class="empty-title">📭 No Transactions Yet</div>
+                            <div class="empty-text">
+                                Your transaction history will appear here<br>
+                                once you make deposits or withdrawals.
+                            </div>
+                            <div style="margin-top: 20px;">
+                                <button class="btn-primary" onclick="closeModal()" style="width: 100%; padding: 12px;">
+                                    <i class="fas fa-check"></i> OK
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        return;
+    }
+    
+    // Original transaction history modal
+    const modalHTML = `
+        <div class="modal-overlay" id="historyModal">
+            <div class="modal-content history-modal">
+                <div class="modal-header">
+                    <h3><i class="fas fa-history"></i> Transaction History</h3>
+                    <button class="modal-close" onclick="closeModal()">×</button>
+                </div>
+                
+                <div class="modal-body">
+                    <!-- Tabs -->
+                    <div class="history-tabs">
+                        <button class="tab-btn active" onclick="switchHistoryTab('pending')">
+                            <i class="fas fa-clock"></i>
+                            <span>Pending</span>
+                            ${walletData.pendingDeposits.length + walletData.pendingWithdrawals.length > 0 ? 
+                              `<span class="tab-badge">${walletData.pendingDeposits.length + walletData.pendingWithdrawals.length}</span>` : ''}
+                        </button>
+                        <button class="tab-btn" onclick="switchHistoryTab('deposits')">
+                            <i class="fas fa-download"></i>
+                            <span>Deposits</span>
+                        </button>
+                        <button class="tab-btn" onclick="switchHistoryTab('withdrawals')">
+                            <i class="fas fa-upload"></i>
+                            <span>Withdrawals</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Pending Transactions -->
+                    <div class="history-content" id="pendingTab">
+                        <div class="section-title">
+                            <i class="fas fa-clock"></i>
+                            <span>Pending Transactions</span>
+                        </div>
+                        
+                        ${renderPendingTransactions()}
+                    </div>
+                    
+                    <!-- Deposit History -->
+                    <div class="history-content" id="depositsTab" style="display: none;">
+                        <div class="section-title">
+                            <i class="fas fa-download"></i>
+                            <span>Deposit History</span>
+                        </div>
+                        
+                        ${renderDepositHistory()}
+                    </div>
+                    
+                    <!-- Withdrawal History -->
+                    <div class="history-content" id="withdrawalsTab" style="display: none;">
+                        <div class="section-title">
+                            <i class="fas fa-upload"></i>
+                            <span>Withdrawal History</span>
+                        </div>
+                        
+                        ${renderWithdrawalHistory()}
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <div class="empty-history" id="emptyHistory" style="display: ${walletData.pendingDeposits.length === 0 && walletData.pendingWithdrawals.length === 0 && walletData.depositHistory.length === 0 && walletData.withdrawalHistory.length === 0 ? 'block' : 'none'};">
+                        <div class="empty-icon">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <div class="empty-title">No Transactions Yet</div>
+                        <div class="empty-text">
+                            Your transaction history will appear here once you make deposits or withdrawals.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    addHistoryModalCSS();
+}
+
+// ============================================
+// PAGE NAVIGATION INTEGRATION
+// ============================================
+
+// Override the global switchToPage function to handle notifications
+const originalSwitchToPage = window.switchToPage;
+window.switchToPage = function(pageName) {
+    // Call original function
+    originalSwitchToPage(pageName);
+    
+    // Manage notification system based on page
+    setTimeout(() => {
+        checkAndShowNotification();
+    }, 100);
+};
 
 // ============================================
 // User Management
@@ -1667,85 +2158,8 @@ function submitWithdrawal() {
 }
 
 // ============================================
-// Transaction History System - NEW
+// Transaction History System
 // ============================================
-
-function showTransactionHistory() {
-    const modalHTML = `
-        <div class="modal-overlay" id="historyModal">
-            <div class="modal-content history-modal">
-                <div class="modal-header">
-                    <h3><i class="fas fa-history"></i> Transaction History</h3>
-                    <button class="modal-close" onclick="closeModal()">×</button>
-                </div>
-                
-                <div class="modal-body">
-                    <!-- Tabs -->
-                    <div class="history-tabs">
-                        <button class="tab-btn active" onclick="switchHistoryTab('pending')">
-                            <i class="fas fa-clock"></i>
-                            <span>Pending</span>
-                            ${walletData.pendingDeposits.length + walletData.pendingWithdrawals.length > 0 ? 
-                              `<span class="tab-badge">${walletData.pendingDeposits.length + walletData.pendingWithdrawals.length}</span>` : ''}
-                        </button>
-                        <button class="tab-btn" onclick="switchHistoryTab('deposits')">
-                            <i class="fas fa-download"></i>
-                            <span>Deposits</span>
-                        </button>
-                        <button class="tab-btn" onclick="switchHistoryTab('withdrawals')">
-                            <i class="fas fa-upload"></i>
-                            <span>Withdrawals</span>
-                        </button>
-                    </div>
-                    
-                    <!-- Pending Transactions -->
-                    <div class="history-content" id="pendingTab">
-                        <div class="section-title">
-                            <i class="fas fa-clock"></i>
-                            <span>Pending Transactions</span>
-                        </div>
-                        
-                        ${renderPendingTransactions()}
-                    </div>
-                    
-                    <!-- Deposit History -->
-                    <div class="history-content" id="depositsTab" style="display: none;">
-                        <div class="section-title">
-                            <i class="fas fa-download"></i>
-                            <span>Deposit History</span>
-                        </div>
-                        
-                        ${renderDepositHistory()}
-                    </div>
-                    
-                    <!-- Withdrawal History -->
-                    <div class="history-content" id="withdrawalsTab" style="display: none;">
-                        <div class="section-title">
-                            <i class="fas fa-upload"></i>
-                            <span>Withdrawal History</span>
-                        </div>
-                        
-                        ${renderWithdrawalHistory()}
-                    </div>
-                    
-                    <!-- Empty State -->
-                    <div class="empty-history" id="emptyHistory" style="display: ${walletData.pendingDeposits.length === 0 && walletData.pendingWithdrawals.length === 0 && walletData.depositHistory.length === 0 && walletData.withdrawalHistory.length === 0 ? 'block' : 'none'};">
-                        <div class="empty-icon">
-                            <i class="fas fa-history"></i>
-                        </div>
-                        <div class="empty-title">No Transactions Yet</div>
-                        <div class="empty-text">
-                            Your transaction history will appear here once you make deposits or withdrawals.
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-    addHistoryModalCSS();
-}
 
 function renderPendingTransactions() {
     if (walletData.pendingDeposits.length === 0 && walletData.pendingWithdrawals.length === 0) {
@@ -2689,6 +3103,7 @@ window.addEventListener('beforeunload', function() {
         console.log("💾 Saving data before page unload...");
         saveUserData();
         saveWalletData();
+        stopNotificationTimer();
     }
 });
 
@@ -2727,7 +3142,3 @@ window.submitDepositRequest = submitDepositRequest;
 window.switchHistoryTab = switchHistoryTab;
 
 console.log("🎮 VIP Mining Wallet v6.3 loaded successfully");
-// ============================================
-// Export Functions for HTML - إضافة التاريخ
-// ============================================
-window.showTransactionHistory = showTransactionHistory;
