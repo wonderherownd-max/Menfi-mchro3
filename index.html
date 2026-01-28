@@ -531,7 +531,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log("🎯 Navigation system loading...");
             setupNavigation();
-            setTimeout(initializeHomePage, 1000); // تم زيادة المهلة من 100ms إلى 1000ms للهاتف
+            setTimeout(initializeHomePage, 1000);
         });
         
         function setupNavigation() {
@@ -636,22 +636,6 @@
             }
         }
         
-        function showTransactionHistory() {
-            if (window.showTransactionHistory) {
-                window.showTransactionHistory();
-            } else {
-                console.log('📭 Transaction history feature loading...');
-                setTimeout(() => {
-                    if (window.showTransactionHistory) {
-                        window.showTransactionHistory();
-                    } else {
-                        console.log('❌ Transaction history function not available');
-                        showMessage('Please wait, history system is loading...', 'warning');
-                    }
-                }, 1000);
-            }
-        }
-        
         function showComingSoon() {
             if (window.showMessage) {
                 window.showMessage('🚀 This feature is under development!', 'info');
@@ -662,7 +646,6 @@
         
         function initializeHomePage() {
             console.log("🏠 Initializing home page...");
-            // هذه الوظيفة ستعيد تهيئة الصفحة الرئيسية
             setTimeout(() => {
                 if (window.initNotificationSystem) {
                     window.initNotificationSystem();
@@ -694,7 +677,6 @@
         
         window.switchToPage = switchToPage;
         window.showComingSoon = showComingSoon;
-        window.showTransactionHistory = showTransactionHistory;
         window.initializeHomePage = initializeHomePage;
         window.updateLoadingStatus = updateLoadingStatus;
         
