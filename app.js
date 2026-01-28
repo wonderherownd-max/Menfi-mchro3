@@ -397,7 +397,7 @@ function cacheElements() {
 }
 
 // ============================================
-// NOTIFICATION SYSTEM FUNCTIONS - FIXED
+// NOTIFICATION SYSTEM FUNCTIONS
 // ============================================
 
 function initNotificationSystem() {
@@ -406,13 +406,11 @@ function initNotificationSystem() {
     // Reset index to start from beginning
     currentNotificationIndex = 0;
     
-    // Start notifications immediately when app loads (for Home page)
-    setTimeout(() => {
-        const homePage = document.querySelector('.container');
-        if (homePage && homePage.classList.contains('active')) {
-            startNotificationTimer();
-        }
-    }, 2000); // Start after 2 seconds to let page load
+    // Check if we're on Home page initially
+    const homePage = document.querySelector('.container.active');
+    if (homePage && !homePage.classList.contains('hidden')) {
+        startNotificationTimer();
+    }
 }
 
 function startNotificationTimer() {
@@ -427,7 +425,7 @@ function startNotificationTimer() {
     // Show first notification immediately
     setTimeout(() => {
         showNextNotification();
-    }, 1000); // Show first notification after 1 second
+    }, 3000);
 }
 
 function stopNotificationTimer() {
@@ -490,7 +488,7 @@ function showNextNotification() {
         currentNotificationIndex = 0;
     }
     
-    // Schedule next notification after 15 seconds (5 seconds show + 10 seconds wait)
+    // Schedule next notification after 65 seconds (5 seconds show + 60 seconds wait)
     notificationTimer = setTimeout(() => {
         // Hide current notification
         notificationBar.classList.remove('show');
@@ -528,16 +526,54 @@ function checkAndShowNotification() {
 }
 
 // ============================================
-// TRANSACTION HISTORY IMPROVEMENT - FIXED
+// TRANSACTION HISTORY IMPROVEMENT
 // ============================================
 
 function showTransactionHistory() {
     console.log("📜 Showing transaction history");
     
-    // Close any existing modal first
-    closeModal();
+    // Check if there are any transactions
+    const hasTransactions = 
+        walletData.pendingDeposits.length > 0 ||
+        walletData.pendingWithdrawals.length > 0 ||
+        walletData.depositHistory.length > 0 ||
+        walletData.withdrawalHistory.length > 0;
     
-    // Always show the modal with "No Transactions Yet" message
+    if (!hasTransactions) {
+        // Show "No Transactions Yet" message
+        const modalHTML = `
+            <div class="modal-overlay" id="historyModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3><i class="fas fa-history"></i> Transaction History</h3>
+                        <button class="modal-close" onclick="closeModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="empty-history" style="display: block;">
+                            <div class="empty-icon">
+                                <i class="fas fa-inbox"></i>
+                            </div>
+                            <div class="empty-title">📭 No Transactions Yet</div>
+                            <div class="empty-text">
+                                Your transaction history will appear here<br>
+                                once you make deposits or withdrawals.
+                            </div>
+                            <div style="margin-top: 20px;">
+                                <button class="btn-primary" onclick="closeModal()" style="width: 100%; padding: 12px;">
+                                    <i class="fas fa-check"></i> OK
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        return;
+    }
+    
+    // Original transaction history modal
     const modalHTML = `
         <div class="modal-overlay" id="historyModal">
             <div class="modal-content history-modal">
@@ -552,6 +588,8 @@ function showTransactionHistory() {
                         <button class="tab-btn active" onclick="switchHistoryTab('pending')">
                             <i class="fas fa-clock"></i>
                             <span>Pending</span>
+                            ${walletData.pendingDeposits.length + walletData.pendingWithdrawals.length > 0 ? 
+                              `<span class="tab-badge">${walletData.pendingDeposits.length + walletData.pendingWithdrawals.length}</span>` : ''}
                         </button>
                         <button class="tab-btn" onclick="switchHistoryTab('deposits')">
                             <i class="fas fa-download"></i>
@@ -570,12 +608,7 @@ function showTransactionHistory() {
                             <span>Pending Transactions</span>
                         </div>
                         
-                        <div class="empty-pending">
-                            <div class="empty-icon-small">
-                                <i class="fas fa-inbox"></i>
-                            </div>
-                            <div class="empty-text">No pending transactions</div>
-                        </div>
+                        ${renderPendingTransactions()}
                     </div>
                     
                     <!-- Deposit History -->
@@ -585,12 +618,7 @@ function showTransactionHistory() {
                             <span>Deposit History</span>
                         </div>
                         
-                        <div class="empty-history-section">
-                            <div class="empty-icon-small">
-                                <i class="fas fa-download"></i>
-                            </div>
-                            <div class="empty-text">No completed deposits</div>
-                        </div>
+                        ${renderDepositHistory()}
                     </div>
                     
                     <!-- Withdrawal History -->
@@ -600,28 +628,17 @@ function showTransactionHistory() {
                             <span>Withdrawal History</span>
                         </div>
                         
-                        <div class="empty-history-section">
-                            <div class="empty-icon-small">
-                                <i class="fas fa-upload"></i>
-                            </div>
-                            <div class="empty-text">No completed withdrawals</div>
-                        </div>
+                        ${renderWithdrawalHistory()}
                     </div>
                     
                     <!-- Empty State -->
-                    <div class="empty-history" style="display: block; margin-top: 30px;">
+                    <div class="empty-history" id="emptyHistory" style="display: ${walletData.pendingDeposits.length === 0 && walletData.pendingWithdrawals.length === 0 && walletData.depositHistory.length === 0 && walletData.withdrawalHistory.length === 0 ? 'block' : 'none'};">
                         <div class="empty-icon">
                             <i class="fas fa-history"></i>
                         </div>
-                        <div class="empty-title">📭 No Transactions Yet</div>
+                        <div class="empty-title">No Transactions Yet</div>
                         <div class="empty-text">
-                            Your transaction history will appear here<br>
-                            once you make deposits or withdrawals.
-                        </div>
-                        <div style="margin-top: 20px;">
-                            <button class="btn-primary" onclick="closeModal()" style="width: 100%; padding: 12px;">
-                                <i class="fas fa-check"></i> OK
-                            </button>
+                            Your transaction history will appear here once you make deposits or withdrawals.
                         </div>
                     </div>
                 </div>
@@ -630,11 +647,11 @@ function showTransactionHistory() {
     `;
     
     document.body.insertAdjacentHTML('beforeend', modalHTML);
-    console.log("✅ History modal displayed");
+    addHistoryModalCSS();
 }
 
 // ============================================
-// PAGE NAVIGATION INTEGRATION - FIXED
+// PAGE NAVIGATION INTEGRATION
 // ============================================
 
 // Override the global switchToPage function to handle notifications
@@ -645,15 +662,7 @@ window.switchToPage = function(pageName) {
     
     // Manage notification system based on page
     setTimeout(() => {
-        const isHomePage = pageName === 'home';
-        
-        if (isHomePage && !isNotificationActive) {
-            // Start notifications when entering Home page
-            startNotificationTimer();
-        } else if (!isHomePage && isNotificationActive) {
-            // Stop notifications when leaving Home page
-            stopNotificationTimer();
-        }
+        checkAndShowNotification();
     }, 100);
 };
 
@@ -1261,6 +1270,9 @@ function openSwapModal(currency) {
     `;
     
     document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Add CSS for professional swap modal
+    addSwapModalCSS();
     
     setTimeout(() => {
         const input = document.getElementById('swapFromAmount');
@@ -2146,8 +2158,235 @@ function submitWithdrawal() {
 }
 
 // ============================================
-// Transaction History System - SIMPLIFIED
+// Transaction History System
 // ============================================
+
+function renderPendingTransactions() {
+    if (walletData.pendingDeposits.length === 0 && walletData.pendingWithdrawals.length === 0) {
+        return `
+            <div class="empty-pending">
+                <div class="empty-icon-small">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="empty-text">No pending transactions</div>
+            </div>
+        `;
+    }
+    
+    let html = '';
+    
+    // Pending Deposits
+    walletData.pendingDeposits.forEach(deposit => {
+        const date = new Date(deposit.timestamp);
+        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        html += `
+            <div class="transaction-card pending">
+                <div class="transaction-header">
+                    <div class="transaction-type">
+                        <div class="type-icon deposit">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <div class="type-info">
+                            <div class="type-title">Deposit Request</div>
+                            <div class="type-subtitle">${deposit.currency}</div>
+                        </div>
+                    </div>
+                    <div class="transaction-status pending-badge">
+                        <i class="fas fa-clock"></i>
+                        <span>Pending Review</span>
+                    </div>
+                </div>
+                <div class="transaction-details">
+                    <div class="detail-row">
+                        <span>Amount:</span>
+                        <span class="detail-value">${deposit.amount} ${deposit.currency}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Transaction Hash:</span>
+                        <span class="detail-value hash">${deposit.transactionHash.substring(0, 12)}...${deposit.transactionHash.substring(deposit.transactionHash.length - 6)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Submitted:</span>
+                        <span class="detail-value">${formattedDate}</span>
+                    </div>
+                </div>
+                <div class="transaction-note">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Awaiting manual review by admin</span>
+                </div>
+            </div>
+        `;
+    });
+    
+    // Pending Withdrawals
+    walletData.pendingWithdrawals.forEach(withdrawal => {
+        const date = new Date(withdrawal.timestamp);
+        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        html += `
+            <div class="transaction-card pending">
+                <div class="transaction-header">
+                    <div class="transaction-type">
+                        <div class="type-icon withdrawal">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <div class="type-info">
+                            <div class="type-title">Withdrawal Request</div>
+                            <div class="type-subtitle">USDT</div>
+                        </div>
+                    </div>
+                    <div class="transaction-status pending-badge">
+                        <i class="fas fa-clock"></i>
+                        <span>Pending Processing</span>
+                    </div>
+                </div>
+                <div class="transaction-details">
+                    <div class="detail-row">
+                        <span>Amount:</span>
+                        <span class="detail-value">${withdrawal.amount} USDT</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Address:</span>
+                        <span class="detail-value hash">${withdrawal.address.substring(0, 12)}...${withdrawal.address.substring(withdrawal.address.length - 6)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Network Fee:</span>
+                        <span class="detail-value">${withdrawal.fee} BNB</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Submitted:</span>
+                        <span class="detail-value">${formattedDate}</span>
+                    </div>
+                </div>
+                <div class="transaction-note">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Awaiting manual processing by admin</span>
+                </div>
+            </div>
+        `;
+    });
+    
+    return html;
+}
+
+function renderDepositHistory() {
+    if (walletData.depositHistory.length === 0) {
+        return `
+            <div class="empty-history-section">
+                <div class="empty-icon-small">
+                    <i class="fas fa-download"></i>
+                </div>
+                <div class="empty-text">No completed deposits</div>
+            </div>
+        `;
+    }
+    
+    let html = '';
+    
+    walletData.depositHistory.forEach(deposit => {
+        const date = new Date(deposit.timestamp);
+        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        html += `
+            <div class="transaction-card completed">
+                <div class="transaction-header">
+                    <div class="transaction-type">
+                        <div class="type-icon deposit">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <div class="type-info">
+                            <div class="type-title">Deposit ${deposit.status === 'approved' ? 'Approved' : 'Completed'}</div>
+                            <div class="type-subtitle">${deposit.currency}</div>
+                        </div>
+                    </div>
+                    <div class="transaction-status ${deposit.status === 'approved' ? 'approved-badge' : 'completed-badge'}">
+                        <i class="fas ${deposit.status === 'approved' ? 'fa-check-circle' : 'fa-check'}"></i>
+                        <span>${deposit.status === 'approved' ? 'Approved' : 'Completed'}</span>
+                    </div>
+                </div>
+                <div class="transaction-details">
+                    <div class="detail-row">
+                        <span>Amount:</span>
+                        <span class="detail-value">${deposit.amount} ${deposit.currency}</span>
+                    </div>
+                    ${deposit.transactionHash ? `
+                    <div class="detail-row">
+                        <span>Transaction Hash:</span>
+                        <span class="detail-value hash">${deposit.transactionHash.substring(0, 12)}...${deposit.transactionHash.substring(deposit.transactionHash.length - 6)}</span>
+                    </div>
+                    ` : ''}
+                    <div class="detail-row">
+                        <span>Date:</span>
+                        <span class="detail-value">${formattedDate}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    return html;
+}
+
+function renderWithdrawalHistory() {
+    if (walletData.withdrawalHistory.length === 0) {
+        return `
+            <div class="empty-history-section">
+                <div class="empty-icon-small">
+                    <i class="fas fa-upload"></i>
+                </div>
+                <div class="empty-text">No completed withdrawals</div>
+            </div>
+        `;
+    }
+    
+    let html = '';
+    
+    walletData.withdrawalHistory.forEach(withdrawal => {
+        const date = new Date(withdrawal.timestamp);
+        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        html += `
+            <div class="transaction-card completed">
+                <div class="transaction-header">
+                    <div class="transaction-type">
+                        <div class="type-icon withdrawal">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <div class="type-info">
+                            <div class="type-title">Withdrawal ${withdrawal.status === 'completed' ? 'Completed' : 'Processed'}</div>
+                            <div class="type-subtitle">USDT</div>
+                        </div>
+                    </div>
+                    <div class="transaction-status completed-badge">
+                        <i class="fas fa-check-circle"></i>
+                        <span>${withdrawal.status === 'completed' ? 'Completed' : 'Processed'}</span>
+                    </div>
+                </div>
+                <div class="transaction-details">
+                    <div class="detail-row">
+                        <span>Amount:</span>
+                        <span class="detail-value">${withdrawal.amount} USDT</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Address:</span>
+                        <span class="detail-value hash">${withdrawal.address.substring(0, 12)}...${withdrawal.address.substring(withdrawal.address.length - 6)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Network Fee:</span>
+                        <span class="detail-value">${withdrawal.fee} BNB</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Date:</span>
+                        <span class="detail-value">${formattedDate}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    return html;
+}
 
 function switchHistoryTab(tabName) {
     // Update tabs
@@ -2173,6 +2412,18 @@ function switchHistoryTab(tabName) {
     const content = document.getElementById(contentId);
     if (content) {
         content.style.display = 'block';
+    }
+    
+    // Show/hide empty state
+    const emptyHistory = document.getElementById('emptyHistory');
+    if (emptyHistory) {
+        if (tabName === 'pending') {
+            emptyHistory.style.display = walletData.pendingDeposits.length === 0 && walletData.pendingWithdrawals.length === 0 ? 'block' : 'none';
+        } else if (tabName === 'deposits') {
+            emptyHistory.style.display = walletData.depositHistory.length === 0 ? 'block' : 'none';
+        } else if (tabName === 'withdrawals') {
+            emptyHistory.style.display = walletData.withdrawalHistory.length === 0 ? 'block' : 'none';
+        }
     }
 }
 
