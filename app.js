@@ -269,11 +269,11 @@ function showAdminPanel() {
                                 
                                 <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                                     <div style="flex: 1;">
-                                        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 5px;">User ID</div>
+                                        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 5px;">User ID or Username</div>
                                         <input type="text" 
                                                id="adminUserId" 
                                                style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; color: white;"
-                                               placeholder="Enter user ID">
+                                               placeholder="Enter user ID or username">
                                     </div>
                                     <div style="flex: 1;">
                                         <div style="font-size: 12px; color: #94a3b8; margin-bottom: 5px;">Amount (MWH)</div>
@@ -315,14 +315,14 @@ function showAdminPanel() {
                         <div style="background: rgba(15,23,42,0.8); border-radius: 12px; padding: 20px;">
                             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
                                 <i class="fas fa-search" style="color: #8b5cf6;"></i>
-                                <span style="color: #cbd5e0; font-size: 14px;">Search User by ID</span>
+                                <span style="color: #cbd5e0; font-size: 14px;">Search User by ID or Username</span>
                             </div>
                             
                             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                                 <input type="text" 
                                        id="adminSearchUserId" 
                                        style="flex: 1; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; color: white;"
-                                       placeholder="Enter user ID to search">
+                                       placeholder="Enter user ID or username to search">
                                 <button onclick="searchUserById()" 
                                         style="padding: 10px 20px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border: none; border-radius: 8px; font-weight: 600;">
                                     <i class="fas fa-search"></i> Search
@@ -350,6 +350,10 @@ function showAdminPanel() {
                                             <div style="font-size: 12px; color: #94a3b8;">Rank</div>
                                             <div style="font-size: 14px; color: #f59e0b; font-weight: 600;" id="adminFoundRank">Beginner</div>
                                         </div>
+                                    </div>
+                                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                                        <div style="font-size: 12px; color: #94a3b8;">User ID in Firebase:</div>
+                                        <div style="font-size: 13px; color: #cbd5e0; font-family: monospace; word-break: break-all;" id="adminFoundUserId">-</div>
                                     </div>
                                 </div>
                             </div>
@@ -390,7 +394,7 @@ async function loadAdminPendingRequests() {
     }
     
     try {
-        // Load pending deposits
+        // Load pending deposits - البحث في الجدول الصحيح deposit_requests
         const depositsSnapshot = await db.collection('deposit_requests')
             .where('status', '==', 'pending')
             .orderBy('timestamp', 'desc')
@@ -428,7 +432,7 @@ async function loadAdminPendingRequests() {
                                     </div>
                                     <div class="type-info">
                                         <div class="type-title">${data.username || 'User'}</div>
-                                        <div class="type-subtitle">ID: ${data.userId?.substring(0, 8)}...</div>
+                                        <div class="type-subtitle">ID: ${data.userId ? data.userId.substring(0, 8) + '...' : 'N/A'}</div>
                                     </div>
                                 </div>
                                 <div class="transaction-status pending-badge">
@@ -439,7 +443,7 @@ async function loadAdminPendingRequests() {
                             <div class="transaction-details">
                                 <div class="detail-row">
                                     <span>Amount:</span>
-                                    <span class="detail-value">${data.amount} ${data.currency}</span>
+                                    <span class="detail-value">${data.amount} ${data.currency || 'USDT'}</span>
                                 </div>
                                 <div class="detail-row">
                                     <span>Transaction:</span>
@@ -453,7 +457,7 @@ async function loadAdminPendingRequests() {
                                 </div>
                             </div>
                             <div style="display: flex; gap: 10px; margin-top: 10px;">
-                                <button onclick="approveDepositRequest('${doc.id}', '${data.userId}', ${data.amount}, '${data.currency}')" 
+                                <button onclick="approveDepositRequest('${doc.id}', '${data.userId}', ${data.amount}, '${data.currency || 'USDT'}')" 
                                         style="flex: 1; padding: 8px; background: linear-gradient(135deg, #22c55e, #10b981); color: white; border: none; border-radius: 6px; font-weight: 600;">
                                     <i class="fas fa-check"></i> Approve
                                 </button>
@@ -507,7 +511,7 @@ async function loadAdminPendingRequests() {
                                     </div>
                                     <div class="type-info">
                                         <div class="type-title">${data.username || 'User'}</div>
-                                        <div class="type-subtitle">ID: ${data.userId?.substring(0, 8)}...</div>
+                                        <div class="type-subtitle">ID: ${data.userId ? data.userId.substring(0, 8) + '...' : 'N/A'}</div>
                                     </div>
                                 </div>
                                 <div class="transaction-status pending-badge">
@@ -716,7 +720,6 @@ async function addBalanceToAllUsers() {
     }
 }
 
-// NEW FUNCTION: Add balance to specific user
 async function addBalanceToSpecificUser() {
     if (!adminAccess || !db) return;
     
@@ -725,11 +728,11 @@ async function addBalanceToSpecificUser() {
     
     if (!userIdInput || !amountInput) return;
     
-    const userId = userIdInput.value.trim();
+    const searchTerm = userIdInput.value.trim();
     const amount = parseFloat(amountInput.value);
     
-    if (!userId) {
-        showMessage('❌ Please enter a user ID', 'error');
+    if (!searchTerm) {
+        showMessage('❌ Please enter a user ID or username', 'error');
         return;
     }
     
@@ -738,30 +741,47 @@ async function addBalanceToSpecificUser() {
         return;
     }
     
-    if (!confirm(`Add ${amount} MWH to user ${userId}?`)) return;
+    if (!confirm(`Add ${amount} MWH to user ${searchTerm}?`)) return;
     
     try {
         showMessage('⏳ Adding balance to user...', 'info');
         
-        const userRef = db.collection('users').doc(userId);
-        const userSnap = await userRef.get();
+        let userDoc;
         
+        // جرب البحث بالـ ID أولاً
+        const userRefById = db.collection('users').doc(searchTerm);
+        let userSnap = await userRefById.get();
+        
+        // إذا لم ينجح، جرب البحث بالـ Username
         if (!userSnap.exists) {
-            showMessage(`❌ User ${userId} not found`, 'error');
+            const usersSnapshot = await db.collection('users')
+                .where('username', '==', searchTerm)
+                .limit(1)
+                .get();
+            
+            if (!usersSnapshot.empty) {
+                userDoc = usersSnapshot.docs[0];
+            }
+        } else {
+            userDoc = { id: searchTerm, data: () => userSnap.data(), ref: userRefById };
+        }
+        
+        if (!userDoc) {
+            showMessage(`❌ User ${searchTerm} not found`, 'error');
             return;
         }
         
-        await userRef.update({
+        await userDoc.ref.update({
             balance: firebase.firestore.FieldValue.increment(amount),
             totalEarned: firebase.firestore.FieldValue.increment(amount),
             lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
         });
         
-        showMessage(`✅ Added ${amount} MWH to user ${userId}`, 'success');
+        showMessage(`✅ Added ${amount} MWH to user ${userDoc.data().username || searchTerm}`, 'success');
         userIdInput.value = '';
         amountInput.value = '';
         
-        // Update user info if displayed
+        // تحديث معلومات المستخدم إذا كانت معروضة
         const userInfoDiv = document.getElementById('adminUserInfo');
         if (userInfoDiv && userInfoDiv.style.display !== 'none') {
             const foundBalance = document.getElementById('adminFoundBalance');
@@ -777,50 +797,73 @@ async function addBalanceToSpecificUser() {
     }
 }
 
-// NEW FUNCTION: Search user by ID
 async function searchUserById() {
     if (!adminAccess || !db) return;
     
     const searchInput = document.getElementById('adminSearchUserId');
     if (!searchInput) return;
     
-    const userId = searchInput.value.trim();
-    if (!userId) {
-        showMessage('❌ Please enter a user ID', 'error');
+    const searchTerm = searchInput.value.trim();
+    if (!searchTerm) {
+        showMessage('❌ Please enter a user ID or username', 'error');
         return;
     }
     
     try {
         showMessage('🔍 Searching for user...', 'info');
         
-        const userRef = db.collection('users').doc(userId);
-        const userSnap = await userRef.get();
+        let userDoc;
+        let foundById = false;
         
-        if (!userSnap.exists) {
-            showMessage(`❌ User ${userId} not found`, 'error');
+        // جرب البحث بالـ ID أولاً
+        const userRefById = db.collection('users').doc(searchTerm);
+        let userSnap = await userRefById.get();
+        
+        if (userSnap.exists) {
+            userDoc = { id: searchTerm, data: () => userSnap.data(), ref: userRefById };
+            foundById = true;
+        } else {
+            // إذا لم ينجح، جرب البحث بالـ Username
+            const usersSnapshot = await db.collection('users')
+                .where('username', '==', searchTerm)
+                .limit(1)
+                .get();
+            
+            if (!usersSnapshot.empty) {
+                userDoc = usersSnapshot.docs[0];
+            }
+        }
+        
+        if (!userDoc) {
+            showMessage(`❌ User ${searchTerm} not found`, 'error');
             document.getElementById('adminUserInfo').style.display = 'none';
             return;
         }
         
-        const userData = userSnap.data();
+        const userData = userDoc.data();
         
-        // Update UI with user info
+        // تحديث الواجهة
         document.getElementById('adminFoundUsername').textContent = userData.username || 'Unknown';
         document.getElementById('adminFoundBalance').textContent = `${userData.balance || 0} MWH`;
         document.getElementById('adminFoundTotalEarned').textContent = `${userData.totalEarned || 0} MWH`;
         document.getElementById('adminFoundReferrals').textContent = userData.referrals || 0;
         document.getElementById('adminFoundRank').textContent = userData.rank || 'Beginner';
+        document.getElementById('adminFoundUserId').textContent = userDoc.id;
         
-        // Fill the add balance form with this user's ID
+        // تعبئة خانة إضافة الرصيد
         const addUserIdInput = document.getElementById('adminUserId');
         if (addUserIdInput) {
-            addUserIdInput.value = userId;
+            if (foundById) {
+                addUserIdInput.value = searchTerm; // استخدم الـ ID المدخل
+            } else {
+                addUserIdInput.value = userDoc.id; // استخدم الـ ID الحقيقي من Firebase
+            }
         }
         
-        // Show user info
+        // إظهار معلومات المستخدم
         document.getElementById('adminUserInfo').style.display = 'block';
         
-        showMessage(`✅ User ${userId} found`, 'success');
+        showMessage(`✅ User found: ${userData.username}`, 'success');
         
     } catch (error) {
         console.error("❌ Error searching for user:", error);
@@ -3628,5 +3671,7 @@ window.rejectDepositRequest = rejectDepositRequest;
 window.approveWithdrawalRequest = approveWithdrawalRequest;
 window.rejectWithdrawalRequest = rejectWithdrawalRequest;
 window.addBalanceToAllUsers = addBalanceToAllUsers;
+window.addBalanceToSpecificUser = addBalanceToSpecificUser;
+window.searchUserById = searchUserById;
 
-console.log("🎮 VIP Mining Wallet v6.5 loaded with Admin Panel");
+console.log("🎮 VIP Mining Wallet v6.5 loaded with Admin Panel - UPDATED VERSION");
