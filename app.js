@@ -219,6 +219,9 @@ function showAdminPanel() {
                             <i class="fas fa-upload"></i> Pending Withdrawals
                             <span class="tab-badge" id="pendingWithdrawalsCount">0</span>
                         </button>
+                        <button class="tab-btn" onclick="switchAdminTab('users')">
+                            <i class="fas fa-users"></i> User Management
+                        </button>
                     </div>
                     
                     <div id="adminDepositsTab">
@@ -251,28 +254,104 @@ function showAdminPanel() {
                         </div>
                     </div>
                     
-                    <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <div id="adminUsersTab" style="display: none;">
                         <div class="section-title">
-                            <i class="fas fa-coins"></i>
-                            <span>Balance Management</span>
+                            <i class="fas fa-user-cog"></i>
+                            <span>User Balance Management</span>
                         </div>
                         
-                        <div style="background: rgba(15,23,42,0.8); border-radius: 12px; padding: 15px; margin-bottom: 15px;">
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                                <i class="fas fa-gem" style="color: #fbbf24;"></i>
-                                <span style="color: #cbd5e0; font-size: 14px;">Add MWH to All Users</span>
-                            </div>
-                            <div style="display: flex; gap: 10px;">
-                                <input type="number" 
-                                       id="adminAddAmount" 
-                                       style="flex: 1; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; color: white;"
-                                       placeholder="Amount" 
-                                       min="1" 
-                                       step="1">
-                                <button onclick="addBalanceToAllUsers()" 
-                                        style="padding: 10px 20px; background: linear-gradient(135deg, #22c55e, #10b981); color: white; border: none; border-radius: 8px; font-weight: 600;">
-                                    Add to All
+                        <div style="background: rgba(15,23,42,0.8); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                            <div style="margin-bottom: 15px;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                    <i class="fas fa-user" style="color: #60a5fa;"></i>
+                                    <span style="color: #cbd5e0; font-size: 14px;">Add Balance to Specific User</span>
+                                </div>
+                                
+                                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 5px;">User ID</div>
+                                        <input type="text" 
+                                               id="adminUserId" 
+                                               style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; color: white;"
+                                               placeholder="Enter user ID">
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 5px;">Amount (MWH)</div>
+                                        <input type="number" 
+                                               id="adminUserAmount" 
+                                               style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; color: white;"
+                                               placeholder="Amount" 
+                                               min="1" 
+                                               step="1">
+                                    </div>
+                                </div>
+                                
+                                <button onclick="addBalanceToSpecificUser()" 
+                                        style="width: 100%; padding: 12px; background: linear-gradient(135deg, #3b82f6, #6366f1); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 14px;">
+                                    <i class="fas fa-plus-circle"></i> Add Balance to User
                                 </button>
+                            </div>
+                            
+                            <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                    <i class="fas fa-users" style="color: #fbbf24;"></i>
+                                    <span style="color: #cbd5e0; font-size: 14px;">Add Balance to All Users</span>
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="number" 
+                                           id="adminAddAmount" 
+                                           style="flex: 1; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; color: white;"
+                                           placeholder="Amount" 
+                                           min="1" 
+                                           step="1">
+                                    <button onclick="addBalanceToAllUsers()" 
+                                            style="padding: 10px 20px; background: linear-gradient(135deg, #22c55e, #10b981); color: white; border: none; border-radius: 8px; font-weight: 600;">
+                                        Add to All
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(15,23,42,0.8); border-radius: 12px; padding: 20px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                                <i class="fas fa-search" style="color: #8b5cf6;"></i>
+                                <span style="color: #cbd5e0; font-size: 14px;">Search User by ID</span>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                                <input type="text" 
+                                       id="adminSearchUserId" 
+                                       style="flex: 1; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; color: white;"
+                                       placeholder="Enter user ID to search">
+                                <button onclick="searchUserById()" 
+                                        style="padding: 10px 20px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border: none; border-radius: 8px; font-weight: 600;">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                            </div>
+                            
+                            <div id="adminUserInfo" style="display: none;">
+                                <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 15px; margin-top: 15px;">
+                                    <div style="font-size: 14px; color: #94a3b8; margin-bottom: 5px;">User Information</div>
+                                    <div style="font-size: 16px; color: #f8fafc; font-weight: 600; margin-bottom: 10px;" id="adminFoundUsername">Username</div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                        <div>
+                                            <div style="font-size: 12px; color: #94a3b8;">Balance</div>
+                                            <div style="font-size: 14px; color: #fbbf24; font-weight: 600;" id="adminFoundBalance">0 MWH</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 12px; color: #94a3b8;">Total Earned</div>
+                                            <div style="font-size: 14px; color: #22c55e; font-weight: 600;" id="adminFoundTotalEarned">0 MWH</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 12px; color: #94a3b8;">Referrals</div>
+                                            <div style="font-size: 14px; color: #60a5fa; font-weight: 600;" id="adminFoundReferrals">0</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 12px; color: #94a3b8;">Rank</div>
+                                            <div style="font-size: 14px; color: #f59e0b; font-weight: 600;" id="adminFoundRank">Beginner</div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -295,17 +374,23 @@ function switchAdminTab(tabName) {
     
     document.getElementById('adminDepositsTab').style.display = tabName === 'deposits' ? 'block' : 'none';
     document.getElementById('adminWithdrawalsTab').style.display = tabName === 'withdrawals' ? 'block' : 'none';
+    document.getElementById('adminUsersTab').style.display = tabName === 'users' ? 'block' : 'none';
     
     const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => 
-        btn.textContent.includes(tabName === 'deposits' ? 'Deposits' : 'Withdrawals')
+        btn.textContent.includes(tabName === 'deposits' ? 'Deposits' : 
+                                tabName === 'withdrawals' ? 'Withdrawals' : 'Users')
     );
     if (activeBtn) activeBtn.classList.add('active');
 }
 
 async function loadAdminPendingRequests() {
-    if (!adminAccess || !db) return;
+    if (!adminAccess || !db) {
+        console.log("❌ Admin access or DB not available");
+        return;
+    }
     
     try {
+        // Load pending deposits
         const depositsSnapshot = await db.collection('deposit_requests')
             .where('status', '==', 'pending')
             .orderBy('timestamp', 'desc')
@@ -384,6 +469,7 @@ async function loadAdminPendingRequests() {
             }
         }
         
+        // Load pending withdrawals
         const withdrawalsSnapshot = await db.collection('withdrawals')
             .where('status', '==', 'pending')
             .orderBy('timestamp', 'desc')
@@ -462,8 +548,11 @@ async function loadAdminPendingRequests() {
             }
         }
         
+        console.log("✅ Admin requests loaded successfully");
+        
     } catch (error) {
         console.error("❌ Error loading admin requests:", error);
+        showMessage('Error loading admin data. Check console.', 'error');
     }
 }
 
@@ -627,10 +716,123 @@ async function addBalanceToAllUsers() {
     }
 }
 
+// NEW FUNCTION: Add balance to specific user
+async function addBalanceToSpecificUser() {
+    if (!adminAccess || !db) return;
+    
+    const userIdInput = document.getElementById('adminUserId');
+    const amountInput = document.getElementById('adminUserAmount');
+    
+    if (!userIdInput || !amountInput) return;
+    
+    const userId = userIdInput.value.trim();
+    const amount = parseFloat(amountInput.value);
+    
+    if (!userId) {
+        showMessage('❌ Please enter a user ID', 'error');
+        return;
+    }
+    
+    if (!amount || amount <= 0) {
+        showMessage('❌ Please enter a valid amount', 'error');
+        return;
+    }
+    
+    if (!confirm(`Add ${amount} MWH to user ${userId}?`)) return;
+    
+    try {
+        showMessage('⏳ Adding balance to user...', 'info');
+        
+        const userRef = db.collection('users').doc(userId);
+        const userSnap = await userRef.get();
+        
+        if (!userSnap.exists) {
+            showMessage(`❌ User ${userId} not found`, 'error');
+            return;
+        }
+        
+        await userRef.update({
+            balance: firebase.firestore.FieldValue.increment(amount),
+            totalEarned: firebase.firestore.FieldValue.increment(amount),
+            lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        showMessage(`✅ Added ${amount} MWH to user ${userId}`, 'success');
+        userIdInput.value = '';
+        amountInput.value = '';
+        
+        // Update user info if displayed
+        const userInfoDiv = document.getElementById('adminUserInfo');
+        if (userInfoDiv && userInfoDiv.style.display !== 'none') {
+            const foundBalance = document.getElementById('adminFoundBalance');
+            if (foundBalance) {
+                const currentBalance = parseFloat(foundBalance.textContent.replace(' MWH', ''));
+                foundBalance.textContent = `${currentBalance + amount} MWH`;
+            }
+        }
+        
+    } catch (error) {
+        console.error("❌ Error adding balance to user:", error);
+        showMessage('❌ Error adding balance to user', 'error');
+    }
+}
+
+// NEW FUNCTION: Search user by ID
+async function searchUserById() {
+    if (!adminAccess || !db) return;
+    
+    const searchInput = document.getElementById('adminSearchUserId');
+    if (!searchInput) return;
+    
+    const userId = searchInput.value.trim();
+    if (!userId) {
+        showMessage('❌ Please enter a user ID', 'error');
+        return;
+    }
+    
+    try {
+        showMessage('🔍 Searching for user...', 'info');
+        
+        const userRef = db.collection('users').doc(userId);
+        const userSnap = await userRef.get();
+        
+        if (!userSnap.exists) {
+            showMessage(`❌ User ${userId} not found`, 'error');
+            document.getElementById('adminUserInfo').style.display = 'none';
+            return;
+        }
+        
+        const userData = userSnap.data();
+        
+        // Update UI with user info
+        document.getElementById('adminFoundUsername').textContent = userData.username || 'Unknown';
+        document.getElementById('adminFoundBalance').textContent = `${userData.balance || 0} MWH`;
+        document.getElementById('adminFoundTotalEarned').textContent = `${userData.totalEarned || 0} MWH`;
+        document.getElementById('adminFoundReferrals').textContent = userData.referrals || 0;
+        document.getElementById('adminFoundRank').textContent = userData.rank || 'Beginner';
+        
+        // Fill the add balance form with this user's ID
+        const addUserIdInput = document.getElementById('adminUserId');
+        if (addUserIdInput) {
+            addUserIdInput.value = userId;
+        }
+        
+        // Show user info
+        document.getElementById('adminUserInfo').style.display = 'block';
+        
+        showMessage(`✅ User ${userId} found`, 'success');
+        
+    } catch (error) {
+        console.error("❌ Error searching for user:", error);
+        showMessage('❌ Error searching for user', 'error');
+    }
+}
+
 // ============================================
-// FLOATING NOTIFICATION SYSTEM
+// باقي الكود بدون تغيير (كل الدوال الأخرى)
 // ============================================
 
+// FLOATING NOTIFICATION SYSTEM
 const NOTIFICATION_MESSAGES = [
     "Withdraw successful: User ID 599****5486 -200 USDT",
     "Deposit successful: User ID 848****9393 +100 USDT",
