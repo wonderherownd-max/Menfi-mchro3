@@ -22,6 +22,34 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛏️</text></svg>">
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #0f172a;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 99999;
+        transition: opacity 0.5s;
+    ">
+        <div class="spinner" style="
+            width: 50px;
+            height: 50px;
+            border: 5px solid #3b82f6;
+            border-top: 5px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        "></div>
+        <p style="color: white; font-size: 18px; font-weight: 600; margin-bottom: 10px;">VIP Mining Wealth PRO</p>
+        <p id="loadingStatus" style="color: #94a3b8; font-size: 14px; margin-top: 10px;">جاري التهيئة...</p>
+    </div>
+
     <!-- Main Home Page -->
     <div class="container" id="homePage">
         <!-- Header Section - Compact Version -->
@@ -100,7 +128,7 @@
             </div>
         </div>
 
-        <!-- Floating Notification Bar - NEW -->
+        <!-- Floating Notification Bar -->
         <div id="floatingNotification" class="notification-bar"></div>
 
         <!-- Referral System -->
@@ -178,28 +206,6 @@
                 </div>
             </div>
         </div>
-        
-        <!-- App Footer - سيتم حذفه في CSS -->
-        <div class="app-footer">
-            <div class="footer-links">
-                <a href="#" class="footer-link" onclick="showComingSoon()">
-                    <i class="fas fa-question-circle"></i>
-                    <span>Help</span>
-                </a>
-                <a href="#" class="footer-link" onclick="showComingSoon()">
-                    <i class="fas fa-file-alt"></i>
-                    <span>Terms</span>
-                </a>
-                <a href="#" class="footer-link" onclick="showComingSoon()">
-                    <i class="fas fa-shield-alt"></i>
-                    <span>Privacy</span>
-                </a>
-            </div>
-            <div class="footer-copyright">
-                <p>VIP Mining Wealth © 2024</p>
-                <p id="connectionStatus">🟡 Connecting...</p>
-            </div>
-        </div>
     </div>
 
     <!-- =========================================== -->
@@ -236,7 +242,6 @@
                         </div>
                         <div class="action-text">Swap MWH</div>
                     </div>
-                    <!-- تعديل زر Deposit BNB ليكون Deposit USDT في الكويق اكشنز -->
                     <div class="quick-action" onclick="openDepositModal('USDT')">
                         <div class="action-icon">
                             <i class="fas fa-download"></i>
@@ -326,7 +331,6 @@
                         <button class="action-btn-small" onclick="openSwapModal('USDT')">
                             <i class="fas fa-exchange-alt"></i> Swap
                         </button>
-                        <!-- زر الإيداع يعمل الآن -->
                         <button class="action-btn-small" onclick="openDepositModal('USDT')">
                             <i class="fas fa-download"></i> Deposit
                         </button>
@@ -358,7 +362,6 @@
                         ≈ $0.00
                     </div>
                     <div class="crypto-actions">
-                        <!-- زر الإيداع يعمل الآن -->
                         <button class="action-btn-small" onclick="openDepositModal('BNB')">
                             <i class="fas fa-download"></i> Deposit
                         </button>
@@ -528,7 +531,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log("🎯 Navigation system loading...");
             setupNavigation();
-            setTimeout(initializeHomePage, 100);
+            setTimeout(initializeHomePage, 1000); // تم زيادة المهلة من 100ms إلى 1000ms للهاتف
         });
         
         function setupNavigation() {
@@ -580,6 +583,16 @@
                     }
                 });
                 
+                // بدء الإشعارات عند فتح الصفحة الرئيسية
+                setTimeout(() => {
+                    if (window.initNotificationSystem) {
+                        window.initNotificationSystem();
+                    }
+                    if (window.startNotificationTimer) {
+                        window.startNotificationTimer();
+                    }
+                }, 500);
+                
             } else if (pageName === 'wallet') {
                 const walletPage = document.getElementById('walletPage');
                 if (walletPage) {
@@ -598,6 +611,11 @@
                     window.updateWalletUI();
                 }
                 
+                // إيقاف الإشعارات عند فتح المحفظة
+                if (window.stopNotificationTimer) {
+                    window.stopNotificationTimer();
+                }
+                
             } else if (pageName === 'earning') {
                 const earningPage = document.getElementById('earningPage');
                 if (earningPage) {
@@ -610,6 +628,11 @@
                         item.classList.add('active');
                     }
                 });
+                
+                // إيقاف الإشعارات عند فتح صفحة الأرباح
+                if (window.stopNotificationTimer) {
+                    window.stopNotificationTimer();
+                }
             }
         }
         
@@ -623,8 +646,9 @@
                         window.showTransactionHistory();
                     } else {
                         console.log('❌ Transaction history function not available');
+                        showMessage('Please wait, history system is loading...', 'warning');
                     }
-                }, 500);
+                }, 1000);
             }
         }
         
@@ -636,11 +660,55 @@
             }
         }
         
+        function initializeHomePage() {
+            console.log("🏠 Initializing home page...");
+            // هذه الوظيفة ستعيد تهيئة الصفحة الرئيسية
+            setTimeout(() => {
+                if (window.initNotificationSystem) {
+                    window.initNotificationSystem();
+                }
+                // إخفاء شاشة التحميل بعد 2 ثانية
+                const loadingScreen = document.getElementById('loadingScreen');
+                if (loadingScreen) {
+                    setTimeout(() => {
+                        loadingScreen.style.opacity = '0';
+                        setTimeout(() => {
+                            loadingScreen.style.display = 'none';
+                        }, 500);
+                    }, 2000);
+                }
+            }, 1500);
+        }
+        
+        // وظيفة تحديث حالة التحميل
+        function updateLoadingStatus(text) {
+            const statusEl = document.getElementById('loadingStatus');
+            if (statusEl) {
+                statusEl.textContent = text;
+            }
+            console.log("📱 Loading:", text);
+        }
+        
+        // تهيئة حالة التحميل الأولية
+        updateLoadingStatus("جاري تحميل التطبيق...");
+        
         window.switchToPage = switchToPage;
         window.showComingSoon = showComingSoon;
         window.showTransactionHistory = showTransactionHistory;
+        window.initializeHomePage = initializeHomePage;
+        window.updateLoadingStatus = updateLoadingStatus;
         
         console.log("✅ Navigation system ready");
+        
+        // Animation for spinner
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
