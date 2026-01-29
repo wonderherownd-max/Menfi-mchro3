@@ -394,7 +394,7 @@ async function loadAdminPendingRequests() {
     }
     
     try {
-        // Load pending deposits - البحث في الجدول الصحيح deposit_requests
+        // تعديل هنا: قراءة كل الطلبات المعلقة بغض النظر عن userId
         const depositsSnapshot = await db.collection('deposit_requests')
             .where('status', '==', 'pending')
             .orderBy('timestamp', 'desc')
@@ -432,7 +432,7 @@ async function loadAdminPendingRequests() {
                                     </div>
                                     <div class="type-info">
                                         <div class="type-title">${data.username || 'User'}</div>
-                                        <div class="type-subtitle">ID: ${data.userId ? data.userId.substring(0, 8) + '...' : 'N/A'}</div>
+                                        <div class="type-subtitle">ID: ${data.userId ? data.userId : 'N/A'}</div>
                                     </div>
                                 </div>
                                 <div class="transaction-status pending-badge">
@@ -511,7 +511,7 @@ async function loadAdminPendingRequests() {
                                     </div>
                                     <div class="type-info">
                                         <div class="type-title">${data.username || 'User'}</div>
-                                        <div class="type-subtitle">ID: ${data.userId ? data.userId.substring(0, 8) + '...' : 'N/A'}</div>
+                                        <div class="type-subtitle">ID: ${data.userId ? data.userId : 'N/A'}</div>
                                     </div>
                                 </div>
                                 <div class="transaction-status pending-badge">
@@ -872,10 +872,9 @@ async function searchUserById() {
 }
 
 // ============================================
-// باقي الكود بدون تغيير (كل الدوال الأخرى)
+// FLOATING NOTIFICATION SYSTEM
 // ============================================
 
-// FLOATING NOTIFICATION SYSTEM
 const NOTIFICATION_MESSAGES = [
     "Withdraw successful: User ID 599****5486 -200 USDT",
     "Deposit successful: User ID 848****9393 +100 USDT",
@@ -1865,7 +1864,7 @@ async function setupUser() {
         userData.firstName = telegramUser.first_name || 'User';
     } else {
         const savedUserId = localStorage.getItem('vip_mining_user_id');
-        userData.userId = savedUserId || 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        userData.userId = savedUserId || Date.now().toString() + Math.random().toString(36).substr(2, 4);
         userData.username = 'User';
         userData.firstName = 'User';
         
