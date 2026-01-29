@@ -389,40 +389,65 @@ function switchAdminTab(tabName) {
 
 async function loadAdminPendingRequests() {
     if (!adminAccess || !db) {
-        console.log("❌ Admin access or DB not available");
+        console.log("❌ لا يوجد صلاحيات أدمن أو اتصال");
         return;
     }
     
+    console.log("🔄 بدء تحميل طلبات المشرف...");
+    
     try {
-        // تعديل هنا: قراءة كل الطلبات المعلقة بغض النظر عن userId
-        const depositsSnapshot = await db.collection('deposit_requests')
-            .where('status', '==', 'pending')
+        // 1. جلب جميع طلبات الإيداع (بدون شرط)
+        const allDeposits = await db.collection('deposit_requests')
             .orderBy('timestamp', 'desc')
-            .limit(50)
+            .limit(100)
             .get();
         
+        console.log(`📥 عدد طلبات الإيداع الكلية: ${allDeposits.size}`);
+        
+        // 2. تصفية الطلبات المعلقة يدوياً
+        const pendingDeposits = [];
+        
+        allDeposits.forEach(doc => {
+            const data = doc.data();
+            const status = data.status ? data.status.toString().toLowerCase().trim() : '';
+            
+            console.log(`🔍 فحص طلب ${doc.id}: status="${data.status}" → lowercase="${status}"`);
+            
+            // اعتبار أي طلب بدون status أو بقيمة pending كمعلق
+            if (!status || status === 'pending' || status === 'قيد الانتظار') {
+                pendingDeposits.push({ id: doc.id, ...data });
+            }
+        });
+        
+        console.log(`⏳ طلبات الإيداع المعلقة: ${pendingDeposits.length}`);
+        
+        // 3. تحديث واجهة الإيداعات
         const depositsList = document.getElementById('adminDepositsList');
         const depositsCount = document.getElementById('pendingDepositsCount');
         
         if (depositsCount) {
-            depositsCount.textContent = depositsSnapshot.size;
+            depositsCount.textContent = pendingDeposits.length;
         }
         
         if (depositsList) {
-            if (depositsSnapshot.empty) {
+            if (pendingDeposits.length === 0) {
                 depositsList.innerHTML = `
                     <div class="empty-pending">
                         <div class="empty-icon-small">
                             <i class="fas fa-check-circle"></i>
                         </div>
-                        <div class="empty-text">No pending deposits</div>
+                        <div class="empty-text">لا توجد طلبات إيداع معلقة</div>
                     </div>
                 `;
             } else {
                 let html = '';
-                depositsSnapshot.forEach(doc => {
-                    const data = doc.data();
-                    const date = data.timestamp?.toDate ? data.timestamp.toDate() : new Date(data.timestamp);
+                pendingDeposits.forEach(item => {
+                    const date = item.timestamp?.toDate ? item.timestamp.toDate() : new Date(item.timestamp || Date.now());
+                    
+                    // حل مشكلة علامات التنصيص المتداخلة
+                    const currency = item.currency || 'USDT';
+                    const safeCurrency = currency.replace(/'/g, "\\'");
+                    
                     html += `
                         <div class="transaction-card pending" style="margin-bottom: 10px;">
                             <div class="transaction-header">
@@ -431,39 +456,39 @@ async function loadAdminPendingRequests() {
                                         <i class="fas fa-download"></i>
                                     </div>
                                     <div class="type-info">
-                                        <div class="type-title">${data.username || 'User'}</div>
-                                        <div class="type-subtitle">ID: ${data.userId ? data.userId : 'N/A'}</div>
+                                        <div class="type-title">${item.username || 'مستخدم'}</div>
+                                        <div class="type-subtitle">ID: ${item.userId || 'غير معروف'}</div>
                                     </div>
                                 </div>
                                 <div class="transaction-status pending-badge">
                                     <i class="fas fa-clock"></i>
-                                    <span>Pending</span>
+                                    <span>معلق</span>
                                 </div>
                             </div>
                             <div class="transaction-details">
                                 <div class="detail-row">
-                                    <span>Amount:</span>
-                                    <span class="detail-value">${data.amount} ${data.currency || 'USDT'}</span>
+                                    <span>المبلغ:</span>
+                                    <span class="detail-value">${item.amount || 0} ${currency}</span>
                                 </div>
                                 <div class="detail-row">
-                                    <span>Transaction:</span>
-                                    <span class="detail-value hash" title="${data.transactionHash}">
-                                        ${data.transactionHash?.substring(0, 10)}...${data.transactionHash?.substring(data.transactionHash.length - 6)}
+                                    <span>المعاملات:</span>
+                                    <span class="detail-value hash" title="${item.transactionHash || 'لا يوجد'}">
+                                        ${item.transactionHash ? item.transactionHash.substring(0, 10) + '...' + item.transactionHash.substring(item.transactionHash.length - 6) : 'غير متوفر'}
                                     </span>
                                 </div>
                                 <div class="detail-row">
-                                    <span>Date:</span>
-                                    <span class="detail-value">${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                    <span>التاريخ:</span>
+                                    <span class="detail-value">${date.toLocaleDateString('ar-SA')} ${date.toLocaleTimeString('ar-SA', {hour: '2-digit', minute:'2-digit'})}</span>
                                 </div>
                             </div>
                             <div style="display: flex; gap: 10px; margin-top: 10px;">
-                                <button onclick="approveDepositRequest('${doc.id}', '${data.userId}', ${data.amount}, '${data.currency || 'USDT'}')" 
+                                <button onclick="approveDepositRequest('${item.id}', '${item.userId}', ${item.amount}, '${safeCurrency}')" 
                                         style="flex: 1; padding: 8px; background: linear-gradient(135deg, #22c55e, #10b981); color: white; border: none; border-radius: 6px; font-weight: 600;">
-                                    <i class="fas fa-check"></i> Approve
+                                    <i class="fas fa-check"></i> موافقة
                                 </button>
-                                <button onclick="rejectDepositRequest('${doc.id}', '${data.userId}')" 
+                                <button onclick="rejectDepositRequest('${item.id}', '${item.userId}')" 
                                         style="flex: 1; padding: 8px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 6px; font-weight: 600;">
-                                    <i class="fas fa-times"></i> Reject
+                                    <i class="fas fa-times"></i> رفض
                                 </button>
                             </div>
                         </div>
@@ -473,35 +498,48 @@ async function loadAdminPendingRequests() {
             }
         }
         
-        // Load pending withdrawals
-        const withdrawalsSnapshot = await db.collection('withdrawals')
-            .where('status', '==', 'pending')
+        // 4. نفس الشيء لطلبات السحب
+        const allWithdrawals = await db.collection('withdrawals')
             .orderBy('timestamp', 'desc')
-            .limit(50)
+            .limit(100)
             .get();
         
+        console.log(`📤 عدد طلبات السحب الكلية: ${allWithdrawals.size}`);
+        
+        const pendingWithdrawals = [];
+        allWithdrawals.forEach(doc => {
+            const data = doc.data();
+            const status = data.status ? data.status.toString().toLowerCase().trim() : '';
+            
+            if (!status || status === 'pending' || status === 'قيد الانتظار') {
+                pendingWithdrawals.push({ id: doc.id, ...data });
+            }
+        });
+        
+        console.log(`⏳ طلبات السحب المعلقة: ${pendingWithdrawals.length}`);
+        
+        // 5. تحديث واجهة السحوبات
         const withdrawalsList = document.getElementById('adminWithdrawalsList');
         const withdrawalsCount = document.getElementById('pendingWithdrawalsCount');
         
         if (withdrawalsCount) {
-            withdrawalsCount.textContent = withdrawalsSnapshot.size;
+            withdrawalsCount.textContent = pendingWithdrawals.length;
         }
         
         if (withdrawalsList) {
-            if (withdrawalsSnapshot.empty) {
+            if (pendingWithdrawals.length === 0) {
                 withdrawalsList.innerHTML = `
                     <div class="empty-pending">
                         <div class="empty-icon-small">
                             <i class="fas fa-check-circle"></i>
                         </div>
-                        <div class="empty-text">No pending withdrawals</div>
+                        <div class="empty-text">لا توجد طلبات سحب معلقة</div>
                     </div>
                 `;
             } else {
                 let html = '';
-                withdrawalsSnapshot.forEach(doc => {
-                    const data = doc.data();
-                    const date = data.timestamp?.toDate ? data.timestamp.toDate() : new Date(data.timestamp);
+                pendingWithdrawals.forEach(item => {
+                    const date = item.timestamp?.toDate ? item.timestamp.toDate() : new Date(item.timestamp || Date.now());
                     html += `
                         <div class="transaction-card pending" style="margin-bottom: 10px;">
                             <div class="transaction-header">
@@ -510,39 +548,39 @@ async function loadAdminPendingRequests() {
                                         <i class="fas fa-upload"></i>
                                     </div>
                                     <div class="type-info">
-                                        <div class="type-title">${data.username || 'User'}</div>
-                                        <div class="type-subtitle">ID: ${data.userId ? data.userId : 'N/A'}</div>
+                                        <div class="type-title">${item.username || 'مستخدم'}</div>
+                                        <div class="type-subtitle">ID: ${item.userId || 'غير معروف'}</div>
                                     </div>
                                 </div>
                                 <div class="transaction-status pending-badge">
                                     <i class="fas fa-clock"></i>
-                                    <span>Pending</span>
+                                    <span>معلق</span>
                                 </div>
                             </div>
                             <div class="transaction-details">
                                 <div class="detail-row">
-                                    <span>Amount:</span>
-                                    <span class="detail-value">${data.amount} ${data.currency || 'USDT'}</span>
+                                    <span>المبلغ:</span>
+                                    <span class="detail-value">${item.amount || 0} ${item.currency || 'USDT'}</span>
                                 </div>
                                 <div class="detail-row">
-                                    <span>Address:</span>
-                                    <span class="detail-value hash" title="${data.address}">
-                                        ${data.address?.substring(0, 10)}...${data.address?.substring(data.address.length - 6)}
+                                    <span>العنوان:</span>
+                                    <span class="detail-value hash" title="${item.address || 'لا يوجد'}">
+                                        ${item.address ? item.address.substring(0, 10) + '...' + item.address.substring(item.address.length - 6) : 'غير متوفر'}
                                     </span>
                                 </div>
                                 <div class="detail-row">
-                                    <span>Date:</span>
-                                    <span class="detail-value">${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                    <span>التاريخ:</span>
+                                    <span class="detail-value">${date.toLocaleDateString('ar-SA')} ${date.toLocaleTimeString('ar-SA', {hour: '2-digit', minute:'2-digit'})}</span>
                                 </div>
                             </div>
                             <div style="display: flex; gap: 10px; margin-top: 10px;">
-                                <button onclick="approveWithdrawalRequest('${doc.id}', '${data.userId}', ${data.amount})" 
+                                <button onclick="approveWithdrawalRequest('${item.id}', '${item.userId}', ${item.amount})" 
                                         style="flex: 1; padding: 8px; background: linear-gradient(135deg, #22c55e, #10b981); color: white; border: none; border-radius: 6px; font-weight: 600;">
-                                    <i class="fas fa-check"></i> Approve
+                                    <i class="fas fa-check"></i> موافقة
                                 </button>
-                                <button onclick="rejectWithdrawalRequest('${doc.id}', '${data.userId}', ${data.amount})" 
+                                <button onclick="rejectWithdrawalRequest('${item.id}', '${item.userId}', ${item.amount})" 
                                         style="flex: 1; padding: 8px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 6px; font-weight: 600;">
-                                    <i class="fas fa-times"></i> Reject
+                                    <i class="fas fa-times"></i> رفض
                                 </button>
                             </div>
                         </div>
@@ -552,49 +590,20 @@ async function loadAdminPendingRequests() {
             }
         }
         
-        console.log("✅ Admin requests loaded successfully");
+                console.log("✅ تم تحميل طلبات المشرف بنجاح");
         
     } catch (error) {
-        console.error("❌ Error loading admin requests:", error);
-        showMessage('Error loading admin data. Check console.', 'error');
+        console.error("❌ خطأ في تحميل طلبات المشرف:", error);
+        console.error("📌 تفاصيل الخطأ:", error.message);
+        console.error("🔗 رابط الخطأ:", error.stack);
+        
+        showMessage('❌ خطأ في تحميل بيانات المشرف. راجع الكونسول.', 'error');
     }
-}
+} // ⬅️ نهاية loadAdminPendingRequests
 
-async function approveDepositRequest(requestId, userId, amount, currency) {
-    if (!adminAccess || !db) return;
-    
-    if (!confirm(`Approve deposit of ${amount} ${currency} for user ${userId}?`)) return;
-    
-    try {
-        await db.collection('deposit_requests').doc(requestId).update({
-            status: 'approved',
-            approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            approvedBy: 'admin'
-        });
-        
-        const userRef = db.collection('users').doc(userId);
-        const userSnap = await userRef.get();
-        
-        if (userSnap.exists) {
-            const userData = userSnap.data();
-            const newBalance = (userData.balance || 0) + (currency === 'USDT' ? amount * 1000 : amount / CONFIG.BNB_TO_MWH_RATE * 1000);
-            
-            await userRef.update({
-                balance: newBalance,
-                totalEarned: firebase.firestore.FieldValue.increment(amount),
-                lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        }
-        
-        showMessage(`✅ Deposit approved! ${amount} ${currency} added to user ${userId}`, 'success');
-        
-        setTimeout(loadAdminPendingRequests, 1000);
-        
-    } catch (error) {
-        console.error("❌ Error approving deposit:", error);
-        showMessage('❌ Error approving deposit', 'error');
-    }
-}
+// ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
+// الدوال الإدارية - إدارة الطلبات
+// ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
 
 async function rejectDepositRequest(requestId, userId) {
     if (!adminAccess || !db) return;
@@ -618,8 +627,7 @@ async function rejectDepositRequest(requestId, userId) {
         console.error("❌ Error rejecting deposit:", error);
         showMessage('❌ Error rejecting deposit', 'error');
     }
-}
-
+} // ⬅️ نهاية rejectDepositRequest
 async function approveWithdrawalRequest(requestId, userId, amount) {
     if (!adminAccess || !db) return;
     
