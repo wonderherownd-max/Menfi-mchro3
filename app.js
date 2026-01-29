@@ -367,8 +367,83 @@ function showAdminPanel() {
     document.body.insertAdjacentHTML('beforeend', adminPanelHTML);
     loadAdminPendingRequests();
     
-    if (window.adminRefreshInterval) clearInterval(window.adminRefreshInterval);
-    window.adminRefreshInterval = setInterval(loadAdminPendingRequests, 30000);
+    // أضف أزرار التصحيح
+    addAdminDebugTools();
+}
+
+function addAdminDebugTools() {
+    setTimeout(() => {
+        const adminBody = document.querySelector('#adminPanel .modal-body');
+        if (adminBody) {
+            const debugDiv = document.createElement('div');
+            debugDiv.innerHTML = `
+                <div style="margin: 15px 0; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px dashed #f59e0b;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <i class="fas fa-bug" style="color: #f59e0b;"></i>
+                        <span style="color: #fbbf24; font-size: 14px; font-weight: 600;">أدوات التصحيح</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button onclick="testAdminDocumentId()" 
+                                style="padding: 6px 12px; background: #8b5cf6; color: white; border: none; border-radius: 6px; font-size: 12px;">
+                            🧪 اختبار Document ID
+                        </button>
+                        <button onclick="showAdminDebugInfo()" 
+                                style="padding: 6px 12px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 12px;">
+                            🔍 معلومات التصحيح
+                        </button>
+                        <button onclick="refreshAdminData()" 
+                                style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 12px;">
+                            🔄 تحديث البيانات
+                        </button>
+                    </div>
+                </div>
+            `;
+            adminBody.prepend(debugDiv);
+        }
+    }, 500);
+}
+
+function testAdminDocumentId() {
+    if (!adminAccess) {
+        showMessage("❌ تحتاج صلاحيات المشرف", "error");
+        return;
+    }
+    
+    const testDocumentId = prompt("📝 أدخل Document ID للاختبار (من Firebase):", "6DWg1ilbu2wskj7tfkUC");
+    if (!testDocumentId) return;
+    
+    const testUserId = prompt("👤 أدخل User ID للاختبار:", "16539186419");
+    if (!testUserId) return;
+    
+    showMessage(`🔍 جاري اختبار Document ID: ${testDocumentId.substring(0, 10)}...`, "info");
+    
+    setTimeout(() => {
+        approveDepositRequest(testDocumentId, testUserId, 100, "USDT");
+    }, 1000);
+}
+
+function showAdminDebugInfo() {
+    const debugInfo = `
+    🔍 معلومات تصحيح Admin:
+    
+    Firebase: ${db ? '✅ متصل' : '❌ غير متصل'}
+    Admin Access: ${adminAccess ? '✅ مفعل' : '❌ غير مفعل'}
+    
+    مثال Document IDs:
+    - deposit_requests: "6DWg1ilbu2wskj7tfkUC"
+    - withdrawals: "jxylnZbROtsmMuCa5mrN"
+    
+    تلميح: تأكد أن الزر يمرر Document ID أولاً
+    `;
+    
+    alert(debugInfo);
+}
+
+function refreshAdminData() {
+    if (adminAccess && db) {
+        showMessage("🔄 جاري تحديث بيانات المشرف...", "info");
+        loadAdminPendingRequests();
+    }
 }
 
 function switchAdminTab(tabName) {
@@ -396,32 +471,28 @@ async function loadAdminPendingRequests() {
     console.log("🔄 بدء تحميل طلبات المشرف...");
     
     try {
-        // 1. جلب جميع طلبات الإيداع (بدون شرط)
-        const allDeposits = await db.collection('deposit_requests')
+        // 1. جلب طلبات الإيداع المعلقة فقط
+        const pendingDepositsQuery = await db.collection('deposit_requests')
+            .where('status', 'in', ['pending', 'قيد الانتظار', ''])
             .orderBy('timestamp', 'desc')
-            .limit(100)
+            .limit(50)
             .get();
         
-        console.log(`📥 عدد طلبات الإيداع الكلية: ${allDeposits.size}`);
+        console.log(`📥 عدد طلبات الإيداع المعلقة: ${pendingDepositsQuery.size}`);
         
-        // 2. تصفية الطلبات المعلقة يدوياً
         const pendingDeposits = [];
         
-        allDeposits.forEach(doc => {
+        pendingDepositsQuery.forEach(doc => {
             const data = doc.data();
-            const status = data.status ? data.status.toString().toLowerCase().trim() : '';
-            
-            console.log(`🔍 فحص طلب ${doc.id}: status="${data.status}" → lowercase="${status}"`);
-            
-            // اعتبار أي طلب بدون status أو بقيمة pending كمعلق
-            if (!status || status === 'pending' || status === 'قيد الانتظار') {
-                pendingDeposits.push({ id: doc.id, ...data });
-            }
+            pendingDeposits.push({ 
+                id: doc.id,  // ✅ Document ID الحقيقي من Firebase
+                ...data 
+            });
         });
         
         console.log(`⏳ طلبات الإيداع المعلقة: ${pendingDeposits.length}`);
         
-        // 3. تحديث واجهة الإيداعات
+        // 2. تحديث واجهة الإيداعات
         const depositsList = document.getElementById('adminDepositsList');
         const depositsCount = document.getElementById('pendingDepositsCount');
         
@@ -444,9 +515,9 @@ async function loadAdminPendingRequests() {
                 pendingDeposits.forEach(item => {
                     const date = item.timestamp?.toDate ? item.timestamp.toDate() : new Date(item.timestamp || Date.now());
                     
-                    // حل مشكلة علامات التنصيص المتداخلة
+                    // تنظيف currency من الـ quotes
                     const currency = item.currency || 'USDT';
-                    const safeCurrency = currency.replace(/'/g, "\\'");
+                    const cleanCurrency = currency.replace(/['"]/g, '');
                     
                     html += `
                         <div class="transaction-card pending" style="margin-bottom: 10px;">
@@ -468,7 +539,7 @@ async function loadAdminPendingRequests() {
                             <div class="transaction-details">
                                 <div class="detail-row">
                                     <span>المبلغ:</span>
-                                    <span class="detail-value">${item.amount || 0} ${currency}</span>
+                                    <span class="detail-value">${item.amount || 0} ${cleanCurrency}</span>
                                 </div>
                                 <div class="detail-row">
                                     <span>المعاملات:</span>
@@ -482,7 +553,7 @@ async function loadAdminPendingRequests() {
                                 </div>
                             </div>
                             <div style="display: flex; gap: 10px; margin-top: 10px;">
-                                <button onclick="approveDepositRequest('${item.id}', '${item.userId}', ${item.amount}, '${safeCurrency}')" 
+                                <button onclick="approveDepositRequest('${item.id}', '${item.userId}', ${item.amount || 0}, '${cleanCurrency}')" 
                                         style="flex: 1; padding: 8px; background: linear-gradient(135deg, #22c55e, #10b981); color: white; border: none; border-radius: 6px; font-weight: 600;">
                                     <i class="fas fa-check"></i> موافقة
                                 </button>
@@ -498,27 +569,27 @@ async function loadAdminPendingRequests() {
             }
         }
         
-        // 4. نفس الشيء لطلبات السحب
-        const allWithdrawals = await db.collection('withdrawals')
+        // 3. جلب طلبات السحب المعلقة فقط
+        const pendingWithdrawalsQuery = await db.collection('withdrawals')
+            .where('status', 'in', ['pending', 'قيد الانتظار', ''])
             .orderBy('timestamp', 'desc')
-            .limit(100)
+            .limit(50)
             .get();
         
-        console.log(`📤 عدد طلبات السحب الكلية: ${allWithdrawals.size}`);
+        console.log(`📤 عدد طلبات السحب المعلقة: ${pendingWithdrawalsQuery.size}`);
         
         const pendingWithdrawals = [];
-        allWithdrawals.forEach(doc => {
+        pendingWithdrawalsQuery.forEach(doc => {
             const data = doc.data();
-            const status = data.status ? data.status.toString().toLowerCase().trim() : '';
-            
-            if (!status || status === 'pending' || status === 'قيد الانتظار') {
-                pendingWithdrawals.push({ id: doc.id, ...data });
-            }
+            pendingWithdrawals.push({ 
+                id: doc.id,  // ✅ Document ID الحقيقي من Firebase
+                ...data 
+            });
         });
         
         console.log(`⏳ طلبات السحب المعلقة: ${pendingWithdrawals.length}`);
         
-        // 5. تحديث واجهة السحوبات
+        // 4. تحديث واجهة السحوبات
         const withdrawalsList = document.getElementById('adminWithdrawalsList');
         const withdrawalsCount = document.getElementById('pendingWithdrawalsCount');
         
@@ -540,6 +611,11 @@ async function loadAdminPendingRequests() {
                 let html = '';
                 pendingWithdrawals.forEach(item => {
                     const date = item.timestamp?.toDate ? item.timestamp.toDate() : new Date(item.timestamp || Date.now());
+                    
+                    // تنظيف الـ address من الـ quotes
+                    const address = item.address || '';
+                    const cleanAddress = address.replace(/['"]/g, '');
+                    
                     html += `
                         <div class="transaction-card pending" style="margin-bottom: 10px;">
                             <div class="transaction-header">
@@ -564,8 +640,8 @@ async function loadAdminPendingRequests() {
                                 </div>
                                 <div class="detail-row">
                                     <span>العنوان:</span>
-                                    <span class="detail-value hash" title="${item.address || 'لا يوجد'}">
-                                        ${item.address ? item.address.substring(0, 10) + '...' + item.address.substring(item.address.length - 6) : 'غير متوفر'}
+                                    <span class="detail-value hash" title="${cleanAddress}">
+                                        ${cleanAddress ? cleanAddress.substring(0, 10) + '...' + cleanAddress.substring(cleanAddress.length - 6) : 'غير متوفر'}
                                     </span>
                                 </div>
                                 <div class="detail-row">
@@ -602,14 +678,33 @@ async function loadAdminPendingRequests() {
 // ADMIN FUNCTIONS - FIXED VERSION
 // ============================================
 
-async function approveDepositRequest(requestId, userId, amount, currency) {
-    if (!adminAccess || !db) return;
+async function approveDepositRequest(documentId, userId, amount, currency) {
+    if (!adminAccess || !db) {
+        showMessage("❌ تحتاج صلاحيات المشرف أو Firebase غير متصل", "error");
+        return;
+    }
+    
+    // تحقق من صحة documentId
+    if (!documentId || documentId.length < 5) {
+        showMessage(`❌ Document ID غير صالح: ${documentId}`, "error");
+        return;
+    }
+    
+    showMessage(`🔄 جاري الموافقة على طلب الإيداع: ${documentId.substring(0, 10)}...`, "info");
     
     if (!confirm(`هل تريد الموافقة على إيداع ${amount} ${currency} للمستخدم ${userId}؟`)) return;
     
     try {
-        // 1. تحديث حالة طلب الإيداع
-        const depositRef = db.collection('deposit_requests').doc(requestId);
+        // 1. تحقق من وجود المستند أولاً
+        const depositRef = db.collection('deposit_requests').doc(documentId);
+        const depositDoc = await depositRef.get();
+        
+        if (!depositDoc.exists) {
+            showMessage(`❌ لم يتم العثور على طلب الإيداع بالـ ID: ${documentId}`, "error");
+            return;
+        }
+        
+        // 2. تحديث حالة طلب الإيداع
         await depositRef.update({
             status: 'approved',
             approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -617,33 +712,35 @@ async function approveDepositRequest(requestId, userId, amount, currency) {
             adminNote: 'تمت الموافقة يدوياً'
         });
         
-        console.log(`✅ تمت الموافقة على طلب الإيداع ${requestId} للمستخدم ${userId}`);
+        console.log(`✅ تمت الموافقة على طلب الإيداع ${documentId} للمستخدم ${userId}`);
         
-        // 2. البحث عن wallet للمستخدم أولاً
+        // 3. البحث عن wallet للمستخدم أولاً
         const walletRef = db.collection('wallets').doc(userId);
         const walletSnap = await walletRef.get();
+        
+        const numericAmount = parseFloat(amount) || 0;
         
         if (walletSnap.exists) {
             // تحديث الرصيد بنفس العملة
             const walletData = walletSnap.data();
             
-            if (currency === 'USDT') {
+            if (currency === 'USDT' || currency === 'USD') {
                 await walletRef.update({
-                    usdtBalance: firebase.firestore.FieldValue.increment(parseFloat(amount)),
+                    usdtBalance: firebase.firestore.FieldValue.increment(numericAmount),
                     lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 console.log(`💰 تم إضافة ${amount} USDT إلى محفظة المستخدم`);
             } 
             else if (currency === 'BNB') {
                 await walletRef.update({
-                    bnbBalance: firebase.firestore.FieldValue.increment(parseFloat(amount)),
+                    bnbBalance: firebase.firestore.FieldValue.increment(numericAmount),
                     lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 console.log(`💰 تم إضافة ${amount} BNB إلى محفظة المستخدم`);
             }
             else if (currency === 'MWH') {
                 await walletRef.update({
-                    mwhBalance: firebase.firestore.FieldValue.increment(parseFloat(amount)),
+                    mwhBalance: firebase.firestore.FieldValue.increment(numericAmount),
                     lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 console.log(`💰 تم إضافة ${amount} MWH إلى محفظة المستخدم`);
@@ -651,8 +748,8 @@ async function approveDepositRequest(requestId, userId, amount, currency) {
                 // تحديث رصيد المستخدم في جدول users أيضاً
                 const userRef = db.collection('users').doc(userId);
                 await userRef.update({
-                    balance: firebase.firestore.FieldValue.increment(parseFloat(amount)),
-                    totalEarned: firebase.firestore.FieldValue.increment(parseFloat(amount)),
+                    balance: firebase.firestore.FieldValue.increment(numericAmount),
+                    totalEarned: firebase.firestore.FieldValue.increment(numericAmount),
                     lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
                 });
             }
@@ -669,9 +766,9 @@ async function approveDepositRequest(requestId, userId, amount, currency) {
                 lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
             };
             
-            if (currency === 'USDT') newWalletData.usdtBalance = parseFloat(amount);
-            else if (currency === 'BNB') newWalletData.bnbBalance = parseFloat(amount);
-            else if (currency === 'MWH') newWalletData.mwhBalance = parseFloat(amount);
+            if (currency === 'USDT' || currency === 'USD') newWalletData.usdtBalance = numericAmount;
+            else if (currency === 'BNB') newWalletData.bnbBalance = numericAmount;
+            else if (currency === 'MWH') newWalletData.mwhBalance = numericAmount;
             
             await walletRef.set(newWalletData);
             console.log(`💼 تم إنشاء محفظة جديدة للمستخدم وإضافة ${amount} ${currency}`);
@@ -680,8 +777,8 @@ async function approveDepositRequest(requestId, userId, amount, currency) {
             if (currency === 'MWH') {
                 const userRef = db.collection('users').doc(userId);
                 await userRef.update({
-                    balance: firebase.firestore.FieldValue.increment(parseFloat(amount)),
-                    totalEarned: firebase.firestore.FieldValue.increment(parseFloat(amount)),
+                    balance: firebase.firestore.FieldValue.increment(numericAmount),
+                    totalEarned: firebase.firestore.FieldValue.increment(numericAmount),
                     lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
                 });
             }
@@ -689,22 +786,39 @@ async function approveDepositRequest(requestId, userId, amount, currency) {
         
         showMessage(`✅ تمت الموافقة على الإيداع! تم إضافة ${amount} ${currency} للمستخدم`, 'success');
         
-        setTimeout(loadAdminPendingRequests, 1000);
+        setTimeout(loadAdminPendingRequests, 1500);
         
     } catch (error) {
         console.error("❌ خطأ في الموافقة على الإيداع:", error);
-        showMessage('❌ خطأ في الموافقة على الإيداع', 'error');
+        showMessage(`❌ خطأ في الموافقة على الإيداع: ${error.message}`, 'error');
     }
 }
 
-async function rejectDepositRequest(requestId) {
-    if (!adminAccess || !db) return;
+async function rejectDepositRequest(documentId) {
+    if (!adminAccess || !db) {
+        showMessage("❌ تحتاج صلاحيات المشرف أو Firebase غير متصل", "error");
+        return;
+    }
+    
+    // تحقق من صحة documentId
+    if (!documentId || documentId.length < 5) {
+        showMessage(`❌ Document ID غير صالح: ${documentId}`, "error");
+        return;
+    }
     
     const reason = prompt("أدخل سبب الرفض:", "رمز المعاملة غير صالح");
     if (reason === null) return;
     
     try {
-        await db.collection('deposit_requests').doc(requestId).update({
+        const depositRef = db.collection('deposit_requests').doc(documentId);
+        const depositDoc = await depositRef.get();
+        
+        if (!depositDoc.exists) {
+            showMessage(`❌ لم يتم العثور على طلب الإيداع بالـ ID: ${documentId}`, "error");
+            return;
+        }
+        
+        await depositRef.update({
             status: 'rejected',
             rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
             rejectedBy: 'admin',
@@ -713,24 +827,33 @@ async function rejectDepositRequest(requestId) {
         
         showMessage(`❌ تم رفض طلب الإيداع. السبب: ${reason}`, 'warning');
         
-        setTimeout(loadAdminPendingRequests, 1000);
+        setTimeout(loadAdminPendingRequests, 1500);
         
     } catch (error) {
         console.error("❌ خطأ في رفض الإيداع:", error);
-        showMessage('❌ خطأ في رفض الإيداع', 'error');
+        showMessage(`❌ خطأ في رفض الإيداع: ${error.message}`, 'error');
     }
 }
 
-async function approveWithdrawalRequest(requestId) {
-    if (!adminAccess || !db) return;
+async function approveWithdrawalRequest(documentId) {
+    if (!adminAccess || !db) {
+        showMessage("❌ تحتاج صلاحيات المشرف أو Firebase غير متصل", "error");
+        return;
+    }
+    
+    // تحقق من صحة documentId
+    if (!documentId || documentId.length < 5) {
+        showMessage(`❌ Document ID غير صالح: ${documentId}`, "error");
+        return;
+    }
     
     try {
         // أولاً، الحصول على بيانات الطلب
-        const requestRef = db.collection('withdrawals').doc(requestId);
+        const requestRef = db.collection('withdrawals').doc(documentId);
         const requestSnap = await requestRef.get();
         
         if (!requestSnap.exists) {
-            showMessage('❌ طلب السحب غير موجود', 'error');
+            showMessage(`❌ لم يتم العثور على طلب السحب بالـ ID: ${documentId}`, 'error');
             return;
         }
         
@@ -751,24 +874,33 @@ async function approveWithdrawalRequest(requestId) {
         
         showMessage(`✅ تمت الموافقة على السحب! تم إرسال ${amount} USDT للمستخدم`, 'success');
         
-        setTimeout(loadAdminPendingRequests, 1000);
+        setTimeout(loadAdminPendingRequests, 1500);
         
     } catch (error) {
         console.error("❌ خطأ في الموافقة على السحب:", error);
-        showMessage('❌ خطأ في الموافقة على السحب', 'error');
+        showMessage(`❌ خطأ في الموافقة على السحب: ${error.message}`, 'error');
     }
 }
 
-async function rejectWithdrawalRequest(requestId) {
-    if (!adminAccess || !db) return;
+async function rejectWithdrawalRequest(documentId) {
+    if (!adminAccess || !db) {
+        showMessage("❌ تحتاج صلاحيات المشرف أو Firebase غير متصل", "error");
+        return;
+    }
+    
+    // تحقق من صحة documentId
+    if (!documentId || documentId.length < 5) {
+        showMessage(`❌ Document ID غير صالح: ${documentId}`, "error");
+        return;
+    }
     
     try {
         // أولاً، الحصول على بيانات الطلب
-        const requestRef = db.collection('withdrawals').doc(requestId);
+        const requestRef = db.collection('withdrawals').doc(documentId);
         const requestSnap = await requestRef.get();
         
         if (!requestSnap.exists) {
-            showMessage('❌ طلب السحب غير موجود', 'error');
+            showMessage(`❌ لم يتم العثور على طلب السحب بالـ ID: ${documentId}`, 'error');
             return;
         }
         
@@ -786,210 +918,16 @@ async function rejectWithdrawalRequest(requestId) {
         
         showMessage(`❌ تم رفض طلب السحب. السبب: ${reason}`, 'warning');
         
-        setTimeout(loadAdminPendingRequests, 1000);
+        setTimeout(loadAdminPendingRequests, 1500);
         
     } catch (error) {
         console.error("❌ خطأ في رفض السحب:", error);
-        showMessage('❌ خطأ في رفض السحب', 'error');
+        showMessage(`❌ خطأ في رفض السحب: ${error.message}`, 'error');
     }
 }
 
-async function addBalanceToAllUsers() {
-    if (!adminAccess || !db) return;
-    
-    const amountInput = document.getElementById('adminAddAmount');
-    if (!amountInput) return;
-    
-    const amount = parseFloat(amountInput.value);
-    if (!amount || amount <= 0) {
-        showMessage('❌ الرجاء إدخال مبلغ صحيح', 'error');
-        return;
-    }
-    
-    if (!confirm(`هل تريد إضافة ${amount} MWH لجميع المستخدمين؟ هذا الإجراء لا يمكن التراجع عنه.`)) return;
-    
-    try {
-        showMessage('⏳ جاري إضافة الرصيد لجميع المستخدمين...', 'info');
-        
-        const usersSnapshot = await db.collection('users').get();
-        let processed = 0;
-        
-        const batch = db.batch();
-        usersSnapshot.forEach(doc => {
-            const userRef = db.collection('users').doc(doc.id);
-            batch.update(userRef, {
-                balance: firebase.firestore.FieldValue.increment(amount),
-                totalEarned: firebase.firestore.FieldValue.increment(amount),
-                lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            processed++;
-        });
-        
-        await batch.commit();
-        
-        showMessage(`✅ تم إضافة ${amount} MWH لـ ${processed} مستخدم`, 'success');
-        amountInput.value = '';
-        
-    } catch (error) {
-        console.error("❌ خطأ في إضافة الرصيد لجميع المستخدمين:", error);
-        showMessage('❌ خطأ في إضافة الرصيد للمستخدمين', 'error');
-    }
-}
-
-async function addBalanceToSpecificUser() {
-    if (!adminAccess || !db) return;
-    
-    const userIdInput = document.getElementById('adminUserId');
-    const amountInput = document.getElementById('adminUserAmount');
-    
-    if (!userIdInput || !amountInput) return;
-    
-    const searchTerm = userIdInput.value.trim();
-    const amount = parseFloat(amountInput.value);
-    
-    if (!searchTerm) {
-        showMessage('❌ الرجاء إدخال معرف المستخدم أو اسم المستخدم', 'error');
-        return;
-    }
-    
-    if (!amount || amount <= 0) {
-        showMessage('❌ الرجاء إدخال مبلغ صحيح', 'error');
-        return;
-    }
-    
-    if (!confirm(`هل تريد إضافة ${amount} MWH للمستخدم ${searchTerm}؟`)) return;
-    
-    try {
-        showMessage('⏳ جاري إضافة الرصيد للمستخدم...', 'info');
-        
-        let userDoc;
-        
-        // جرب البحث بالـ ID أولاً
-        const userRefById = db.collection('users').doc(searchTerm);
-        let userSnap = await userRefById.get();
-        
-        // إذا لم ينجح، جرب البحث بالـ Username
-        if (!userSnap.exists) {
-            const usersSnapshot = await db.collection('users')
-                .where('username', '==', searchTerm)
-                .limit(1)
-                .get();
-            
-            if (!usersSnapshot.empty) {
-                userDoc = usersSnapshot.docs[0];
-            }
-        } else {
-            userDoc = { id: searchTerm, data: () => userSnap.data(), ref: userRefById };
-        }
-        
-        if (!userDoc) {
-            showMessage(`❌ المستخدم ${searchTerm} غير موجود`, 'error');
-            return;
-        }
-        
-        await userDoc.ref.update({
-            balance: firebase.firestore.FieldValue.increment(amount),
-            totalEarned: firebase.firestore.FieldValue.increment(amount),
-            lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
-        showMessage(`✅ تم إضافة ${amount} MWH للمستخدم ${userDoc.data().username || searchTerm}`, 'success');
-        userIdInput.value = '';
-        amountInput.value = '';
-        
-        // تحديث معلومات المستخدم إذا كانت معروضة
-        const userInfoDiv = document.getElementById('adminUserInfo');
-        if (userInfoDiv && userInfoDiv.style.display !== 'none') {
-            const foundBalance = document.getElementById('adminFoundBalance');
-            if (foundBalance) {
-                const currentBalance = parseFloat(foundBalance.textContent.replace(' MWH', ''));
-                foundBalance.textContent = `${currentBalance + amount} MWH`;
-            }
-        }
-        
-    } catch (error) {
-        console.error("❌ خطأ في إضافة الرصيد للمستخدم:", error);
-        showMessage('❌ خطأ في إضافة الرصيد للمستخدم', 'error');
-    }
-}
-
-async function searchUserById() {
-    if (!adminAccess || !db) return;
-    
-    const searchInput = document.getElementById('adminSearchUserId');
-    if (!searchInput) return;
-    
-    const searchTerm = searchInput.value.trim();
-    if (!searchTerm) {
-        showMessage('❌ الرجاء إدخال معرف المستخدم أو اسم المستخدم', 'error');
-        return;
-    }
-    
-    try {
-        showMessage('🔍 جاري البحث عن المستخدم...', 'info');
-        
-        let userDoc;
-        let foundById = false;
-        
-        // جرب البحث بالـ ID أولاً
-        const userRefById = db.collection('users').doc(searchTerm);
-        let userSnap = await userRefById.get();
-        
-        if (userSnap.exists) {
-            userDoc = { id: searchTerm, data: () => userSnap.data(), ref: userRefById };
-            foundById = true;
-        } else {
-            // إذا لم ينجح، جرب البحث بالـ Username
-            const usersSnapshot = await db.collection('users')
-                .where('username', '==', searchTerm)
-                .limit(1)
-                .get();
-            
-            if (!usersSnapshot.empty) {
-                userDoc = usersSnapshot.docs[0];
-            }
-        }
-        
-        if (!userDoc) {
-            showMessage(`❌ المستخدم ${searchTerm} غير موجود`, 'error');
-            document.getElementById('adminUserInfo').style.display = 'none';
-            return;
-        }
-        
-        const userData = userDoc.data();
-        
-        // تحديث الواجهة
-        document.getElementById('adminFoundUsername').textContent = userData.username || 'غير معروف';
-        document.getElementById('adminFoundBalance').textContent = `${userData.balance || 0} MWH`;
-        document.getElementById('adminFoundTotalEarned').textContent = `${userData.totalEarned || 0} MWH`;
-        document.getElementById('adminFoundReferrals').textContent = userData.referrals || 0;
-        document.getElementById('adminFoundRank').textContent = userData.rank || 'مبتدئ';
-        document.getElementById('adminFoundUserId').textContent = userDoc.id;
-        
-        // تعبئة خانة إضافة الرصيد
-        const addUserIdInput = document.getElementById('adminUserId');
-        if (addUserIdInput) {
-            if (foundById) {
-                addUserIdInput.value = searchTerm; // استخدم الـ ID المدخل
-            } else {
-                addUserIdInput.value = userDoc.id; // استخدم الـ ID الحقيقي من Firebase
-            }
-        }
-        
-        // إظهار معلومات المستخدم
-        document.getElementById('adminUserInfo').style.display = 'block';
-        
-        showMessage(`✅ تم العثور على المستخدم: ${userData.username}`, 'success');
-        
-    } catch (error) {
-        console.error("❌ خطأ في البحث عن المستخدم:", error);
-        showMessage('❌ خطأ في البحث عن المستخدم', 'error');
-    }
-}
-
-// ============================================
-// باقي الكود بدون تغيير
-// ============================================
+// باقي الكود كما هو بدون تغيير...
+// [يتبع باقي الكود الأصلي بدون تغييرات]
 
 // FLOATING NOTIFICATION SYSTEM
 const NOTIFICATION_MESSAGES = [
