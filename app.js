@@ -106,7 +106,7 @@ const CONFIG = {
 };
 
 // ============================================
-// ADMIN PANEL SYSTEM - HIDDEN ADMIN FEATURES
+// ADMIN PANEL SYSTEM - UPDATED WITH FIREBASE ID FIX
 // ============================================
 
 let adminAccess = false;
@@ -371,22 +371,6 @@ function showAdminPanel() {
     window.adminRefreshInterval = setInterval(loadAdminPendingRequests, 30000);
 }
 
-function switchAdminTab(tabName) {
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    document.getElementById('adminDepositsTab').style.display = tabName === 'deposits' ? 'block' : 'none';
-    document.getElementById('adminWithdrawalsTab').style.display = tabName === 'withdrawals' ? 'block' : 'none';
-    document.getElementById('adminUsersTab').style.display = tabName === 'users' ? 'block' : 'none';
-    
-    const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => 
-        btn.textContent.includes(tabName === 'deposits' ? 'Deposits' : 
-                                tabName === 'withdrawals' ? 'Withdrawals' : 'Users')
-    );
-    if (activeBtn) activeBtn.classList.add('active');
-}
-
 async function loadAdminPendingRequests() {
     if (!adminAccess || !db) {
         console.log("❌ لا يوجد صلاحيات أدمن أو اتصال");
@@ -396,26 +380,29 @@ async function loadAdminPendingRequests() {
     console.log("🔄 بدء تحميل طلبات المشرف...");
     
     try {
-        // 1. جلب جميع طلبات الإيداع (بدون شرط)
-        const allDeposits = await db.collection('deposit_requests')
+        // 1. جلب جميع طلبات الإيداع
+        const depositsQuery = await db.collection('deposit_requests')
             .orderBy('timestamp', 'desc')
             .limit(100)
             .get();
         
-        console.log(`📥 عدد طلبات الإيداع الكلية: ${allDeposits.size}`);
+        console.log(`📥 عدد طلبات الإيداع الكلية: ${depositsQuery.size}`);
         
-        // 2. تصفية الطلبات المعلقة يدوياً
+        // 2. تصفية الطلبات المعلقة
         const pendingDeposits = [];
         
-        allDeposits.forEach(doc => {
+        depositsQuery.forEach(doc => {
             const data = doc.data();
             const status = data.status ? data.status.toString().toLowerCase().trim() : '';
             
-            console.log(`🔍 فحص طلب ${doc.id}: status="${data.status}" → lowercase="${status}"`);
+            console.log(`🔍 فحص طلب ${doc.id}: status="${data.status}"`);
             
             // اعتبار أي طلب بدون status أو بقيمة pending كمعلق
             if (!status || status === 'pending' || status === 'قيد الانتظار') {
-                pendingDeposits.push({ id: doc.id, ...data });
+                pendingDeposits.push({ 
+                    firebaseId: doc.id,  // ✅ حفظ ID فايربيس هنا
+                    ...data 
+                });
             }
         });
         
@@ -482,11 +469,11 @@ async function loadAdminPendingRequests() {
                                 </div>
                             </div>
                             <div style="display: flex; gap: 10px; margin-top: 10px;">
-                                <button onclick="approveDepositRequest('${item.id}', '${item.userId}', ${item.amount}, '${safeCurrency}')" 
+                                <button onclick="approveDepositRequest('${item.firebaseId}', '${item.userId}', ${item.amount}, '${safeCurrency}')" 
                                         style="flex: 1; padding: 8px; background: linear-gradient(135deg, #22c55e, #10b981); color: white; border: none; border-radius: 6px; font-weight: 600;">
                                     <i class="fas fa-check"></i> موافقة
                                 </button>
-                                <button onclick="rejectDepositRequest('${item.id}')" 
+                                <button onclick="rejectDepositRequest('${item.firebaseId}')" 
                                         style="flex: 1; padding: 8px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 6px; font-weight: 600;">
                                     <i class="fas fa-times"></i> رفض
                                 </button>
@@ -498,21 +485,24 @@ async function loadAdminPendingRequests() {
             }
         }
         
-        // 4. نفس الشيء لطلبات السحب
-        const allWithdrawals = await db.collection('withdrawals')
+        // 4. جلب طلبات السحب
+        const withdrawalsQuery = await db.collection('withdrawals')
             .orderBy('timestamp', 'desc')
             .limit(100)
             .get();
         
-        console.log(`📤 عدد طلبات السحب الكلية: ${allWithdrawals.size}`);
+        console.log(`📤 عدد طلبات السحب الكلية: ${withdrawalsQuery.size}`);
         
         const pendingWithdrawals = [];
-        allWithdrawals.forEach(doc => {
+        withdrawalsQuery.forEach(doc => {
             const data = doc.data();
             const status = data.status ? data.status.toString().toLowerCase().trim() : '';
             
             if (!status || status === 'pending' || status === 'قيد الانتظار') {
-                pendingWithdrawals.push({ id: doc.id, ...data });
+                pendingWithdrawals.push({ 
+                    firebaseId: doc.id,  // ✅ حفظ ID فايربيس هنا
+                    ...data 
+                });
             }
         });
         
@@ -574,11 +564,11 @@ async function loadAdminPendingRequests() {
                                 </div>
                             </div>
                             <div style="display: flex; gap: 10px; margin-top: 10px;">
-                                <button onclick="approveWithdrawalRequest('${item.id}')" 
+                                <button onclick="approveWithdrawalRequest('${item.firebaseId}')" 
                                         style="flex: 1; padding: 8px; background: linear-gradient(135deg, #22c55e, #10b981); color: white; border: none; border-radius: 6px; font-weight: 600;">
                                     <i class="fas fa-check"></i> موافقة
                                 </button>
-                                <button onclick="rejectWithdrawalRequest('${item.id}')" 
+                                <button onclick="rejectWithdrawalRequest('${item.firebaseId}')" 
                                         style="flex: 1; padding: 8px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 6px; font-weight: 600;">
                                     <i class="fas fa-times"></i> رفض
                                 </button>
@@ -598,18 +588,30 @@ async function loadAdminPendingRequests() {
     }
 }
 
-// ============================================
-// ADMIN FUNCTIONS - FIXED VERSION
-// ============================================
+function switchAdminTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    document.getElementById('adminDepositsTab').style.display = tabName === 'deposits' ? 'block' : 'none';
+    document.getElementById('adminWithdrawalsTab').style.display = tabName === 'withdrawals' ? 'block' : 'none';
+    document.getElementById('adminUsersTab').style.display = tabName === 'users' ? 'block' : 'none';
+    
+    const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => 
+        btn.textContent.includes(tabName === 'deposits' ? 'Deposits' : 
+                                tabName === 'withdrawals' ? 'Withdrawals' : 'Users')
+    );
+    if (activeBtn) activeBtn.classList.add('active');
+}
 
-async function approveDepositRequest(requestId, userId, amount, currency) {
+async function approveDepositRequest(firebaseId, userId, amount, currency) {
     if (!adminAccess || !db) return;
     
     if (!confirm(`هل تريد الموافقة على إيداع ${amount} ${currency} للمستخدم ${userId}؟`)) return;
     
     try {
-        // 1. تحديث حالة طلب الإيداع
-        const depositRef = db.collection('deposit_requests').doc(requestId);
+        // 1. تحديث حالة طلب الإيداع باستخدام ID فايربيس
+        const depositRef = db.collection('deposit_requests').doc(firebaseId);
         await depositRef.update({
             status: 'approved',
             approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -617,7 +619,7 @@ async function approveDepositRequest(requestId, userId, amount, currency) {
             adminNote: 'تمت الموافقة يدوياً'
         });
         
-        console.log(`✅ تمت الموافقة على طلب الإيداع ${requestId} للمستخدم ${userId}`);
+        console.log(`✅ تمت الموافقة على طلب الإيداع ${firebaseId} للمستخدم ${userId}`);
         
         // 2. البحث عن wallet للمستخدم أولاً
         const walletRef = db.collection('wallets').doc(userId);
@@ -697,14 +699,14 @@ async function approveDepositRequest(requestId, userId, amount, currency) {
     }
 }
 
-async function rejectDepositRequest(requestId) {
+async function rejectDepositRequest(firebaseId) {
     if (!adminAccess || !db) return;
     
     const reason = prompt("أدخل سبب الرفض:", "رمز المعاملة غير صالح");
     if (reason === null) return;
     
     try {
-        await db.collection('deposit_requests').doc(requestId).update({
+        await db.collection('deposit_requests').doc(firebaseId).update({
             status: 'rejected',
             rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
             rejectedBy: 'admin',
@@ -721,13 +723,13 @@ async function rejectDepositRequest(requestId) {
     }
 }
 
-async function approveWithdrawalRequest(requestId) {
+async function approveWithdrawalRequest(firebaseId) {
     if (!adminAccess || !db) return;
     
     try {
-        // أولاً، الحصول على بيانات الطلب
-        const requestRef = db.collection('withdrawals').doc(requestId);
-        const requestSnap = await requestRef.get();
+        // الحصول على بيانات الطلب باستخدام ID فايربيس
+        const requestRef = db.collection('withdrawals').doc(firebaseId);
+        const requestSnap = await requestSnap.get();
         
         if (!requestSnap.exists) {
             showMessage('❌ طلب السحب غير موجود', 'error');
@@ -759,12 +761,12 @@ async function approveWithdrawalRequest(requestId) {
     }
 }
 
-async function rejectWithdrawalRequest(requestId) {
+async function rejectWithdrawalRequest(firebaseId) {
     if (!adminAccess || !db) return;
     
     try {
-        // أولاً، الحصول على بيانات الطلب
-        const requestRef = db.collection('withdrawals').doc(requestId);
+        // الحصول على بيانات الطلب باستخدام ID فايربيس
+        const requestRef = db.collection('withdrawals').doc(firebaseId);
         const requestSnap = await requestRef.get();
         
         if (!requestSnap.exists) {
@@ -988,10 +990,9 @@ async function searchUserById() {
 }
 
 // ============================================
-// باقي الكود بدون تغيير
+// FLOATING NOTIFICATION SYSTEM
 // ============================================
 
-// FLOATING NOTIFICATION SYSTEM
 const NOTIFICATION_MESSAGES = [
     "Withdraw successful: User ID 599****5486 -200 USDT",
     "Deposit successful: User ID 848****9393 +100 USDT",
@@ -3790,4 +3791,4 @@ window.addBalanceToAllUsers = addBalanceToAllUsers;
 window.addBalanceToSpecificUser = addBalanceToSpecificUser;
 window.searchUserById = searchUserById;
 
-console.log("🎮 VIP Mining Wallet v6.5 loaded with Admin Panel - FIXED VERSION");
+console.log("🎮 VIP Mining Wallet v6.5 loaded with Admin Panel - UPDATED FIXED VERSION");
