@@ -1,6 +1,5 @@
 // ============================================
 // VIP Mining Mini App - PROFESSIONAL WALLET v6.5
-// COMPLETE FIXED VERSION
 // ============================================
 
 // Telegram WebApp
@@ -107,9 +106,884 @@ const CONFIG = {
 };
 
 // ============================================
-// FLOATING NOTIFICATION SYSTEM
+// ADMIN PANEL SYSTEM - HIDDEN ADMIN FEATURES
 // ============================================
 
+let adminAccess = false;
+let gemClickCount = 0;
+let lastGemClickTime = 0;
+const ADMIN_PASSWORD = "Ali97$";
+const ADMIN_TELEGRAM_ID = "1823952166"; // 👈 معرف التليجرام الخاص بك
+
+function initAdminSystem() {
+    const gemIcon = document.querySelector('.logo i.fa-gem');
+    if (gemIcon) {
+        gemIcon.addEventListener('click', handleGemClick);
+        console.log("💎 Admin system initialized");
+    }
+}
+
+function handleGemClick() {
+    const now = Date.now();
+    
+    if (now - lastGemClickTime > 2000) {
+        gemClickCount = 0;
+    }
+    
+    gemClickCount++;
+    lastGemClickTime = now;
+    
+    console.log(`💎 Gem click ${gemClickCount}/5`);
+    
+    if (gemClickCount >= 5) {
+        showAdminLogin();
+        gemClickCount = 0;
+    }
+}
+
+function showAdminLogin() {
+    const adminLoginHTML = `
+        <div class="modal-overlay" id="adminLoginModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-lock"></i> Admin Access</h3>
+                    <button class="modal-close" onclick="closeModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div style="text-align: center; padding: 20px;">
+                        <div style="font-size: 48px; margin-bottom: 20px;">🔒</div>
+                        <h3 style="color: #f8fafc; margin-bottom: 20px;">Administrator Access</h3>
+                        <p style="color: #94a3b8; margin-bottom: 30px;">Enter administrator password</p>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <input type="password" 
+                                   id="adminPasswordInput" 
+                                   style="width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.3); border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; color: white; font-size: 16px;"
+                                   placeholder="Enter password">
+                        </div>
+                        
+                        <button onclick="checkAdminPassword()" 
+                                style="width: 100%; padding: 12px; background: linear-gradient(135deg, #3b82f6, #6366f1); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </button>
+                        
+                        <div id="adminError" style="color: #ef4444; margin-top: 15px; display: none;">
+                            <i class="fas fa-exclamation-circle"></i> Incorrect password
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', adminLoginHTML);
+}
+
+function checkAdminPassword() {
+    const passwordInput = document.getElementById('adminPasswordInput');
+    const errorDiv = document.getElementById('adminError');
+    
+    if (!passwordInput) return;
+    
+    // تحقق من كلمة المرور
+    if (passwordInput.value !== ADMIN_PASSWORD) {
+        if (errorDiv) errorDiv.style.display = 'block';
+        passwordInput.style.borderColor = '#ef4444';
+        setTimeout(() => {
+            if (errorDiv) errorDiv.style.display = 'none';
+            passwordInput.style.borderColor = 'rgba(59,130,246,0.3)';
+        }, 2000);
+        return;
+    }
+    
+    // تحقق من معرف التليجرام
+    const telegramId = tg?.initDataUnsafe?.user?.id?.toString();
+    if (telegramId !== ADMIN_TELEGRAM_ID) {
+        showMessage("❌ ليس لديك صلاحيات المشرف", "error");
+        closeModal();
+        return;
+    }
+    
+    // إذا نجح كل شيء
+    adminAccess = true;
+    closeModal();
+    showAdminPanel();
+    showMessage(`✅ مرحباً يا عمري! (المشرف: ${telegramId})`, 'success');
+    console.log(`🔓 Admin access granted to: ${telegramId}`);
+}
+
+function showAdminPanel() {
+    const adminPanelHTML = `
+        <div class="modal-overlay" id="adminPanel">
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h3><i class="fas fa-user-shield"></i> Admin Panel</h3>
+                    <button class="modal-close" onclick="closeModal()">×</button>
+                </div>
+                
+                <div class="modal-body">
+                    <div style="margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                            <i class="fas fa-id-card" style="color: #60a5fa;"></i>
+                            <span style="color: #cbd5e0; font-size: 14px;">المشرف: ${ADMIN_TELEGRAM_ID}</span>
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-top: 8px;">
+                            <button onclick="fixCompletedRequests()" 
+                                    style="flex: 1; padding: 8px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; border-radius: 6px; font-size: 12px;">
+                                🔧 تصحيح الطلبات
+                            </button>
+                            <button onclick="forceRefreshAdminData()" 
+                                    style="flex: 1; padding: 8px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border: none; border-radius: 6px; font-size: 12px;">
+                                🔄 تحديث البيانات
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; margin-bottom: 25px;">
+                        <button class="tab-btn active" onclick="switchAdminTab('deposits')">
+                            <i class="fas fa-download"></i> Pending Deposits
+                            <span class="tab-badge" id="pendingDepositsCount">0</span>
+                        </button>
+                        <button class="tab-btn" onclick="switchAdminTab('withdrawals')">
+                            <i class="fas fa-upload"></i> Pending Withdrawals
+                            <span class="tab-badge" id="pendingWithdrawalsCount">0</span>
+                        </button>
+                        <button class="tab-btn" onclick="switchAdminTab('users')">
+                            <i class="fas fa-users"></i> User Management
+                        </button>
+                    </div>
+                    
+                    <div id="adminDepositsTab">
+                        <div class="section-title">
+                            <i class="fas fa-download"></i>
+                            <span>Pending Deposit Requests</span>
+                        </div>
+                        <div id="adminDepositsList" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;">
+                            <div class="empty-pending">
+                                <div class="empty-icon-small">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="empty-text">Loading pending deposits...</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="adminWithdrawalsTab" style="display: none;">
+                        <div class="section-title">
+                            <i class="fas fa-upload"></i>
+                            <span>Pending Withdrawal Requests</span>
+                        </div>
+                        <div id="adminWithdrawalsList" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;">
+                            <div class="empty-pending">
+                                <div class="empty-icon-small">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="empty-text">Loading pending withdrawals...</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="adminUsersTab" style="display: none;">
+                        <div class="section-title">
+                            <i class="fas fa-user-cog"></i>
+                            <span>User Balance Management</span>
+                        </div>
+                        
+                        <div style="background: rgba(15,23,42,0.8); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                            <div style="margin-bottom: 15px;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                    <i class="fas fa-user" style="color: #60a5fa;"></i>
+                                    <span style="color: #cbd5e0; font-size: 14px;">Add Balance to Specific User</span>
+                                </div>
+                                
+                                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 5px;">User ID or Username</div>
+                                        <input type="text" 
+                                               id="adminUserId" 
+                                               style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; color: white;"
+                                               placeholder="Enter user ID or username">
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 5px;">Amount (MWH)</div>
+                                        <input type="number" 
+                                               id="adminUserAmount" 
+                                               style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; color: white;"
+                                               placeholder="Amount" 
+                                               min="1" 
+                                               step="1">
+                                    </div>
+                                </div>
+                                
+                                <button onclick="addBalanceToSpecificUser()" 
+                                        style="width: 100%; padding: 12px; background: linear-gradient(135deg, #3b82f6, #6366f1); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 14px;">
+                                    <i class="fas fa-plus-circle"></i> Add Balance to User
+                                </button>
+                            </div>
+                            
+                            <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                    <i class="fas fa-users" style="color: #fbbf24;"></i>
+                                    <span style="color: #cbd5e0; font-size: 14px;">Add Balance to All Users</span>
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="number" 
+                                           id="adminAddAmount" 
+                                           style="flex: 1; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; color: white;"
+                                           placeholder="Amount" 
+                                           min="1" 
+                                           step="1">
+                                    <button onclick="addBalanceToAllUsers()" 
+                                            style="padding: 10px 20px; background: linear-gradient(135deg, #22c55e, #10b981); color: white; border: none; border-radius: 8px; font-weight: 600;">
+                                        Add to All
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(15,23,42,0.8); border-radius: 12px; padding: 20px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                                <i class="fas fa-search" style="color: #8b5cf6;"></i>
+                                <span style="color: #cbd5e0; font-size: 14px;">Search User by ID or Username</span>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                                <input type="text" 
+                                       id="adminSearchUserId" 
+                                       style="flex: 1; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; color: white;"
+                                       placeholder="Enter user ID or username to search">
+                                <button onclick="searchUserById()" 
+                                        style="padding: 10px 20px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border: none; border-radius: 8px; font-weight: 600;">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                            </div>
+                            
+                            <div id="adminUserInfo" style="display: none;">
+                                <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 15px; margin-top: 15px;">
+                                    <div style="font-size: 14px; color: #94a3b8; margin-bottom: 5px;">User Information</div>
+                                    <div style="font-size: 16px; color: #f8fafc; font-weight: 600; margin-bottom: 10px;" id="adminFoundUsername">Username</div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                        <div>
+                                            <div style="font-size: 12px; color: #94a3b8;">Balance</div>
+                                            <div style="font-size: 14px; color: #fbbf24; font-weight: 600;" id="adminFoundBalance">0 MWH</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 12px; color: #94a3b8;">Total Earned</div>
+                                            <div style="font-size: 14px; color: #22c55e; font-weight: 600;" id="adminFoundTotalEarned">0 MWH</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 12px; color: #94a3b8;">Referrals</div>
+                                            <div style="font-size: 14px; color: #60a5fa; font-weight: 600;" id="adminFoundReferrals">0</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 12px; color: #94a3b8;">Rank</div>
+                                            <div style="font-size: 14px; color: #f59e0b; font-weight: 600;" id="adminFoundRank">Beginner</div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                                        <div style="font-size: 12px; color: #94a3b8;">User ID in Firebase:</div>
+                                        <div style="font-size: 13px; color: #cbd5e0; font-family: monospace; word-break: break-all;" id="adminFoundUserId">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', adminPanelHTML);
+    loadAdminPendingRequests();
+}
+
+function forceRefreshAdminData() {
+    if (adminAccess) {
+        showMessage("🔄 جاري تحديث البيانات من Firebase...", "info");
+        loadAdminPendingRequests();
+    }
+}
+
+async function fixCompletedRequests() {
+    if (!adminAccess || !db) {
+        showMessage("❌ تحتاج صلاحيات المشرف", "error");
+        return;
+    }
+    
+    showMessage("🔧 جاري تصحيح الطلبات المكتملة...", "info");
+    
+    try {
+        // 1. ابحث عن الطلبات المكتملة في Firebase
+        const completedDeposits = await db.collection('deposit_requests')
+            .where('status', 'in', ['Done', 'done', 'completed', 'مكتمل'])
+            .get();
+        
+        console.log(`🔍 وجدت ${completedDeposits.size} طلب مكتمل`);
+        
+        // 2. أضف الأموال للمستخدمين
+        let fixedCount = 0;
+        
+        for (const doc of completedDeposits.docs) {
+            const data = doc.data();
+            const userId = data.userId;
+            const amount = parseFloat(data.amount) || 0;
+            const currency = data.currency || 'USDT';
+            
+            if (!userId || amount <= 0) continue;
+            
+            // البحث عن wallet للمستخدم
+            const walletRef = db.collection('wallets').doc(userId);
+            const walletSnap = await walletRef.get();
+            
+            if (walletSnap.exists) {
+                // تحديث الرصيد
+                if (currency === 'USDT' || currency === 'USD') {
+                    await walletRef.update({
+                        usdtBalance: firebase.firestore.FieldValue.increment(amount)
+                    });
+                } else if (currency === 'BNB') {
+                    await walletRef.update({
+                        bnbBalance: firebase.firestore.FieldValue.increment(amount)
+                    });
+                } else if (currency === 'MWH') {
+                    await walletRef.update({
+                        mwhBalance: firebase.firestore.FieldValue.increment(amount)
+                    });
+                    
+                    // تحديث رصيد المستخدم أيضاً
+                    const userRef = db.collection('users').doc(userId);
+                    await userRef.update({
+                        balance: firebase.firestore.FieldValue.increment(amount),
+                        totalEarned: firebase.firestore.FieldValue.increment(amount)
+                    });
+                }
+                
+                fixedCount++;
+                console.log(`✅ تم إضافة ${amount} ${currency} للمستخدم ${userId}`);
+            } else {
+                // إنشاء wallet جديد
+                const newWallet = {
+                    userId: userId,
+                    mwhBalance: 0,
+                    usdtBalance: 0,
+                    bnbBalance: 0,
+                    tonBalance: 0,
+                    ethBalance: 0,
+                    totalWithdrawn: 0,
+                    lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                if (currency === 'USDT' || currency === 'USD') newWallet.usdtBalance = amount;
+                else if (currency === 'BNB') newWallet.bnbBalance = amount;
+                else if (currency === 'MWH') newWallet.mwhBalance = amount;
+                
+                await walletRef.set(newWallet);
+                fixedCount++;
+                console.log(`💼 تم إنشاء محفظة جديدة للمستخدم ${userId}`);
+            }
+        }
+        
+        showMessage(`✅ تم تصحيح ${fixedCount} طلب مكتمل`, "success");
+        
+    } catch (error) {
+        console.error("❌ خطأ في تصحيح الطلبات:", error);
+        showMessage(`❌ خطأ في التصحيح: ${error.message}`, "error");
+    }
+}
+
+function switchAdminTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    document.getElementById('adminDepositsTab').style.display = tabName === 'deposits' ? 'block' : 'none';
+    document.getElementById('adminWithdrawalsTab').style.display = tabName === 'withdrawals' ? 'block' : 'none';
+    document.getElementById('adminUsersTab').style.display = tabName === 'users' ? 'block' : 'none';
+    
+    const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => 
+        btn.textContent.includes(tabName === 'deposits' ? 'Deposits' : 
+                                tabName === 'withdrawals' ? 'Withdrawals' : 'Users')
+    );
+    if (activeBtn) activeBtn.classList.add('active');
+}
+
+async function loadAdminPendingRequests() {
+    if (!adminAccess || !db) {
+        console.log("❌ لا يوجد صلاحيات أدمن أو اتصال");
+        return;
+    }
+    
+    console.log("🔄 بدء تحميل طلبات المشرف...");
+    
+    try {
+        // 1. جلب جميع طلبات الإيداع (بدون فلترة أولية)
+        const allDeposits = await db.collection('deposit_requests')
+            .orderBy('timestamp', 'desc')
+            .limit(100)
+            .get();
+        
+        console.log(`📥 عدد طلبات الإيداع الكلية: ${allDeposits.size}`);
+        
+        // 2. تصفية الطلبات المعلقة يدوياً
+        const pendingDeposits = [];
+        
+        allDeposits.forEach(doc => {
+            const data = doc.data();
+            const status = data.status ? data.status.toString().toLowerCase().trim() : '';
+            
+            console.log(`🔍 فحص طلب ${doc.id}: status="${data.status}" → lowercase="${status}"`);
+            
+            // اعتبار أي طلب بدون status أو بقيمة pending كمعلق
+            if (!status || status === 'pending' || status === 'قيد الانتظار' || status === '') {
+                pendingDeposits.push({ 
+                    id: doc.id,  // ✅ Document ID الحقيقي
+                    ...data 
+                });
+            }
+        });
+        
+        console.log(`⏳ طلبات الإيداع المعلقة: ${pendingDeposits.length}`);
+        
+        // 3. تحديث واجهة الإيداعات
+        const depositsList = document.getElementById('adminDepositsList');
+        const depositsCount = document.getElementById('pendingDepositsCount');
+        
+        if (depositsCount) {
+            depositsCount.textContent = pendingDeposits.length;
+        }
+        
+        if (depositsList) {
+            if (pendingDeposits.length === 0) {
+                depositsList.innerHTML = `
+                    <div class="empty-pending">
+                        <div class="empty-icon-small">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="empty-text">لا توجد طلبات إيداع معلقة</div>
+                    </div>
+                `;
+            } else {
+                let html = '';
+                pendingDeposits.forEach(item => {
+                    const date = item.timestamp?.toDate ? item.timestamp.toDate() : new Date(item.timestamp || Date.now());
+                    
+                    // تنظيف currency
+                    const currency = item.currency || 'USDT';
+                    const cleanCurrency = currency.replace(/['"]/g, '');
+                    
+                    html += `
+                        <div class="transaction-card pending" style="margin-bottom: 10px;">
+                            <div class="transaction-header">
+                                <div class="transaction-type">
+                                    <div class="type-icon deposit">
+                                        <i class="fas fa-download"></i>
+                                    </div>
+                                    <div class="type-info">
+                                        <div class="type-title">${item.username || 'مستخدم'}</div>
+                                        <div class="type-subtitle">ID: ${item.userId || 'غير معروف'}</div>
+                                    </div>
+                                </div>
+                                <div class="transaction-status pending-badge">
+                                    <i class="fas fa-clock"></i>
+                                    <span>معلق</span>
+                                </div>
+                            </div>
+                            <div class="transaction-details">
+                                <div class="detail-row">
+                                    <span>المبلغ:</span>
+                                    <span class="detail-value">${item.amount || 0} ${cleanCurrency}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span>المعاملات:</span>
+                                    <span class="detail-value hash" title="${item.transactionHash || 'لا يوجد'}">
+                                        ${item.transactionHash ? item.transactionHash.substring(0, 10) + '...' + item.transactionHash.substring(item.transactionHash.length - 6) : 'غير متوفر'}
+                                    </span>
+                                </div>
+                                <div class="detail-row">
+                                    <span>التاريخ:</span>
+                                    <span class="detail-value">${date.toLocaleDateString('ar-SA')} ${date.toLocaleTimeString('ar-SA', {hour: '2-digit', minute:'2-digit'})}</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <button onclick="approveDepositRequest('${item.id}', '${item.userId}', ${item.amount || 0}, '${cleanCurrency}')" 
+                                        style="flex: 1; padding: 8px; background: linear-gradient(135deg, #22c55e, #10b981); color: white; border: none; border-radius: 6px; font-weight: 600;">
+                                    <i class="fas fa-check"></i> موافقة
+                                </button>
+                                <button onclick="rejectDepositRequest('${item.id}')" 
+                                        style="flex: 1; padding: 8px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 6px; font-weight: 600;">
+                                    <i class="fas fa-times"></i> رفض
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                depositsList.innerHTML = html;
+            }
+        }
+        
+        // 4. جلب جميع طلبات السحب (بدون فلترة أولية)
+        const allWithdrawals = await db.collection('withdrawals')
+            .orderBy('timestamp', 'desc')
+            .limit(100)
+            .get();
+        
+        console.log(`📤 عدد طلبات السحب الكلية: ${allWithdrawals.size}`);
+        
+        const pendingWithdrawals = [];
+        allWithdrawals.forEach(doc => {
+            const data = doc.data();
+            const status = data.status ? data.status.toString().toLowerCase().trim() : '';
+            
+            if (!status || status === 'pending' || status === 'قيد الانتظار' || status === '') {
+                pendingWithdrawals.push({ 
+                    id: doc.id,  // ✅ Document ID الحقيقي
+                    ...data 
+                });
+            }
+        });
+        
+        console.log(`⏳ طلبات السحب المعلقة: ${pendingWithdrawals.length}`);
+        
+        // 5. تحديث واجهة السحوبات
+        const withdrawalsList = document.getElementById('adminWithdrawalsList');
+        const withdrawalsCount = document.getElementById('pendingWithdrawalsCount');
+        
+        if (withdrawalsCount) {
+            withdrawalsCount.textContent = pendingWithdrawals.length;
+        }
+        
+        if (withdrawalsList) {
+            if (pendingWithdrawals.length === 0) {
+                withdrawalsList.innerHTML = `
+                    <div class="empty-pending">
+                        <div class="empty-icon-small">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="empty-text">لا توجد طلبات سحب معلقة</div>
+                    </div>
+                `;
+            } else {
+                let html = '';
+                pendingWithdrawals.forEach(item => {
+                    const date = item.timestamp?.toDate ? item.timestamp.toDate() : new Date(item.timestamp || Date.now());
+                    
+                    // تنظيف الـ address
+                    const address = item.address || '';
+                    const cleanAddress = address.replace(/['"]/g, '');
+                    
+                    html += `
+                        <div class="transaction-card pending" style="margin-bottom: 10px;">
+                            <div class="transaction-header">
+                                <div class="transaction-type">
+                                    <div class="type-icon withdrawal">
+                                        <i class="fas fa-upload"></i>
+                                    </div>
+                                    <div class="type-info">
+                                        <div class="type-title">${item.username || 'مستخدم'}</div>
+                                        <div class="type-subtitle">ID: ${item.userId || 'غير معروف'}</div>
+                                    </div>
+                                </div>
+                                <div class="transaction-status pending-badge">
+                                    <i class="fas fa-clock"></i>
+                                    <span>معلق</span>
+                                </div>
+                            </div>
+                            <div class="transaction-details">
+                                <div class="detail-row">
+                                    <span>المبلغ:</span>
+                                    <span class="detail-value">${item.amount || 0} ${item.currency || 'USDT'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span>العنوان:</span>
+                                    <span class="detail-value hash" title="${cleanAddress}">
+                                        ${cleanAddress ? cleanAddress.substring(0, 10) + '...' + cleanAddress.substring(cleanAddress.length - 6) : 'غير متوفر'}
+                                    </span>
+                                </div>
+                                <div class="detail-row">
+                                    <span>التاريخ:</span>
+                                    <span class="detail-value">${date.toLocaleDateString('ar-SA')} ${date.toLocaleTimeString('ar-SA', {hour: '2-digit', minute:'2-digit'})}</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <button onclick="approveWithdrawalRequest('${item.id}')" 
+                                        style="flex: 1; padding: 8px; background: linear-gradient(135deg, #22c55e, #10b981); color: white; border: none; border-radius: 6px; font-weight: 600;">
+                                    <i class="fas fa-check"></i> موافقة
+                                </button>
+                                <button onclick="rejectWithdrawalRequest('${item.id}')" 
+                                        style="flex: 1; padding: 8px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 6px; font-weight: 600;">
+                                    <i class="fas fa-times"></i> رفض
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                withdrawalsList.innerHTML = html;
+            }
+        }
+        
+        console.log("✅ تم تحميل طلبات المشرف بنجاح");
+        
+    } catch (error) {
+        console.error("❌ خطأ في تحميل طلبات المشرف:", error);
+        showMessage('❌ خطأ في تحميل بيانات المشرف. راجع الكونسول.', 'error');
+    }
+}
+
+// ============================================
+// ADMIN FUNCTIONS - FIXED VERSION
+// ============================================
+
+async function approveDepositRequest(documentId, userId, amount, currency) {
+    if (!adminAccess || !db) {
+        showMessage("❌ تحتاج صلاحيات المشرف أو Firebase غير متصل", "error");
+        return;
+    }
+    
+    // تحقق من صحة documentId
+    if (!documentId || documentId.length < 5) {
+        showMessage(`❌ Document ID غير صالح: ${documentId}`, "error");
+        return;
+    }
+    
+    showMessage(`🔄 جاري الموافقة على طلب الإيداع...`, "info");
+    
+    if (!confirm(`هل تريد الموافقة على إيداع ${amount} ${currency} للمستخدم ${userId}؟`)) return;
+    
+    try {
+        // 1. تحقق من وجود المستند أولاً
+        const depositRef = db.collection('deposit_requests').doc(documentId);
+        const depositDoc = await depositRef.get();
+        
+        if (!depositDoc.exists) {
+            showMessage(`❌ لم يتم العثور على طلب الإيداع بالـ ID: ${documentId}`, "error");
+            return;
+        }
+        
+        // 2. تحديث حالة طلب الإيداع
+        await depositRef.update({
+            status: 'approved',
+            approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            approvedBy: ADMIN_TELEGRAM_ID,
+            adminNote: `تمت الموافقة يدوياً بواسطة المشرف ${ADMIN_TELEGRAM_ID}`
+        });
+        
+        console.log(`✅ تمت الموافقة على طلب الإيداع ${documentId} للمستخدم ${userId}`);
+        
+        // 3. البحث عن wallet للمستخدم أولاً
+        const walletRef = db.collection('wallets').doc(userId);
+        const walletSnap = await walletRef.get();
+        
+        const numericAmount = parseFloat(amount) || 0;
+        
+        if (walletSnap.exists) {
+            // تحديث الرصيد بنفس العملة
+            if (currency === 'USDT' || currency === 'USD') {
+                await walletRef.update({
+                    usdtBalance: firebase.firestore.FieldValue.increment(numericAmount),
+                    lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                console.log(`💰 تم إضافة ${amount} USDT إلى محفظة المستخدم`);
+            } 
+            else if (currency === 'BNB') {
+                await walletRef.update({
+                    bnbBalance: firebase.firestore.FieldValue.increment(numericAmount),
+                    lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                console.log(`💰 تم إضافة ${amount} BNB إلى محفظة المستخدم`);
+            }
+            else if (currency === 'MWH') {
+                await walletRef.update({
+                    mwhBalance: firebase.firestore.FieldValue.increment(numericAmount),
+                    lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                console.log(`💰 تم إضافة ${amount} MWH إلى محفظة المستخدم`);
+                
+                // تحديث رصيد المستخدم في جدول users أيضاً
+                const userRef = db.collection('users').doc(userId);
+                await userRef.update({
+                    balance: firebase.firestore.FieldValue.increment(numericAmount),
+                    totalEarned: firebase.firestore.FieldValue.increment(numericAmount),
+                    lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
+        } else {
+            // إنشاء wallet جديد إذا لم يكن موجوداً
+            const newWalletData = {
+                userId: userId,
+                mwhBalance: 0,
+                usdtBalance: 0,
+                bnbBalance: 0,
+                tonBalance: 0,
+                ethBalance: 0,
+                totalWithdrawn: 0,
+                lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            if (currency === 'USDT' || currency === 'USD') newWalletData.usdtBalance = numericAmount;
+            else if (currency === 'BNB') newWalletData.bnbBalance = numericAmount;
+            else if (currency === 'MWH') newWalletData.mwhBalance = numericAmount;
+            
+            await walletRef.set(newWalletData);
+            console.log(`💼 تم إنشاء محفظة جديدة للمستخدم وإضافة ${amount} ${currency}`);
+            
+            // إذا كانت MWH، تحديث رصيد المستخدم أيضاً
+            if (currency === 'MWH') {
+                const userRef = db.collection('users').doc(userId);
+                await userRef.update({
+                    balance: firebase.firestore.FieldValue.increment(numericAmount),
+                    totalEarned: firebase.firestore.FieldValue.increment(numericAmount),
+                    lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
+        }
+        
+        showMessage(`✅ تمت الموافقة على الإيداع! تم إضافة ${amount} ${currency} للمستخدم`, 'success');
+        
+        setTimeout(loadAdminPendingRequests, 1500);
+        
+    } catch (error) {
+        console.error("❌ خطأ في الموافقة على الإيداع:", error);
+        showMessage(`❌ خطأ في الموافقة على الإيداع: ${error.message}`, 'error');
+    }
+}
+
+async function rejectDepositRequest(documentId) {
+    if (!adminAccess || !db) {
+        showMessage("❌ تحتاج صلاحيات المشرف أو Firebase غير متصل", "error");
+        return;
+    }
+    
+    // تحقق من صحة documentId
+    if (!documentId || documentId.length < 5) {
+        showMessage(`❌ Document ID غير صالح: ${documentId}`, "error");
+        return;
+    }
+    
+    const reason = prompt("أدخل سبب الرفض:", "رمز المعاملة غير صالح");
+    if (reason === null) return;
+    
+    try {
+        const depositRef = db.collection('deposit_requests').doc(documentId);
+        const depositDoc = await depositRef.get();
+        
+        if (!depositDoc.exists) {
+            showMessage(`❌ لم يتم العثور على طلب الإيداع بالـ ID: ${documentId}`, "error");
+            return;
+        }
+        
+        await depositRef.update({
+            status: 'rejected',
+            rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            rejectedBy: ADMIN_TELEGRAM_ID,
+            rejectionReason: reason
+        });
+        
+        showMessage(`❌ تم رفض طلب الإيداع. السبب: ${reason}`, 'warning');
+        
+        setTimeout(loadAdminPendingRequests, 1500);
+        
+    } catch (error) {
+        console.error("❌ خطأ في رفض الإيداع:", error);
+        showMessage(`❌ خطأ في رفض الإيداع: ${error.message}`, 'error');
+    }
+}
+
+async function approveWithdrawalRequest(documentId) {
+    if (!adminAccess || !db) {
+        showMessage("❌ تحتاج صلاحيات المشرف أو Firebase غير متصل", "error");
+        return;
+    }
+    
+    // تحقق من صحة documentId
+    if (!documentId || documentId.length < 5) {
+        showMessage(`❌ Document ID غير صالح: ${documentId}`, "error");
+        return;
+    }
+    
+    try {
+        // أولاً، الحصول على بيانات الطلب
+        const requestRef = db.collection('withdrawals').doc(documentId);
+        const requestSnap = await requestRef.get();
+        
+        if (!requestSnap.exists) {
+            showMessage(`❌ لم يتم العثور على طلب السحب بالـ ID: ${documentId}`, 'error');
+            return;
+        }
+        
+        const requestData = requestSnap.data();
+        const userId = requestData.userId;
+        const amount = requestData.amount;
+        
+        if (!confirm(`هل تريد الموافقة على سحب ${amount} USDT للمستخدم ${userId}؟`)) return;
+        
+        // تحديث حالة الطلب
+        await requestRef.update({
+            status: 'completed',
+            completedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            completedBy: ADMIN_TELEGRAM_ID,
+            adminNote: `تمت الموافقة بواسطة المشرف ${ADMIN_TELEGRAM_ID}`
+        });
+        
+        console.log(`✅ تمت الموافقة على سحب ${amount} USDT للمستخدم ${userId}`);
+        
+        showMessage(`✅ تمت الموافقة على السحب! تم إرسال ${amount} USDT للمستخدم`, 'success');
+        
+        setTimeout(loadAdminPendingRequests, 1500);
+        
+    } catch (error) {
+        console.error("❌ خطأ في الموافقة على السحب:", error);
+        showMessage(`❌ خطأ في الموافقة على السحب: ${error.message}`, 'error');
+    }
+}
+
+async function rejectWithdrawalRequest(documentId) {
+    if (!adminAccess || !db) {
+        showMessage("❌ تحتاج صلاحيات المشرف أو Firebase غير متصل", "error");
+        return;
+    }
+    
+    // تحقق من صحة documentId
+    if (!documentId || documentId.length < 5) {
+        showMessage(`❌ Document ID غير صالح: ${documentId}`, "error");
+        return;
+    }
+    
+    try {
+        // أولاً، الحصول على بيانات الطلب
+        const requestRef = db.collection('withdrawals').doc(documentId);
+        const requestSnap = await requestRef.get();
+        
+        if (!requestSnap.exists) {
+            showMessage(`❌ لم يتم العثور على طلب السحب بالـ ID: ${documentId}`, 'error');
+            return;
+        }
+        
+        const requestData = requestSnap.data();
+        
+        const reason = prompt("أدخل سبب الرفض:", "رصيد غير كافي");
+        if (reason === null) return;
+        
+        await requestRef.update({
+            status: 'rejected',
+            rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            rejectedBy: ADMIN_TELEGRAM_ID,
+            rejectionReason: reason
+        });
+        
+        showMessage(`❌ تم رفض طلب السحب. السبب: ${reason}`, 'warning');
+        
+        setTimeout(loadAdminPendingRequests, 1500);
+        
+    } catch (error) {
+        console.error("❌ خطأ في رفض السحب:", error);
+        showMessage(`❌ خطأ في رفض السحب: ${error.message}`, 'error');
+    }
+}
+
+// باقي الكود كما هو بدون تغيير...
+// [يتبع باقي الكود الأصلي بدون تغييرات]
+
+// FLOATING NOTIFICATION SYSTEM
 const NOTIFICATION_MESSAGES = [
     "Withdraw successful: User ID 599****5486 -200 USDT",
     "Deposit successful: User ID 848****9393 +100 USDT",
@@ -123,6 +997,57 @@ const NOTIFICATION_MESSAGES = [
     "Withdraw successful: User ID 447****9577 -90 USDT",
     "Withdraw successful: User ID 510****5431 -150 USDT",
     "Withdraw successful: User ID 945****4413 -400 USDT",
+    "Deposit successful: User ID 722****8419 +0.081 BNB",
+    "Withdraw successful: User ID 535****7481 -120 USDT",
+    "Deposit successful: User ID 762****7750 +400 USDT",
+    "Deposit successful: User ID 911****5707 +100 USDT",
+    "Withdraw successful: User ID 603****2720 -75 USDT",
+    "Withdraw successful: User ID 888****8724 -120 USDT",
+    "Withdraw successful: User ID 275****6848 -90 USDT",
+    "Deposit successful: User ID 820****3853 +95 USDT",
+    "Deposit successful: User ID 797****9600 +0.463 BNB",
+    "Deposit successful: User ID 713****4991 +0.445 BNB",
+    "Deposit successful: User ID 915****6003 +0.142 BNB",
+    "Deposit successful: User ID 515****1941 +0.221 BNB",
+    "Deposit successful: User ID 709****2493 +85 USDT",
+    "Withdraw successful: User ID 712****2232 -85 USDT",
+    "Deposit successful: User ID 407****3765 +0.231 BNB",
+    "Deposit successful: User ID 875****3519 +80 USDT",
+    "Deposit successful: User ID 806****5674 +0.418 BNB",
+    "Withdraw successful: User ID 484****5745 -85 USDT",
+    "Deposit successful: User ID 209****4857 +0.105 BNB",
+    "Withdraw successful: User ID 346****6451 -400 USDT",
+    "Deposit successful: User ID 649****8499 +85 USDT",
+    "Withdraw successful: User ID 528****8768 -65 USDT",
+    "Deposit successful: User ID 674****2986 +0.287 BNB",
+    "Deposit successful: User ID 455****5127 +450 USDT",
+    "Deposit successful: User ID 336****1836 +450 USDT",
+    "Deposit successful: User ID 254****4683 +450 USDT",
+    "Deposit successful: User ID 827****1743 +250 USDT",
+    "Deposit successful: User ID 832****8543 +0.483 BNB",
+    "Deposit successful: User ID 264****4548 +90 USDT",
+    "Deposit successful: User ID 391****1341 +0.134 BNB",
+    "Deposit successful: User ID 395****2663 +0.106 BNB",
+    "Deposit successful: User ID 642****7536 +95 USDT",
+    "Deposit successful: User ID 230****4033 +0.387 BNB",
+    "Withdraw successful: User ID 906****1183 -55 USDT",
+    "Deposit successful: User ID 282****2796 +0.028 BNB",
+    "Deposit successful: User ID 848****7327 +0.482 BNB",
+    "Deposit successful: User ID 202****3599 +0.404 BNB",
+    "Withdraw successful: User ID 790****5955 -60 USDT",
+    "Deposit successful: User ID 858****3490 +0.301 BNB",
+    "Withdraw successful: User ID 411****1546 -60 USDT",
+    "Deposit successful: User ID 580****5388 +80 USDT",
+    "Deposit successful: User ID 664****5710 +350 USDT",
+    "Deposit successful: User ID 204****1455 +70 USDT",
+    "Deposit successful: User ID 922****3898 +95 USDT",
+    "Withdraw successful: User ID 115****7935 -55 USDT",
+    "Withdraw successful: User ID 454****9499 -60 USDT",
+    "Deposit successful: User ID 548****6236 +0.3 BNB",
+    "Deposit successful: User ID 838****6789 +55 USDT",
+    "Deposit successful: User ID 356****6757 +0.419 BNB",
+    "Deposit successful: User ID 995****6562 +75 USDT",
+    "Deposit successful: User ID 560****3520 +0.022 BNB",
     "Deposit successful: User ID 696****5638 +0.386 BNB",
     "Deposit successful: User ID 629****8757 +0.428 BNB",
     "Deposit successful: User ID 266****4986 +0.107 BNB",
@@ -238,12 +1163,9 @@ const NOTIFICATION_MESSAGES = [
     "Withdraw successful: User ID 671****8243 -117.8 USDT",
     "Withdraw successful: User ID 423****1578 -73.6 USDT",
     "Withdraw successful: User ID 789****2645 -148.9 USDT",
-    "Deposit successful: User ID 762****7750 +400 USDT",
-    "Deposit successful: User ID 911****5707 +100 USDT",
-    "Withdraw successful: User ID 603****2720 -75 USDT",
-    "Withdraw successful: User ID 888****8724 -120 USDT",
-    "Withdraw successful: User ID 275****6848 -90 USDT",
-    "Deposit successful: User ID 820****3853 +95 USDT"
+    "Withdraw successful: User ID 356****9172 -101.3 USDT",
+    "Withdraw successful: User ID 842****6354 -129.4 USDT",
+    "Withdraw successful: User ID 234****7891 -70.7 USDT"
 ];
 
 let currentNotificationIndex = 0;
@@ -363,814 +1285,655 @@ function checkAndShowNotification() {
 }
 
 // ============================================
-// ADMIN PANEL SYSTEM - FIXED VERSION
+// TRANSACTION HISTORY SYSTEM
 // ============================================
 
-let adminAccess = false;
-let gemClickCount = 0;
-let lastGemClickTime = 0;
-const ADMIN_PASSWORD = "Ali97$";
-const ADMIN_TELEGRAM_ID = "1823952166";
-
-function initAdminSystem() {
-    const gemIcon = document.querySelector('.logo i.fa-gem');
-    if (gemIcon) {
-        gemIcon.addEventListener('click', handleGemClick);
-        console.log("💎 Admin system initialized");
-    }
-}
-
-function handleGemClick() {
-    const now = Date.now();
+function showTransactionHistory() {
+    console.log("📜 Showing transaction history");
     
-    if (now - lastGemClickTime > 2000) {
-        gemClickCount = 0;
-    }
+    const hasTransactions = 
+        walletData.pendingDeposits.length > 0 ||
+        walletData.pendingWithdrawals.length > 0 ||
+        walletData.depositHistory.length > 0 ||
+        walletData.withdrawalHistory.length > 0;
     
-    gemClickCount++;
-    lastGemClickTime = now;
-    
-    console.log(`💎 Gem click ${gemClickCount}/5`);
-    
-    if (gemClickCount >= 5) {
-        showAdminLogin();
-        gemClickCount = 0;
-    }
-}
-
-function showAdminLogin() {
-    const adminLoginHTML = `
-        <div class="modal-overlay" id="adminLoginModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3><i class="fas fa-lock"></i> Admin Access</h3>
-                    <button class="modal-close" onclick="closeModal()">×</button>
-                </div>
-                <div class="modal-body">
-                    <div style="text-align: center; padding: 20px;">
-                        <div style="font-size: 48px; margin-bottom: 20px;">🔒</div>
-                        <h3 style="color: #f8fafc; margin-bottom: 20px;">Administrator Access</h3>
-                        <p style="color: #94a3b8; margin-bottom: 30px;">Enter administrator password</p>
-                        
-                        <div style="margin-bottom: 20px;">
-                            <input type="password" 
-                                   id="adminPasswordInput" 
-                                   style="width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.3); border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; color: white; font-size: 16px;"
-                                   placeholder="Enter password">
-                        </div>
-                        
-                        <button onclick="checkAdminPassword()" 
-                                style="width: 100%; padding: 12px; background: linear-gradient(135deg, #3b82f6, #6366f1); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                            <i class="fas fa-sign-in-alt"></i> Login
-                        </button>
+    if (!hasTransactions) {
+        const modalHTML = `
+            <div class="modal-overlay" id="historyModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3><i class="fas fa-history"></i> Transaction History</h3>
+                        <button class="modal-close" onclick="closeModal()">×</button>
                     </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', adminLoginHTML);
-}
-
-function checkAdminPassword() {
-    const passwordInput = document.getElementById('adminPasswordInput');
-    
-    if (!passwordInput) return;
-    
-    if (passwordInput.value !== ADMIN_PASSWORD) {
-        showMessage("❌ كلمة المرور خاطئة", "error");
-        return;
-    }
-    
-    const telegramId = tg?.initDataUnsafe?.user?.id?.toString();
-    if (telegramId !== ADMIN_TELEGRAM_ID) {
-        showMessage("❌ ليس لديك صلاحيات المشرف", "error");
-        closeModal();
-        return;
-    }
-    
-    adminAccess = true;
-    closeModal();
-    showAdminPanel();
-    showMessage(`✅ مرحباً يا عمري! (المشرف: ${telegramId})`, 'success');
-}
-
-function showAdminPanel() {
-    const adminPanelHTML = `
-        <div class="modal-overlay" id="adminPanel">
-            <div class="modal-content" style="max-width: 500px;">
-                <div class="modal-header">
-                    <h3><i class="fas fa-user-shield"></i> Admin Panel</h3>
-                    <button class="modal-close" onclick="closeModal()">×</button>
-                </div>
-                
-                <div class="modal-body">
-                    <div style="margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px;">
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
-                            <i class="fas fa-id-card" style="color: #60a5fa;"></i>
-                            <span style="color: #cbd5e0; font-size: 14px;">المشرف: ${ADMIN_TELEGRAM_ID}</span>
-                        </div>
-                        <div style="display: flex; gap: 8px; margin-top: 8px;">
-                            <button onclick="fixAllRequests()" 
-                                    style="flex: 1; padding: 8px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; border-radius: 6px; font-size: 12px;">
-                                🔧 تصحيح كل الطلبات
-                            </button>
-                            <button onclick="forceRefreshAdminData()" 
-                                    style="flex: 1; padding: 8px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border: none; border-radius: 6px; font-size: 12px;">
-                                🔄 تحديث البيانات
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div style="display: flex; gap: 10px; margin-bottom: 25px;">
-                        <button class="tab-btn active" onclick="switchAdminTab('deposits')">
-                            <i class="fas fa-download"></i> Pending Deposits
-                            <span class="tab-badge" id="pendingDepositsCount">0</span>
-                        </button>
-                        <button class="tab-btn" onclick="switchAdminTab('withdrawals')">
-                            <i class="fas fa-upload"></i> Pending Withdrawals
-                            <span class="tab-badge" id="pendingWithdrawalsCount">0</span>
-                        </button>
-                        <button class="tab-btn" onclick="switchAdminTab('users')">
-                            <i class="fas fa-users"></i> User Management
-                        </button>
-                    </div>
-                    
-                    <div id="adminDepositsTab">
-                        <div class="section-title">
-                            <i class="fas fa-download"></i>
-                            <span>Pending Deposit Requests</span>
-                        </div>
-                        <div id="adminDepositsList" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;">
-                            <div class="empty-pending">
-                                <div class="empty-icon-small">
-                                    <i class="fas fa-clock"></i>
-                                </div>
-                                <div class="empty-text">Loading pending deposits...</div>
+                    <div class="modal-body">
+                        <div class="empty-history" style="display: block;">
+                            <div class="empty-icon">
+                                <i class="fas fa-inbox"></i>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <div id="adminWithdrawalsTab" style="display: none;">
-                        <div class="section-title">
-                            <i class="fas fa-upload"></i>
-                            <span>Pending Withdrawal Requests</span>
-                        </div>
-                        <div id="adminWithdrawalsList" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;">
-                            <div class="empty-pending">
-                                <div class="empty-icon-small">
-                                    <i class="fas fa-clock"></i>
-                                </div>
-                                <div class="empty-text">Loading pending withdrawals...</div>
+                            <div class="empty-title">📭 No Transactions Yet</div>
+                            <div class="empty-text">
+                                Your transaction history will appear here<br>
+                                once you make deposits or withdrawals.
                             </div>
-                        </div>
-                    </div>
-                    
-                    <div id="adminUsersTab" style="display: none;">
-                        <div class="section-title">
-                            <i class="fas fa-user-cog"></i>
-                            <span>User Balance Management</span>
-                        </div>
-                        
-                        <div style="background: rgba(15,23,42,0.8); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-                            <div style="margin-bottom: 15px;">
-                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                                    <i class="fas fa-user" style="color: #60a5fa;"></i>
-                                    <span style="color: #cbd5e0; font-size: 14px;">Add Balance to Specific User</span>
-                                </div>
-                                
-                                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                                    <div style="flex: 1;">
-                                        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 5px;">User ID or Username</div>
-                                        <input type="text" 
-                                               id="adminUserId" 
-                                               style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; color: white;"
-                                               placeholder="Enter user ID or username">
-                                    </div>
-                                    <div style="flex: 1;">
-                                        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 5px;">Amount (MWH)</div>
-                                        <input type="number" 
-                                               id="adminUserAmount" 
-                                               style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; color: white;"
-                                               placeholder="Amount" 
-                                               min="1" 
-                                               step="1">
-                                    </div>
-                                </div>
-                                
-                                <button onclick="addBalanceToSpecificUser()" 
-                                        style="width: 100%; padding: 12px; background: linear-gradient(135deg, #3b82f6, #6366f1); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 14px;">
-                                    <i class="fas fa-plus-circle"></i> Add Balance to User
+                            <div style="margin-top: 20px;">
+                                <button class="btn-primary" onclick="closeModal()" style="width: 100%; padding: 12px;">
+                                    <i class="fas fa-check"></i> OK
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        return;
+    }
+    
+    const modalHTML = `
+        <div class="modal-overlay" id="historyModal">
+            <div class="modal-content history-modal">
+                <div class="modal-header">
+                    <h3><i class="fas fa-history"></i> Transaction History</h3>
+                    <button class="modal-close" onclick="closeModal()">×</button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="history-tabs">
+                        <button class="tab-btn active" onclick="switchHistoryTab('pending')">
+                            <i class="fas fa-clock"></i>
+                            <span>Pending</span>
+                            ${walletData.pendingDeposits.length + walletData.pendingWithdrawals.length > 0 ? 
+                              `<span class="tab-badge">${walletData.pendingDeposits.length + walletData.pendingWithdrawals.length}</span>` : ''}
+                        </button>
+                        <button class="tab-btn" onclick="switchHistoryTab('deposits')">
+                            <i class="fas fa-download"></i>
+                            <span>Deposits</span>
+                        </button>
+                        <button class="tab-btn" onclick="switchHistoryTab('withdrawals')">
+                            <i class="fas fa-upload"></i>
+                            <span>Withdrawals</span>
+                        </button>
+                    </div>
+                    
+                    <div class="history-content" id="pendingTab">
+                        <div class="section-title">
+                            <i class="fas fa-clock"></i>
+                            <span>Pending Transactions</span>
+                        </div>
+                        
+                        ${renderPendingTransactions()}
+                    </div>
+                    
+                    <div class="history-content" id="depositsTab" style="display: none;">
+                        <div class="section-title">
+                            <i class="fas fa-download"></i>
+                            <span>Deposit History</span>
+                        </div>
+                        
+                        ${renderDepositHistory()}
+                    </div>
+                    
+                    <div class="history-content" id="withdrawalsTab" style="display: none;">
+                        <div class="section-title">
+                            <i class="fas fa-upload"></i>
+                            <span>Withdrawal History</span>
+                        </div>
+                        
+                        ${renderWithdrawalHistory()}
+                    </div>
+                    
+                    <div class="empty-history" id="emptyHistory" style="display: ${walletData.pendingDeposits.length === 0 && walletData.pendingWithdrawals.length === 0 && walletData.depositHistory.length === 0 && walletData.withdrawalHistory.length === 0 ? 'block' : 'none'};">
+                        <div class="empty-icon">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <div class="empty-title">No Transactions Yet</div>
+                        <div class="empty-text">
+                            Your transaction history will appear here once you make deposits or withdrawals.
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     `;
     
-    document.body.insertAdjacentHTML('beforeend', adminPanelHTML);
-    loadAdminPendingRequests();
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
 }
 
-// ============================================
-// SMART REQUEST FINDER - FIXED
-// ============================================
-
-async function findRequestById(requestId, collectionName) {
-    if (!db) return null;
-    
-    try {
-        // 1. Try as Document ID (Firebase native ID)
-        const docRef = db.collection(collectionName).doc(requestId);
-        const docSnap = await docRef.get();
-        
-        if (docSnap.exists) {
-            return { ref: docRef, data: docSnap.data(), type: 'documentId' };
-        }
-        
-        // 2. Try as custom 'id' field
-        const queryById = await db.collection(collectionName)
-            .where('id', '==', requestId)
-            .limit(1)
-            .get();
-        
-        if (!queryById.empty) {
-            const doc = queryById.docs[0];
-            return { ref: doc.ref, data: doc.data(), type: 'fieldId' };
-        }
-        
-        // 3. For deposits, try transactionHash
-        if (collectionName === 'deposit_requests') {
-            const queryByHash = await db.collection(collectionName)
-                .where('transactionHash', '==', requestId)
-                .limit(1)
-                .get();
-            
-            if (!queryByHash.empty) {
-                const doc = queryByHash.docs[0];
-                return { ref: doc.ref, data: doc.data(), type: 'transactionHash' };
-            }
-        }
-        
-        // 4. For withdrawals, try address
-        if (collectionName === 'withdrawals') {
-            const queryByAddress = await db.collection(collectionName)
-                .where('address', '==', requestId)
-                .limit(1)
-                .get();
-            
-            if (!queryByAddress.empty) {
-                const doc = queryByAddress.docs[0];
-                return { ref: doc.ref, data: doc.data(), type: 'address' };
-            }
-        }
-        
-        return null;
-        
-    } catch (error) {
-        console.error("❌ Error finding request:", error);
-        return null;
+function renderPendingTransactions() {
+    if (walletData.pendingDeposits.length === 0 && walletData.pendingWithdrawals.length === 0) {
+        return `
+            <div class="empty-pending">
+                <div class="empty-icon-small">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="empty-text">No pending transactions</div>
+            </div>
+        `;
     }
-}
-
-async function fixAllRequests() {
-    if (!adminAccess || !db) return;
     
-    showMessage("🔧 جاري تصحيح كل الطلبات...", "info");
+    let html = '';
     
-    try {
-        // Fix deposit requests
-        const depositsSnapshot = await db.collection('deposit_requests').get();
-        let depositFixed = 0;
+    walletData.pendingDeposits.forEach(deposit => {
+        const date = new Date(deposit.timestamp);
+        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
-        for (const doc of depositsSnapshot.docs) {
-            const data = doc.data();
-            
-            await doc.ref.update({
-                firebaseDocId: doc.id,
-                lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
-                ...(data.status === 'Done' ? { status: 'completed' } : {}),
-                ...(data.status === 'pending' ? { status: 'pending' } : {}),
-                ...(!data.status ? { status: 'pending' } : {})
-            });
-            
-            depositFixed++;
-        }
+        html += `
+            <div class="transaction-card pending">
+                <div class="transaction-header">
+                    <div class="transaction-type">
+                        <div class="type-icon deposit">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <div class="type-info">
+                            <div class="type-title">Deposit Request</div>
+                            <div class="type-subtitle">${deposit.currency}</div>
+                        </div>
+                    </div>
+                    <div class="transaction-status pending-badge">
+                        <i class="fas fa-clock"></i>
+                        <span>Pending Review</span>
+                    </div>
+                </div>
+                <div class="transaction-details">
+                    <div class="detail-row">
+                        <span>Amount:</span>
+                        <span class="detail-value">${deposit.amount} ${deposit.currency}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Transaction Hash:</span>
+                        <span class="detail-value hash">${deposit.transactionHash.substring(0, 12)}...${deposit.transactionHash.substring(deposit.transactionHash.length - 6)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Submitted:</span>
+                        <span class="detail-value">${formattedDate}</span>
+                    </div>
+                </div>
+                <div class="transaction-note">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Awaiting manual review by admin</span>
+                </div>
+            </div>
+        `;
+    });
+    
+    walletData.pendingWithdrawals.forEach(withdrawal => {
+        const date = new Date(withdrawal.timestamp);
+        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
-        // Fix withdrawal requests
-        const withdrawalsSnapshot = await db.collection('withdrawals').get();
-        let withdrawalFixed = 0;
-        
-        for (const doc of withdrawalsSnapshot.docs) {
-            const data = doc.data();
-            
-            await doc.ref.update({
-                firebaseDocId: doc.id,
-                lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
-                ...(data.status === 'Done' ? { status: 'completed' } : {}),
-                ...(data.status === 'pending' ? { status: 'pending' } : {}),
-                ...(!data.status ? { status: 'pending' } : {})
-            });
-            
-            withdrawalFixed++;
-        }
-        
-        showMessage(`✅ تم تصحيح ${depositFixed} إيداع و ${withdrawalFixed} سحب`, "success");
-        loadAdminPendingRequests();
-        
-    } catch (error) {
-        console.error("❌ Error fixing requests:", error);
-        showMessage("❌ خطأ في التصحيح", "error");
-    }
+        html += `
+            <div class="transaction-card pending">
+                <div class="transaction-header">
+                    <div class="transaction-type">
+                        <div class="type-icon withdrawal">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <div class="type-info">
+                            <div class="type-title">Withdrawal Request</div>
+                            <div class="type-subtitle">USDT</div>
+                        </div>
+                    </div>
+                    <div class="transaction-status pending-badge">
+                        <i class="fas fa-clock"></i>
+                        <span>Pending Processing</span>
+                    </div>
+                </div>
+                <div class="transaction-details">
+                    <div class="detail-row">
+                        <span>Amount:</span>
+                        <span class="detail-value">${withdrawal.amount} USDT</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Address:</span>
+                        <span class="detail-value hash">${withdrawal.address.substring(0, 12)}...${withdrawal.address.substring(withdrawal.address.length - 6)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Network Fee:</span>
+                        <span class="detail-value">${withdrawal.fee} BNB</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Submitted:</span>
+                        <span class="detail-value">${formattedDate}</span>
+                    </div>
+                </div>
+                <div class="transaction-note">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Awaiting manual processing by admin</span>
+                </div>
+            </div>
+        `;
+    });
+    
+    return html;
 }
 
-function forceRefreshAdminData() {
-    if (adminAccess) {
-        showMessage("🔄 جاري تحديث البيانات...", "info");
-        loadAdminPendingRequests();
+function renderDepositHistory() {
+    if (walletData.depositHistory.length === 0) {
+        return `
+            <div class="empty-history-section">
+                <div class="empty-icon-small">
+                    <i class="fas fa-download"></i>
+                </div>
+                <div class="empty-text">No completed deposits</div>
+            </div>
+        `;
     }
+    
+    let html = '';
+    
+    walletData.depositHistory.forEach(deposit => {
+        const date = new Date(deposit.timestamp);
+        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        html += `
+            <div class="transaction-card completed">
+                <div class="transaction-header">
+                    <div class="transaction-type">
+                        <div class="type-icon deposit">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <div class="type-info">
+                            <div class="type-title">Deposit ${deposit.status === 'approved' ? 'Approved' : 'Completed'}</div>
+                            <div class="type-subtitle">${deposit.currency}</div>
+                        </div>
+                    </div>
+                    <div class="transaction-status ${deposit.status === 'approved' ? 'approved-badge' : 'completed-badge'}">
+                        <i class="fas ${deposit.status === 'approved' ? 'fa-check-circle' : 'fa-check'}"></i>
+                        <span>${deposit.status === 'approved' ? 'Approved' : 'Completed'}</span>
+                    </div>
+                </div>
+                <div class="transaction-details">
+                    <div class="detail-row">
+                        <span>Amount:</span>
+                        <span class="detail-value">${deposit.amount} ${deposit.currency}</span>
+                    </div>
+                    ${deposit.transactionHash ? `
+                    <div class="detail-row">
+                        <span>Transaction Hash:</span>
+                        <span class="detail-value hash">${deposit.transactionHash.substring(0, 12)}...${deposit.transactionHash.substring(deposit.transactionHash.length - 6)}</span>
+                    </div>
+                    ` : ''}
+                    <div class="detail-row">
+                        <span>Date:</span>
+                        <span class="detail-value">${formattedDate}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    return html;
 }
 
-function switchAdminTab(tabName) {
+function renderWithdrawalHistory() {
+    if (walletData.withdrawalHistory.length === 0) {
+        return `
+            <div class="empty-history-section">
+                <div class="empty-icon-small">
+                    <i class="fas fa-upload"></i>
+                </div>
+                <div class="empty-text">No completed withdrawals</div>
+            </div>
+        `;
+    }
+    
+    let html = '';
+    
+    walletData.withdrawalHistory.forEach(withdrawal => {
+        const date = new Date(withdrawal.timestamp);
+        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        html += `
+            <div class="transaction-card completed">
+                <div class="transaction-header">
+                    <div class="transaction-type">
+                        <div class="type-icon withdrawal">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <div class="type-info">
+                            <div class="type-title">Withdrawal ${withdrawal.status === 'completed' ? 'Completed' : 'Processed'}</div>
+                            <div class="type-subtitle">USDT</div>
+                        </div>
+                    </div>
+                    <div class="transaction-status completed-badge">
+                        <i class="fas fa-check-circle"></i>
+                        <span>${withdrawal.status === 'completed' ? 'Completed' : 'Processed'}</span>
+                    </div>
+                </div>
+                <div class="transaction-details">
+                    <div class="detail-row">
+                        <span>Amount:</span>
+                        <span class="detail-value">${withdrawal.amount} USDT</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Address:</span>
+                        <span class="detail-value hash">${withdrawal.address.substring(0, 12)}...${withdrawal.address.substring(withdrawal.address.length - 6)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Network Fee:</span>
+                        <span class="detail-value">${withdrawal.fee} BNB</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Date:</span>
+                        <span class="detail-value">${formattedDate}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    return html;
+}
+
+function switchHistoryTab(tabName) {
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     
-    document.getElementById('adminDepositsTab').style.display = tabName === 'deposits' ? 'block' : 'none';
-    document.getElementById('adminWithdrawalsTab').style.display = tabName === 'withdrawals' ? 'block' : 'none';
-    document.getElementById('adminUsersTab').style.display = tabName === 'users' ? 'block' : 'none';
+    document.querySelectorAll('.history-content').forEach(content => {
+        content.style.display = 'none';
+    });
     
-    const activeBtn = document.querySelector(`[onclick*="${tabName}"]`);
-    if (activeBtn) activeBtn.classList.add('active');
-}
-
-// ============================================
-// LOAD ADMIN REQUESTS - FIXED
-// ============================================
-
-async function loadAdminPendingRequests() {
-    if (!adminAccess || !db) return;
+    const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => 
+        btn.querySelector('span').textContent.toLowerCase().includes(tabName)
+    );
     
-    console.log("🔄 Loading admin requests...");
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
     
-    try {
-        // Load PENDING deposits only
-        const depositsQuery = await db.collection('deposit_requests')
-            .where('status', 'in', ['pending', 'قيد الانتظار', ''])
-            .orderBy('timestamp', 'desc')
-            .limit(50)
-            .get();
-        
-        const depositsList = document.getElementById('adminDepositsList');
-        const depositsCount = document.getElementById('pendingDepositsCount');
-        
-        if (depositsCount) depositsCount.textContent = depositsQuery.size;
-        
-        if (depositsList) {
-            if (depositsQuery.empty) {
-                depositsList.innerHTML = `
-                    <div class="empty-pending">
-                        <div class="empty-icon-small">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="empty-text">لا توجد طلبات إيداع معلقة</div>
-                    </div>
-                `;
-            } else {
-                let html = '';
-                depositsQuery.forEach(doc => {
-                    const data = doc.data();
-                    const date = data.timestamp?.toDate ? data.timestamp.toDate() : new Date();
-                    const currency = data.currency || 'USDT';
-                    
-                    html += `
-                        <div class="transaction-card pending" style="margin-bottom: 10px;">
-                            <div class="transaction-header">
-                                <div class="transaction-type">
-                                    <div class="type-icon deposit">
-                                        <i class="fas fa-download"></i>
-                                    </div>
-                                    <div class="type-info">
-                                        <div class="type-title">${data.username || 'مستخدم'}</div>
-                                        <div class="type-subtitle">ID: ${data.userId || 'غير معروف'}</div>
-                                    </div>
-                                </div>
-                                <div class="transaction-status pending-badge">
-                                    <i class="fas fa-clock"></i>
-                                    <span>معلق</span>
-                                </div>
-                            </div>
-                            <div class="transaction-details">
-                                <div class="detail-row">
-                                    <span>المبلغ:</span>
-                                    <span class="detail-value">${data.amount || 0} ${currency}</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span>المعاملات:</span>
-                                    <span class="detail-value hash" title="${data.transactionHash || 'لا يوجد'}">
-                                        ${data.transactionHash ? data.transactionHash.substring(0, 10) + '...' : 'غير متوفر'}
-                                    </span>
-                                </div>
-                                <div class="detail-row">
-                                    <span>التاريخ:</span>
-                                    <span class="detail-value">${date.toLocaleDateString('ar-SA')}</span>
-                                </div>
-                            </div>
-                            <div style="display: flex; gap: 10px; margin-top: 10px;">
-                                <button onclick="approveDepositRequest('${doc.id}', '${data.userId}', ${data.amount || 0}, '${currency}')" 
-                                        style="flex: 1; padding: 8px; background: linear-gradient(135deg, #22c55e, #10b981); color: white; border: none; border-radius: 6px; font-weight: 600;">
-                                    <i class="fas fa-check"></i> موافقة
-                                </button>
-                                <button onclick="rejectDepositRequest('${doc.id}')" 
-                                        style="flex: 1; padding: 8px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 6px; font-weight: 600;">
-                                    <i class="fas fa-times"></i> رفض
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                });
-                depositsList.innerHTML = html;
-            }
+    const contentId = tabName + 'Tab';
+    const content = document.getElementById(contentId);
+    if (content) {
+        content.style.display = 'block';
+    }
+    
+    const emptyHistory = document.getElementById('emptyHistory');
+    if (emptyHistory) {
+        if (tabName === 'pending') {
+            emptyHistory.style.display = walletData.pendingDeposits.length === 0 && walletData.pendingWithdrawals.length === 0 ? 'block' : 'none';
+        } else if (tabName === 'deposits') {
+            emptyHistory.style.display = walletData.depositHistory.length === 0 ? 'block' : 'none';
+        } else if (tabName === 'withdrawals') {
+            emptyHistory.style.display = walletData.withdrawalHistory.length === 0 ? 'block' : 'none';
         }
-        
-        // Load PENDING withdrawals only
-        const withdrawalsQuery = await db.collection('withdrawals')
-            .where('status', 'in', ['pending', 'قيد الانتظار', ''])
-            .orderBy('timestamp', 'desc')
-            .limit(50)
-            .get();
-        
-        const withdrawalsList = document.getElementById('adminWithdrawalsList');
-        const withdrawalsCount = document.getElementById('pendingWithdrawalsCount');
-        
-        if (withdrawalsCount) withdrawalsCount.textContent = withdrawalsQuery.size;
-        
-        if (withdrawalsList) {
-            if (withdrawalsQuery.empty) {
-                withdrawalsList.innerHTML = `
-                    <div class="empty-pending">
-                        <div class="empty-icon-small">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="empty-text">لا توجد طلبات سحب معلقة</div>
-                    </div>
-                `;
-            } else {
-                let html = '';
-                withdrawalsQuery.forEach(doc => {
-                    const data = doc.data();
-                    const date = data.timestamp?.toDate ? data.timestamp.toDate() : new Date();
-                    
-                    html += `
-                        <div class="transaction-card pending" style="margin-bottom: 10px;">
-                            <div class="transaction-header">
-                                <div class="transaction-type">
-                                    <div class="type-icon withdrawal">
-                                        <i class="fas fa-upload"></i>
-                                    </div>
-                                    <div class="type-info">
-                                        <div class="type-title">${data.username || 'مستخدم'}</div>
-                                        <div class="type-subtitle">ID: ${data.userId || 'غير معروف'}</div>
-                                    </div>
-                                </div>
-                                <div class="transaction-status pending-badge">
-                                    <i class="fas fa-clock"></i>
-                                    <span>معلق</span>
-                                </div>
-                            </div>
-                            <div class="transaction-details">
-                                <div class="detail-row">
-                                    <span>المبلغ:</span>
-                                    <span class="detail-value">${data.amount || 0} ${data.currency || 'USDT'}</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span>العنوان:</span>
-                                    <span class="detail-value hash" title="${data.address || ''}">
-                                        ${data.address ? data.address.substring(0, 10) + '...' : 'غير متوفر'}
-                                    </span>
-                                </div>
-                                <div class="detail-row">
-                                    <span>التاريخ:</span>
-                                    <span class="detail-value">${date.toLocaleDateString('ar-SA')}</span>
-                                </div>
-                            </div>
-                            <div style="display: flex; gap: 10px; margin-top: 10px;">
-                                <button onclick="approveWithdrawalRequest('${doc.id}')" 
-                                        style="flex: 1; padding: 8px; background: linear-gradient(135deg, #22c55e, #10b981); color: white; border: none; border-radius: 6px; font-weight: 600;">
-                                    <i class="fas fa-check"></i> موافقة
-                                </button>
-                                <button onclick="rejectWithdrawalRequest('${doc.id}')" 
-                                        style="flex: 1; padding: 8px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 6px; font-weight: 600;">
-                                    <i class="fas fa-times"></i> رفض
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                });
-                withdrawalsList.innerHTML = html;
-            }
-        }
-        
-        console.log("✅ Admin requests loaded successfully");
-        
-    } catch (error) {
-        console.error("❌ Error loading admin requests:", error);
-        showMessage("❌ خطأ في تحميل البيانات", "error");
     }
 }
 
 // ============================================
-// APPROVE/REJECT FUNCTIONS - FIXED
+// DEPOSIT MODAL WITH AMOUNT FIELD
 // ============================================
 
-async function approveDepositRequest(documentId, userId, amount, currency) {
-    if (!adminAccess || !db) {
-        showMessage("❌ تحتاج صلاحيات المشرف", "error");
-        return;
-    }
+function openDepositModal(currency) {
+    console.log("💰 Opening deposit modal for:", currency);
     
-    showMessage(`🔄 جاري الموافقة على الإيداع...`, "info");
+    const depositAddress = CONFIG.DEPOSIT_ADDRESS;
+    const minDeposit = getMinDeposit(currency);
     
-    if (!confirm(`هل تريد الموافقة على إيداع ${amount} ${currency} للمستخدم ${userId}؟`)) return;
-    
-    try {
-        const request = await findRequestById(documentId, 'deposit_requests');
-        
-        if (!request) {
-            showMessage(`❌ لم يتم العثور على طلب الإيداع: ${documentId}`, "error");
-            return;
-        }
-        
-        await request.ref.update({
-            status: 'approved',
-            approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            approvedBy: ADMIN_TELEGRAM_ID,
-            adminNote: `تمت الموافقة بواسطة المشرف ${ADMIN_TELEGRAM_ID}`
-        });
-        
-        const walletRef = db.collection('wallets').doc(userId);
-        const walletSnap = await walletRef.get();
-        
-        const numericAmount = parseFloat(amount) || 0;
-        
-        if (walletSnap.exists) {
-            if (currency === 'USDT' || currency === 'USD') {
-                await walletRef.update({
-                    usdtBalance: firebase.firestore.FieldValue.increment(numericAmount),
-                    lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            } else if (currency === 'BNB') {
-                await walletRef.update({
-                    bnbBalance: firebase.firestore.FieldValue.increment(numericAmount),
-                    lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            } else if (currency === 'MWH') {
-                await walletRef.update({
-                    mwhBalance: firebase.firestore.FieldValue.increment(numericAmount),
-                    lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-                });
+    const modalHTML = `
+        <div class="modal-overlay" id="depositModal">
+            <div class="modal-content deposit-modal">
+                <div class="modal-header">
+                    <h3><i class="fas fa-download"></i> Deposit ${currency}</h3>
+                    <button class="modal-close" onclick="closeModal()">×</button>
+                </div>
                 
-                const userRef = db.collection('users').doc(userId);
-                await userRef.update({
-                    balance: firebase.firestore.FieldValue.increment(numericAmount),
-                    totalEarned: firebase.firestore.FieldValue.increment(numericAmount)
-                });
-            }
-        } else {
-            const newWallet = {
-                userId: userId,
-                mwhBalance: 0,
-                usdtBalance: 0,
-                bnbBalance: 0,
-                tonBalance: 0,
-                ethBalance: 0,
-                totalWithdrawn: 0,
-                lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-            };
-            
-            if (currency === 'USDT' || currency === 'USD') newWallet.usdtBalance = numericAmount;
-            else if (currency === 'BNB') newWallet.bnbBalance = numericAmount;
-            else if (currency === 'MWH') newWallet.mwhBalance = numericAmount;
-            
-            await walletRef.set(newWallet);
-        }
-        
-        showMessage(`✅ تمت الموافقة! تم إضافة ${amount} ${currency} للمستخدم`, "success");
-        setTimeout(loadAdminPendingRequests, 1500);
-        
-    } catch (error) {
-        console.error("❌ Error approving deposit:", error);
-        showMessage(`❌ خطأ في الموافقة: ${error.message}`, "error");
-    }
+                <div class="modal-body">
+                    <div class="deposit-warning">
+                        <div class="warning-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="warning-content">
+                            <div class="warning-title">Important Deposit Instructions</div>
+                            <div class="warning-text">
+                                Send only <strong>${currency}</strong> to this address on <strong>BEP20</strong> network.
+                                Sending other tokens or using wrong network will result in permanent loss.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="deposit-address-card">
+                        <div class="address-header">
+                            <i class="fas fa-wallet"></i>
+                            <span>Your ${currency} Deposit Address</span>
+                        </div>
+                        <div class="address-container">
+                            <div class="address-value" id="depositAddressDisplay">
+                                ${depositAddress}
+                            </div>
+                            <button class="copy-address-btn" onclick="copyDepositAddress()">
+                                <i class="far fa-copy"></i> Copy Address
+                            </button>
+                        </div>
+                        <div class="network-info">
+                            <i class="fas fa-network-wired"></i>
+                            <span>Minimum deposit: ${minDeposit} ${currency}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="transaction-hash-section">
+                        <div class="section-title">
+                            <i class="fas fa-receipt"></i>
+                            <span>Transaction Verification</span>
+                        </div>
+                        <div class="transaction-input-group">
+                            <div class="input-label">Enter Transaction Hash (TxID)</div>
+                            <input type="text" 
+                                   id="transactionHash" 
+                                   class="transaction-input"
+                                   placeholder="0x..."
+                                   oninput="validateTransactionHash()"
+                                   maxlength="100">
+                            <div class="input-hint">
+                                Required to verify and process your deposit
+                            </div>
+                        </div>
+                        <div class="transaction-status" id="transactionStatus" style="display: none;">
+                            <div class="status-icon" id="statusIcon"></div>
+                            <div class="status-text" id="statusText"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="transaction-hash-section" style="margin-top: 15px;">
+                        <div class="section-title">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <span>Deposit Amount</span>
+                        </div>
+                        <div class="transaction-input-group">
+                            <div class="input-label">Enter Amount (${currency})</div>
+                            <input type="number" 
+                                   id="depositAmount" 
+                                   class="transaction-input"
+                                   placeholder="0.00"
+                                   min="${minDeposit}"
+                                   step="${currency === 'USDT' ? '0.01' : '0.001'}"
+                                   oninput="validateDepositAmount('${currency}')"
+                                   value="${minDeposit}">
+                            <div class="input-hint">
+                                Minimum deposit: ${minDeposit} ${currency}
+                            </div>
+                        </div>
+                        <div class="transaction-status" id="amountStatus" style="display: none;">
+                            <div class="status-icon" id="amountIcon"></div>
+                            <div class="status-text" id="amountText"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="deposit-instructions">
+                        <div class="instructions-title">
+                            <i class="fas fa-graduation-cap"></i>
+                            <span>How to Deposit ${currency}</span>
+                        </div>
+                        <div class="instructions-steps">
+                            <div class="instruction-step">
+                                <div class="step-number">1</div>
+                                <div class="step-content">Copy the ${currency} address above</div>
+                            </div>
+                            <div class="instruction-step">
+                                <div class="step-number">2</div>
+                                <div class="step-content">Send ${currency} to this address via your wallet (BEP20 network only)</div>
+                            </div>
+                            <div class="instruction-step">
+                                <div class="step-number">3</div>
+                                <div class="step-content">Wait for transaction confirmation on BSC Scan</div>
+                            </div>
+                            <div class="instruction-step">
+                                <div class="step-number">4</div>
+                                <div class="step-content">Copy the Transaction Hash and paste it above</div>
+                            </div>
+                            <div class="instruction-step">
+                                <div class="step-number">5</div>
+                                <div class="step-content">Enter the exact amount you sent</div>
+                            </div>
+                            <div class="instruction-step">
+                                <div class="step-number">6</div>
+                                <div class="step-content">Click "Submit Deposit Request" for manual review</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="deposit-note">
+                        <div class="note-icon">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div class="note-content">
+                            <strong>Note:</strong> Your deposit will be manually reviewed by our team.
+                            The balance will be added to your account after verification.
+                            Check your transaction status in the History section.
+                        </div>
+                    </div>
+                    
+                    <div class="deposit-actions">
+                        <button class="btn-secondary" onclick="closeModal()">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        <button class="btn-primary" id="verifyDepositBtn" onclick="submitDepositRequest('${currency}')" disabled>
+                            <i class="fas fa-paper-plane"></i> Submit Deposit Request
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    setTimeout(() => {
+        const input = document.getElementById('transactionHash');
+        if (input) input.focus();
+        validateDepositAmount(currency);
+    }, 100);
 }
 
-async function rejectDepositRequest(documentId) {
-    if (!adminAccess || !db) return;
+function validateDepositAmount(currency) {
+    const amountInput = document.getElementById('depositAmount');
+    const amountStatus = document.getElementById('amountStatus');
+    const amountIcon = document.getElementById('amountIcon');
+    const amountText = document.getElementById('amountText');
+    const verifyBtn = document.getElementById('verifyDepositBtn');
     
-    const reason = prompt("أدخل سبب الرفض:", "رمز المعاملة غير صالح");
-    if (!reason) return;
+    if (!amountInput || !amountStatus) return;
     
-    try {
-        const request = await findRequestById(documentId, 'deposit_requests');
-        
-        if (!request) {
-            showMessage(`❌ لم يتم العثور على الطلب`, "error");
-            return;
-        }
-        
-        await request.ref.update({
-            status: 'rejected',
-            rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            rejectedBy: ADMIN_TELEGRAM_ID,
-            rejectionReason: reason
-        });
-        
-        showMessage(`❌ تم رفض الطلب. السبب: ${reason}`, "warning");
-        setTimeout(loadAdminPendingRequests, 1500);
-        
-    } catch (error) {
-        console.error("❌ Error rejecting deposit:", error);
-        showMessage("❌ خطأ في الرفض", "error");
-    }
-}
-
-async function approveWithdrawalRequest(documentId) {
-    if (!adminAccess || !db) {
-        showMessage("❌ تحتاج صلاحيات المشرف", "error");
-        return;
-    }
-    
-    try {
-        const request = await findRequestById(documentId, 'withdrawals');
-        
-        if (!request) {
-            showMessage(`❌ لم يتم العثور على طلب السحب: ${documentId}`, "error");
-            return;
-        }
-        
-        const data = request.data;
-        const userId = data.userId;
-        const amount = data.amount;
-        
-        if (!confirm(`هل تريد الموافقة على سحب ${amount} USDT للمستخدم ${userId}؟`)) return;
-        
-        await request.ref.update({
-            status: 'completed',
-            completedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            completedBy: ADMIN_TELEGRAM_ID,
-            adminNote: `تمت الموافقة بواسطة المشرف ${ADMIN_TELEGRAM_ID}`
-        });
-        
-        showMessage(`✅ تمت الموافقة على السحب! تم إرسال ${amount} USDT`, "success");
-        setTimeout(loadAdminPendingRequests, 1500);
-        
-    } catch (error) {
-        console.error("❌ Error approving withdrawal:", error);
-        showMessage("❌ خطأ في الموافقة على السحب", "error");
-    }
-}
-
-async function rejectWithdrawalRequest(documentId) {
-    if (!adminAccess || !db) return;
-    
-    const reason = prompt("أدخل سبب الرفض:", "رصيد غير كافي");
-    if (!reason) return;
-    
-    try {
-        const request = await findRequestById(documentId, 'withdrawals');
-        
-        if (!request) {
-            showMessage(`❌ لم يتم العثور على الطلب`, "error");
-            return;
-        }
-        
-        await request.ref.update({
-            status: 'rejected',
-            rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            rejectedBy: ADMIN_TELEGRAM_ID,
-            rejectionReason: reason
-        });
-        
-        showMessage(`❌ تم رفض الطلب. السبب: ${reason}`, "warning");
-        setTimeout(loadAdminPendingRequests, 1500);
-        
-    } catch (error) {
-        console.error("❌ Error rejecting withdrawal:", error);
-        showMessage("❌ خطأ في الرفض", "error");
-    }
-}
-
-// ============================================
-// USER MANAGEMENT FUNCTIONS
-// ============================================
-
-async function searchUserById() {
-    if (!adminAccess || !db) return;
-    
-    const searchInput = document.getElementById('adminSearchUserId');
-    if (!searchInput) return;
-    
-    const searchTerm = searchInput.value.trim();
-    if (!searchTerm) {
-        showMessage("❌ الرجاء إدخال معرف المستخدم", "error");
-        return;
-    }
-    
-    try {
-        showMessage("🔍 جاري البحث...", "info");
-        
-        let query = db.collection('users')
-            .where('username', '>=', searchTerm)
-            .where('username', '<=', searchTerm + '\uf8ff')
-            .limit(5);
-        
-        const snapshot = await query.get();
-        
-        if (snapshot.empty) {
-            const userDoc = await db.collection('users').doc(searchTerm).get();
-            
-            if (userDoc.exists) {
-                displayUserInfo(userDoc);
-            } else {
-                showMessage("❌ المستخدم غير موجود", "error");
-            }
-        } else {
-            displayUserInfo(snapshot.docs[0]);
-        }
-        
-    } catch (error) {
-        console.error("❌ Error searching user:", error);
-        showMessage("❌ خطأ في البحث", "error");
-    }
-}
-
-function displayUserInfo(doc) {
-    const data = doc.data();
-    
-    document.getElementById('adminFoundUsername').textContent = data.username || 'غير معروف';
-    document.getElementById('adminFoundBalance').textContent = `${data.balance || 0} MWH`;
-    document.getElementById('adminFoundTotalEarned').textContent = `${data.totalEarned || 0} MWH`;
-    document.getElementById('adminFoundReferrals').textContent = data.referrals || 0;
-    document.getElementById('adminFoundRank').textContent = data.rank || 'مبتدئ';
-    document.getElementById('adminFoundUserId').textContent = doc.id;
-    
-    document.getElementById('adminUserInfo').style.display = 'block';
-    showMessage("✅ تم العثور على المستخدم", "success");
-}
-
-async function addBalanceToSpecificUser() {
-    if (!adminAccess || !db) return;
-    
-    const userIdInput = document.getElementById('adminUserId');
-    const amountInput = document.getElementById('adminUserAmount');
-    
-    if (!userIdInput || !amountInput) return;
-    
-    const userId = userIdInput.value.trim();
     const amount = parseFloat(amountInput.value);
+    const minDeposit = getMinDeposit(currency);
     
-    if (!userId || !amount || amount <= 0) {
-        showMessage("❌ الرجاء إدخال بيانات صحيحة", "error");
+    if (isNaN(amount) || amount < minDeposit) {
+        amountIcon.innerHTML = '<i class="fas fa-times-circle" style="color: #ef4444;"></i>';
+        amountText.innerHTML = `<span style="color: #ef4444;">Minimum deposit is ${minDeposit} ${currency}</span>`;
+        amountStatus.style.display = 'flex';
+        amountStatus.style.background = 'rgba(239, 68, 68, 0.1)';
+        amountStatus.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+        if (verifyBtn) verifyBtn.disabled = true;
+        return false;
+    }
+    
+    amountIcon.innerHTML = '<i class="fas fa-check-circle" style="color: #22c55e;"></i>';
+    amountText.innerHTML = `<span style="color: #22c55e;">Valid amount: ${amount} ${currency}</span>`;
+    amountStatus.style.display = 'flex';
+    amountStatus.style.background = 'rgba(34, 197, 94, 0.1)';
+    amountStatus.style.border = '1px solid rgba(34, 197, 94, 0.3)';
+    
+    validateTransactionHash();
+    
+    return true;
+}
+
+async function submitDepositRequest(currency) {
+    const hash = document.getElementById('transactionHash').value.trim();
+    const amountInput = document.getElementById('depositAmount').value;
+    const verifyBtn = document.getElementById('verifyDepositBtn');
+    
+    if (!hash || hash.length < CONFIG.MIN_TRANSACTION_LENGTH) {
+        showMessage('❌ Please enter a valid transaction hash', 'error');
         return;
     }
     
-    if (!confirm(`هل تريد إضافة ${amount} MWH للمستخدم ${userId}؟`)) return;
+    const depositAmount = parseFloat(amountInput);
+    const minAmount = getMinDeposit(currency);
+    
+    if (isNaN(depositAmount) || depositAmount < minAmount) {
+        showMessage(`❌ Minimum deposit is ${minAmount} ${currency}`, 'error');
+        return;
+    }
+    
+    if (walletData.usedTransactions.includes(hash.toLowerCase())) {
+        showMessage('❌ This transaction hash has already been used', 'error');
+        return;
+    }
+    
+    verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+    verifyBtn.disabled = true;
     
     try {
-        const userRef = db.collection('users').doc(userId);
-        const userSnap = await userRef.get();
+        const formattedAmount = currency === 'USDT' ? 
+            Math.round(depositAmount * 100) / 100 :
+            Math.round(depositAmount * 1000) / 1000;
         
-        if (!userSnap.exists) {
-            showMessage("❌ المستخدم غير موجود", "error");
-            return;
+        const pendingDeposit = {
+            id: 'deposit_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            userId: userData.userId,
+            username: userData.username,
+            transactionHash: hash.toLowerCase(),
+            currency: currency,
+            amount: formattedAmount,
+            status: 'pending',
+            timestamp: Date.now(),
+            reviewNote: 'Awaiting manual review'
+        };
+        
+        walletData.pendingDeposits.push(pendingDeposit);
+        walletData.usedTransactions.push(hash.toLowerCase());
+        
+        saveWalletData();
+        
+        if (db) {
+            await db.collection('deposit_requests').add({
+                ...pendingDeposit,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
         }
         
-        await userRef.update({
-            balance: firebase.firestore.FieldValue.increment(amount),
-            totalEarned: firebase.firestore.FieldValue.increment(amount)
-        });
+        verifyBtn.innerHTML = '<i class="fas fa-check"></i> Submitted!';
         
-        const walletRef = db.collection('wallets').doc(userId);
-        await walletRef.set({
-            mwhBalance: firebase.firestore.FieldValue.increment(amount),
-            userId: userId,
-            lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-        
-        showMessage(`✅ تم إضافة ${amount} MWH للمستخدم`, "success");
-        userIdInput.value = '';
-        amountInput.value = '';
+        setTimeout(() => {
+            closeModal();
+            showMessage(`✅ Deposit request submitted for review! Amount: ${formattedAmount} ${currency}`, 'success');
+            
+            setTimeout(() => {
+                showMessage('📋 Your deposit is now pending manual review. Check History for status.', 'info');
+            }, 1000);
+        }, 1500);
         
     } catch (error) {
-        console.error("❌ Error adding balance:", error);
-        showMessage("❌ خطأ في إضافة الرصيد", "error");
+        console.error('Deposit submission error:', error);
+        verifyBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Deposit Request';
+        verifyBtn.disabled = false;
+        showMessage('❌ Failed to submit deposit request. Please try again.', 'error');
     }
 }
 
 // ============================================
-// MINING SYSTEM
+// UTILITY FUNCTIONS
 // ============================================
 
 const elements = {};
@@ -1190,7 +1953,7 @@ function cacheElements() {
         elements[id] = document.getElementById(id);
     });
     
-    console.log("✅ Cached DOM elements");
+    console.log("✅ Cached", elementIds.length, "DOM elements");
 }
 
 async function setupUser() {
@@ -1467,238 +2230,6 @@ function animateMineButton(reward) {
     }, 2000);
 }
 
-function updateEnergyBelt() {
-    const energyBelt = document.getElementById('energyBelt');
-    const beltFill = document.getElementById('beltFill');
-    const beltKnob = document.getElementById('beltKnob');
-    const mineBtn = document.getElementById('mineBtn');
-    const cooldownTimer = document.getElementById('cooldownTimer');
-    
-    if (!energyBelt || !beltFill || !beltKnob || !mineBtn) return;
-    
-    const now = Date.now();
-    const timeSinceLastMine = now - userData.lastMineTime;
-    const cooldown = CONFIG.MINE_COOLDOWN;
-    
-    let fillPercentage = 0;
-    
-    if (userData.lastMineTime > 0) {
-        fillPercentage = Math.min((timeSinceLastMine / cooldown) * 100, 100);
-    } else {
-        fillPercentage = 100;
-    }
-    
-    beltFill.style.width = `${fillPercentage}%`;
-    beltKnob.style.left = `${fillPercentage}%`;
-    
-    const isReady = timeSinceLastMine >= cooldown || userData.lastMineTime === 0;
-    
-    if (isReady) {
-        energyBelt.classList.add('belt-ready');
-        energyBelt.classList.remove('belt-emptying');
-        mineBtn.classList.add('mine-ready');
-        mineBtn.disabled = false;
-        
-        if (cooldownTimer) {
-            cooldownTimer.textContent = 'READY';
-            cooldownTimer.style.color = '#22c55e';
-            cooldownTimer.style.background = 'rgba(34, 197, 94, 0.1)';
-        }
-    } else {
-        energyBelt.classList.remove('belt-ready');
-        mineBtn.classList.remove('mine-ready');
-        mineBtn.disabled = true;
-        
-        if (cooldownTimer) {
-            const timeLeft = cooldown - timeSinceLastMine;
-            const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-            
-            cooldownTimer.textContent = `${hours}h ${minutes}m`;
-            cooldownTimer.style.color = '#ef4444';
-            cooldownTimer.style.background = 'rgba(239, 68, 68, 0.1)';
-        }
-    }
-}
-
-function animateBeltEmpty() {
-    const energyBelt = document.getElementById('energyBelt');
-    if (energyBelt) {
-        energyBelt.classList.add('belt-emptying');
-        setTimeout(() => {
-            energyBelt.classList.remove('belt-emptying');
-        }, 1000);
-    }
-}
-
-function updateUI() {
-    const currentRank = CONFIG.RANKS.find(r => r.name === userData.rank) || CONFIG.RANKS[0];
-    
-    if (elements.balance) {
-        elements.balance.textContent = userData.balance.toLocaleString();
-    }
-    
-    if (elements.referrals) {
-        elements.referrals.textContent = `${userData.referrals} Referrals`;
-    }
-    
-    if (elements.totalEarned) {
-        elements.totalEarned.textContent = `${userData.totalEarned.toLocaleString()} MWH`;
-    }
-    
-    if (elements.rankBadge) {
-        elements.rankBadge.textContent = userData.rank;
-    }
-    
-    if (elements.rewardAmount) {
-        elements.rewardAmount.textContent = currentRank.reward;
-    }
-    
-    if (elements.miningPower) {
-        elements.miningPower.innerHTML = `<i class="fas fa-bolt"></i> Yield: ${currentRank.power}`;
-    }
-    
-    if (elements.refCount) {
-        elements.refCount.textContent = userData.referrals;
-    }
-    
-    if (elements.refEarned) {
-        elements.refEarned.textContent = userData.referralEarnings.toLocaleString() + " MWH";
-    }
-    
-    if (elements.refRank) {
-        elements.refRank.textContent = userData.rank;
-    }
-    
-    updateUSDBalance();
-    updateProgress();
-    updateReferralLink();
-    updateWalletUI();
-    updateEnergyBelt();
-}
-
-function updateUSDBalance() {
-    const usdValue = (userData.balance * CONFIG.MWH_TO_USD).toFixed(3);
-    
-    if (elements.balanceUSD) {
-        elements.balanceUSD.textContent = `≈ $${usdValue}`;
-    }
-}
-
-function updateProgress() {
-    const currentRank = CONFIG.RANKS.find(r => r.name === userData.rank) || CONFIG.RANKS[0];
-    const nextRank = CONFIG.RANKS[CONFIG.RANKS.indexOf(currentRank) + 1];
-    
-    if (nextRank) {
-        const progress = ((userData.totalEarned - currentRank.min) / (nextRank.min - currentRank.min)) * 100;
-        const clampedProgress = Math.min(progress, 100);
-        
-        if (elements.progressFill) {
-            elements.progressFill.style.width = `${clampedProgress}%`;
-        }
-        
-        if (elements.nextRank) {
-            elements.nextRank.textContent = `Next: ${nextRank.name} (${nextRank.min.toLocaleString()} MWH)`;
-        }
-        
-        if (elements.currentPoints) {
-            elements.currentPoints.textContent = `${userData.totalEarned.toLocaleString()} MWH`;
-        }
-        
-        if (elements.targetPoints) {
-            elements.targetPoints.textContent = `${nextRank.min.toLocaleString()} MWH`;
-        }
-        
-        if (elements.remainingPoints) {
-            const remaining = Math.max(0, nextRank.min - userData.totalEarned);
-            elements.remainingPoints.textContent = `${remaining.toLocaleString()} MWH`;
-        }
-        
-        if (elements.nextRankBonus) {
-            const bonusIncrease = nextRank.reward - currentRank.reward;
-            elements.nextRankBonus.textContent = `+${bonusIncrease} MWH bonus on upgrade`;
-        }
-    } else {
-        if (elements.progressFill) elements.progressFill.style.width = '100%';
-        if (elements.nextRank) elements.nextRank.textContent = 'Highest Rank! 🏆';
-        if (elements.remainingPoints) elements.remainingPoints.textContent = '0 MWH';
-        if (elements.nextRankBonus) elements.nextRankBonus.textContent = 'Max rank achieved!';
-    }
-}
-
-function checkRankUp() {
-    const currentRank = CONFIG.RANKS.find(r => r.name === userData.rank);
-    const newRank = CONFIG.RANKS.find(r => 
-        userData.totalEarned >= r.min && userData.totalEarned <= r.max
-    );
-    
-    if (newRank && newRank.name !== userData.rank) {
-        const oldRank = userData.rank;
-        userData.rank = newRank.name;
-        saveUserData();
-        updateUI();
-        
-        const oldReward = currentRank ? currentRank.reward : 250;
-        const increase = newRank.reward - oldReward;
-        
-        showMessage(`🏆 Rank Up! ${oldRank} → ${newRank.name} (+${increase} MWH bonus!)`, 'success');
-    }
-}
-
-function setupEventListeners() {
-    console.log("🎯 Setting up event listeners...");
-    
-    if (elements.mineBtn) {
-        elements.mineBtn.addEventListener('click', minePoints);
-        console.log("✅ Mine button listener added");
-    }
-    
-    if (elements.copyBtn) {
-        elements.copyBtn.addEventListener('click', copyReferralLink);
-        console.log("✅ Copy button listener added");
-    }
-    
-    if (elements.shareBtn) {
-        elements.shareBtn.addEventListener('click', shareOnTelegram);
-        console.log("✅ Share button listener added");
-    }
-    
-    console.log("✅ Event listeners setup complete");
-}
-
-function copyReferralLink() {
-    const refLink = generateReferralLink();
-    
-    navigator.clipboard.writeText(refLink)
-        .then(() => {
-            showMessage('✅ Link copied to clipboard!', 'success');
-            if (elements.copyBtn) {
-                elements.copyBtn.innerHTML = '<i class="fas fa-check"></i>';
-                setTimeout(() => {
-                    elements.copyBtn.innerHTML = '<i class="far fa-copy"></i>';
-                }, 2000);
-            }
-        })
-        .catch(err => {
-            console.error('Copy error:', err);
-            showMessage('❌ Failed to copy link', 'error');
-        });
-}
-
-function shareOnTelegram() {
-    const refLink = generateReferralLink();
-    const shareText = `🚀 *Join VIP Mining Wealth PRO!*\n\n⛏️ *Mine 250 MWH every 4 hours*\n👥 *Get +50 MWH BONUS with my link*\n💰 *Earn 50 MWH for each referral*\n\n👉 ${refLink}\n\n💎 *Start earning now!* @VIPMainingPROBot`;
-    
-    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(shareText)}`;
-    
-    window.open(shareUrl, '_blank');
-    showMessage('📱 Opening Telegram...', 'info');
-}
-
-// ============================================
-// WALLET SYSTEM
-// ============================================
-
 function initWallet() {
     walletData.mwhBalance = userData.balance;
     
@@ -1792,649 +2323,97 @@ function updateTotalBalance() {
     }
 }
 
-// ============================================
-// DEPOSIT SYSTEM - FIXED
-// ============================================
+function getCurrencyInfo(currency) {
+    const info = {
+        'USDT': { color: '#26a17b', icon: 'fa-coins', network: 'BEP20' },
+        'BNB': { color: '#f0b90b', icon: 'fa-bolt', network: 'BEP20' },
+        'MWH': { color: '#3b82f6', icon: 'fa-gem', network: 'BEP20' }
+    };
+    return info[currency] || { color: '#6b7280', icon: 'fa-coins', network: 'BEP20' };
+}
 
-function openDepositModal(currency) {
-    console.log("💰 Opening deposit modal for:", currency);
-    
+function getMinDeposit(currency) {
+    switch(currency) {
+        case 'USDT': return CONFIG.MIN_DEPOSIT_USDT;
+        case 'BNB': return CONFIG.MIN_DEPOSIT_BNB;
+        default: return 1;
+    }
+}
+
+function copyDepositAddress() {
     const depositAddress = CONFIG.DEPOSIT_ADDRESS;
-    const minDeposit = getMinDeposit(currency);
     
-    const modalHTML = `
-        <div class="modal-overlay" id="depositModal">
-            <div class="modal-content deposit-modal">
-                <div class="modal-header">
-                    <h3><i class="fas fa-download"></i> Deposit ${currency}</h3>
-                    <button class="modal-close" onclick="closeModal()">×</button>
-                </div>
+    navigator.clipboard.writeText(depositAddress)
+        .then(() => {
+            const btn = document.querySelector('.copy-address-btn');
+            if (btn) {
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                btn.style.background = 'linear-gradient(135deg, #22c55e, #10b981)';
                 
-                <div class="modal-body">
-                    <div class="deposit-warning">
-                        <div class="warning-icon">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <div class="warning-content">
-                            <div class="warning-title">Important Deposit Instructions</div>
-                            <div class="warning-text">
-                                Send only <strong>${currency}</strong> to this address on <strong>BEP20</strong> network.
-                                Sending other tokens or using wrong network will result in permanent loss.
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="deposit-address-card">
-                        <div class="address-header">
-                            <i class="fas fa-wallet"></i>
-                            <span>Your ${currency} Deposit Address</span>
-                        </div>
-                        <div class="address-container">
-                            <div class="address-value" id="depositAddressDisplay">
-                                ${depositAddress}
-                            </div>
-                            <button class="copy-address-btn" onclick="copyDepositAddress()">
-                                <i class="far fa-copy"></i> Copy Address
-                            </button>
-                        </div>
-                        <div class="network-info">
-                            <i class="fas fa-network-wired"></i>
-                            <span>Minimum deposit: ${minDeposit} ${currency}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="transaction-hash-section">
-                        <div class="section-title">
-                            <i class="fas fa-receipt"></i>
-                            <span>Transaction Verification</span>
-                        </div>
-                        <div class="transaction-input-group">
-                            <div class="input-label">Enter Transaction Hash (TxID)</div>
-                            <input type="text" 
-                                   id="transactionHash" 
-                                   class="transaction-input"
-                                   placeholder="0x..."
-                                   oninput="validateTransactionHash()"
-                                   maxlength="100">
-                            <div class="input-hint">
-                                Required to verify and process your deposit
-                            </div>
-                        </div>
-                        <div class="transaction-status" id="transactionStatus" style="display: none;">
-                            <div class="status-icon" id="statusIcon"></div>
-                            <div class="status-text" id="statusText"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="transaction-hash-section" style="margin-top: 15px;">
-                        <div class="section-title">
-                            <i class="fas fa-money-bill-wave"></i>
-                            <span>Deposit Amount</span>
-                        </div>
-                        <div class="transaction-input-group">
-                            <div class="input-label">Enter Amount (${currency})</div>
-                            <input type="number" 
-                                   id="depositAmount" 
-                                   class="transaction-input"
-                                   placeholder="0.00"
-                                   min="${minDeposit}"
-                                   step="${currency === 'USDT' ? '0.01' : '0.001'}"
-                                   oninput="validateDepositAmount('${currency}')"
-                                   value="${minDeposit}">
-                            <div class="input-hint">
-                                Minimum deposit: ${minDeposit} ${currency}
-                            </div>
-                        </div>
-                        <div class="transaction-status" id="amountStatus" style="display: none;">
-                            <div class="status-icon" id="amountIcon"></div>
-                            <div class="status-text" id="amountText"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="deposit-instructions">
-                        <div class="instructions-title">
-                            <i class="fas fa-graduation-cap"></i>
-                            <span>How to Deposit ${currency}</span>
-                        </div>
-                        <div class="instructions-steps">
-                            <div class="instruction-step">
-                                <div class="step-number">1</div>
-                                <div class="step-content">Copy the ${currency} address above</div>
-                            </div>
-                            <div class="instruction-step">
-                                <div class="step-number">2</div>
-                                <div class="step-content">Send ${currency} to this address via your wallet (BEP20 network only)</div>
-                            </div>
-                            <div class="instruction-step">
-                                <div class="step-number">3</div>
-                                <div class="step-content">Wait for transaction confirmation on BSC Scan</div>
-                            </div>
-                            <div class="instruction-step">
-                                <div class="step-number">4</div>
-                                <div class="step-content">Copy the Transaction Hash and paste it above</div>
-                            </div>
-                            <div class="instruction-step">
-                                <div class="step-number">5</div>
-                                <div class="step-content">Enter the exact amount you sent</div>
-                            </div>
-                            <div class="instruction-step">
-                                <div class="step-number">6</div>
-                                <div class="step-content">Click "Submit Deposit Request" for manual review</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="deposit-note">
-                        <div class="note-icon">
-                            <i class="fas fa-info-circle"></i>
-                        </div>
-                        <div class="note-content">
-                            <strong>Note:</strong> Your deposit will be manually reviewed by our team.
-                            The balance will be added to your account after verification.
-                            Check your transaction status in the History section.
-                        </div>
-                    </div>
-                    
-                    <div class="deposit-actions">
-                        <button class="btn-secondary" onclick="closeModal()">
-                            <i class="fas fa-times"></i> Cancel
-                        </button>
-                        <button class="btn-primary" id="verifyDepositBtn" onclick="submitDepositRequest('${currency}')" disabled>
-                            <i class="fas fa-paper-plane"></i> Submit Deposit Request
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-    
-    setTimeout(() => {
-        const input = document.getElementById('transactionHash');
-        if (input) input.focus();
-        validateDepositAmount(currency);
-    }, 100);
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.style.background = 'linear-gradient(135deg, #3b82f6, #6366f1)';
+                }, 2000);
+            }
+            showMessage('✅ Address copied to clipboard!', 'success');
+        })
+        .catch(err => {
+            console.error('Copy error:', err);
+            showMessage('❌ Failed to copy address', 'error');
+        });
 }
 
-function validateDepositAmount(currency) {
-    const amountInput = document.getElementById('depositAmount');
-    const amountStatus = document.getElementById('amountStatus');
-    const amountIcon = document.getElementById('amountIcon');
-    const amountText = document.getElementById('amountText');
-    const verifyBtn = document.getElementById('verifyDepositBtn');
-    
-    if (!amountInput || !amountStatus) return;
-    
-    const amount = parseFloat(amountInput.value);
-    const minDeposit = getMinDeposit(currency);
-    
-    if (isNaN(amount) || amount < minDeposit) {
-        amountIcon.innerHTML = '<i class="fas fa-times-circle" style="color: #ef4444;"></i>';
-        amountText.innerHTML = `<span style="color: #ef4444;">Minimum deposit is ${minDeposit} ${currency}</span>`;
-        amountStatus.style.display = 'flex';
-        amountStatus.style.background = 'rgba(239, 68, 68, 0.1)';
-        amountStatus.style.border = '1px solid rgba(239, 68, 68, 0.3)';
-        if (verifyBtn) verifyBtn.disabled = true;
-        return false;
-    }
-    
-    amountIcon.innerHTML = '<i class="fas fa-check-circle" style="color: #22c55e;"></i>';
-    amountText.innerHTML = `<span style="color: #22c55e;">Valid amount: ${amount} ${currency}</span>`;
-    amountStatus.style.display = 'flex';
-    amountStatus.style.background = 'rgba(34, 197, 94, 0.1)';
-    amountStatus.style.border = '1px solid rgba(34, 197, 94, 0.3)';
-    
-    validateTransactionHash();
-    
-    return true;
-}
-
-async function submitDepositRequest(currency) {
+function validateTransactionHash() {
     const hash = document.getElementById('transactionHash').value.trim();
-    const amountInput = document.getElementById('depositAmount').value;
+    const statusDiv = document.getElementById('transactionStatus');
+    const statusIcon = document.getElementById('statusIcon');
+    const statusText = document.getElementById('statusText');
     const verifyBtn = document.getElementById('verifyDepositBtn');
     
-    if (!hash || hash.length < CONFIG.MIN_TRANSACTION_LENGTH) {
-        showMessage('❌ Please enter a valid transaction hash', 'error');
-        return;
-    }
-    
-    const depositAmount = parseFloat(amountInput);
-    const minAmount = getMinDeposit(currency);
-    
-    if (isNaN(depositAmount) || depositAmount < minAmount) {
-        showMessage(`❌ Minimum deposit is ${minAmount} ${currency}`, 'error');
+    if (!hash) {
+        statusDiv.style.display = 'none';
+        verifyBtn.disabled = true;
         return;
     }
     
     if (walletData.usedTransactions.includes(hash.toLowerCase())) {
-        showMessage('❌ This transaction hash has already been used', 'error');
+        statusIcon.innerHTML = '<i class="fas fa-exclamation-circle" style="color: #ef4444;"></i>';
+        statusText.innerHTML = '<span style="color: #ef4444;">This transaction hash has already been used</span>';
+        statusDiv.style.display = 'flex';
+        statusDiv.style.background = 'rgba(239, 68, 68, 0.1)';
+        statusDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+        verifyBtn.disabled = true;
         return;
     }
     
-    verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
-    verifyBtn.disabled = true;
+    if (hash.length < CONFIG.MIN_TRANSACTION_LENGTH) {
+        statusIcon.innerHTML = '<i class="fas fa-times-circle" style="color: #ef4444;"></i>';
+        statusText.innerHTML = '<span style="color: #ef4444;">Invalid transaction hash (too short)</span>';
+        statusDiv.style.display = 'flex';
+        statusDiv.style.background = 'rgba(239, 68, 68, 0.1)';
+        statusDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+        verifyBtn.disabled = true;
+        return;
+    }
     
-    try {
-        const formattedAmount = currency === 'USDT' ? 
-            Math.round(depositAmount * 100) / 100 :
-            Math.round(depositAmount * 1000) / 1000;
-        
-        const depositData = {
-            userId: userData.userId,
-            username: userData.username,
-            transactionHash: hash.toLowerCase(),
-            currency: currency,
-            amount: formattedAmount,
-            status: 'pending',
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            reviewNote: 'Awaiting manual review'
-        };
-        
-        let firebaseDocId = '';
-        
-        if (db) {
-            const docRef = await db.collection('deposit_requests').add(depositData);
-            firebaseDocId = docRef.id;
-            console.log("✅ Deposit sent to Firebase, Document ID:", firebaseDocId);
-        }
-        
-        const pendingDeposit = {
-            ...depositData,
-            id: firebaseDocId,
-            firebaseDocId: firebaseDocId,
-            timestamp: Date.now()
-        };
-        
-        walletData.pendingDeposits.push(pendingDeposit);
-        walletData.usedTransactions.push(hash.toLowerCase());
-        
-        saveWalletData();
-        
-        verifyBtn.innerHTML = '<i class="fas fa-check"></i> Submitted!';
-        
-        setTimeout(() => {
-            closeModal();
-            showMessage(`✅ Deposit request submitted! Amount: ${formattedAmount} ${currency}`, 'success');
-            
-            setTimeout(() => {
-                showMessage('📋 Your deposit is now pending manual review.', 'info');
-            }, 1000);
-        }, 1500);
-        
-    } catch (error) {
-        console.error('Deposit submission error:', error);
-        verifyBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Deposit Request';
+    if (!hash.startsWith('0x') || hash.length !== 66) {
+        statusIcon.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i>';
+        statusText.innerHTML = '<span style="color: #f59e0b;">Verify this is a valid BEP20 transaction hash</span>';
+        statusDiv.style.display = 'flex';
+        statusDiv.style.background = 'rgba(245, 158, 11, 0.1)';
+        statusDiv.style.border = '1px solid rgba(245, 158, 11, 0.3)';
         verifyBtn.disabled = false;
-        showMessage('❌ Failed to submit deposit request', 'error');
-    }
-}
-
-// ============================================
-// WITHDRAWAL SYSTEM - FIXED
-// ============================================
-
-function openWithdrawalModal() {
-    const usdtBalance = walletData.usdtBalance;
-    const bnbBalance = walletData.bnbBalance;
-    
-    const modalHTML = `
-        <div class="modal-overlay" id="withdrawalModal">
-            <div class="modal-content withdrawal-modal">
-                <div class="modal-header">
-                    <h3><i class="fas fa-upload"></i> Withdraw USDT</h3>
-                    <button class="modal-close" onclick="closeModal()">×</button>
-                </div>
-                
-                <div class="modal-body">
-                    <div class="withdrawal-balance-overview">
-                        <div class="balance-card-professional">
-                            <div class="balance-header-professional">
-                                <i class="fas fa-coins"></i>
-                                <span>Available Balance</span>
-                            </div>
-                            <div class="balance-amount-professional">
-                                ${usdtBalance.toFixed(2)} <span class="balance-currency">USDT</span>
-                            </div>
-                            <div class="balance-subtitle">
-                                ≈ $${usdtBalance.toFixed(2)}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="withdrawal-form">
-                        <div class="form-section">
-                            <div class="form-section-header">
-                                <i class="fas fa-wallet"></i>
-                                <span>Wallet Address</span>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">BEP20 USDT Address</label>
-                                <div class="input-with-validation">
-                                    <input type="text" 
-                                           id="withdrawalAddress" 
-                                           class="form-input address-input"
-                                           placeholder="0x..."
-                                           oninput="validateWithdrawalAddress()"
-                                           maxlength="42">
-                                    <div class="input-validation">
-                                        <i class="fas fa-check" id="addressCheck" style="display: none;"></i>
-                                        <i class="fas fa-times" id="addressError" style="display: none;"></i>
-                                    </div>
-                                </div>
-                                <div class="form-hint">
-                                    Your BEP20 USDT wallet address (must start with 0x)
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-section">
-                            <div class="form-section-header">
-                                <i class="fas fa-money-bill-wave"></i>
-                                <span>Withdrawal Amount</span>
-                            </div>
-                            <div class="form-group">
-                                <div class="amount-input-container">
-                                    <div class="amount-input-with-max">
-                                        <input type="number" 
-                                               id="withdrawalAmount" 
-                                               class="form-input amount-input"
-                                               value="${usdtBalance > 0 ? usdtBalance.toFixed(2) : '0'}"
-                                               min="0"
-                                               max="${usdtBalance}"
-                                               step="0.01"
-                                               oninput="validateWithdrawalAmount()">
-                                        <button class="max-amount-btn" onclick="setMaxWithdrawalAmount()">
-                                            MAX
-                                        </button>
-                                    </div>
-                                    <div class="amount-slider">
-                                        <input type="range" 
-                                               id="withdrawalSlider" 
-                                               min="0" 
-                                               max="${usdtBalance}" 
-                                               value="${usdtBalance > 0 ? usdtBalance : '0'}"
-                                               step="0.01"
-                                               oninput="updateWithdrawalAmountFromSlider()">
-                                    </div>
-                                    <div class="amount-range-labels">
-                                        <span>0 USDT</span>
-                                        <span>${usdtBalance.toFixed(2)} USDT</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="requirements-section">
-                            <div class="requirements-header">
-                                <i class="fas fa-clipboard-check"></i>
-                                <span>Withdrawal Requirements</span>
-                            </div>
-                            <div class="requirements-grid">
-                                <div class="requirement-card ${usdtBalance >= CONFIG.MIN_WITHDRAWAL ? 'requirement-met' : 'requirement-not-met'}">
-                                    <div class="requirement-icon">
-                                        <i class="fas ${usdtBalance >= CONFIG.MIN_WITHDRAWAL ? 'fa-check-circle' : 'fa-times-circle'}"></i>
-                                    </div>
-                                    <div class="requirement-content">
-                                        <div class="requirement-title">Minimum Withdrawal</div>
-                                        <div class="requirement-value">${CONFIG.MIN_WITHDRAWAL} USDT</div>
-                                        <div class="requirement-status">
-                                            ${usdtBalance >= CONFIG.MIN_WITHDRAWAL ? '✓ Requirement met' : '✗ Not met'}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="requirement-card ${bnbBalance >= CONFIG.WITHDRAWAL_FEE ? 'requirement-met' : 'requirement-not-met'}">
-                                    <div class="requirement-icon">
-                                        <i class="fas ${bnbBalance >= CONFIG.WITHDRAWAL_FEE ? 'fa-check-circle' : 'fa-times-circle'}"></i>
-                                    </div>
-                                    <div class="requirement-content">
-                                        <div class="requirement-title">Network Fee</div>
-                                        <div class="requirement-value">${CONFIG.WITHDRAWAL_FEE} BNB</div>
-                                        <div class="requirement-status">
-                                            ${bnbBalance >= CONFIG.WITHDRAWAL_FEE ? '✓ Sufficient BNB' : '✗ Insufficient BNB'}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="withdrawal-warning" id="withdrawalWarning" style="display: none;">
-                            <div class="warning-header">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                <span>Cannot Proceed</span>
-                            </div>
-                            <div class="warning-text" id="withdrawalWarningText"></div>
-                        </div>
-                        
-                        <div class="summary-section">
-                            <div class="summary-header">
-                                <i class="fas fa-file-invoice-dollar"></i>
-                                <span>Withdrawal Summary</span>
-                            </div>
-                            <div class="summary-details">
-                                <div class="summary-row">
-                                    <span class="summary-label">Withdrawal Amount:</span>
-                                    <span class="summary-value" id="summaryAmount">${usdtBalance > 0 ? usdtBalance.toFixed(2) : '0'} USDT</span>
-                                </div>
-                                <div class="summary-row">
-                                    <span class="summary-label">Network Fee:</span>
-                                    <span class="summary-value">${CONFIG.WITHDRAWAL_FEE} BNB</span>
-                                </div>
-                                <div class="summary-row total">
-                                    <span class="summary-label">Total Cost:</span>
-                                    <span class="summary-value" id="summaryTotal">${usdtBalance > 0 ? usdtBalance.toFixed(2) : '0'} USDT + ${CONFIG.WITHDRAWAL_FEE} BNB</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="modal-actions">
-                        <button class="btn-secondary-large" onclick="closeModal()">
-                            <i class="fas fa-times"></i> Cancel
-                        </button>
-                        <button class="btn-primary-large" id="confirmWithdrawalBtn" onclick="submitWithdrawal()">
-                            <i class="fas fa-paper-plane"></i> Submit Withdrawal Request
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-    
-    validateWithdrawalAmount();
-    
-    setTimeout(() => {
-        const slider = document.getElementById('withdrawalSlider');
-        if (slider) {
-            slider.value = usdtBalance > 0 ? usdtBalance : 0;
-        }
-    }, 100);
-}
-
-function setMaxWithdrawalAmount() {
-    const input = document.getElementById('withdrawalAmount');
-    const slider = document.getElementById('withdrawalSlider');
-    
-    if (input) {
-        input.value = walletData.usdtBalance.toFixed(2);
-        if (slider) {
-            slider.value = walletData.usdtBalance;
-        }
-        validateWithdrawalAmount();
-    }
-}
-
-function updateWithdrawalAmountFromSlider() {
-    const slider = document.getElementById('withdrawalSlider');
-    const input = document.getElementById('withdrawalAmount');
-    
-    if (slider && input) {
-        input.value = parseFloat(slider.value).toFixed(2);
-        validateWithdrawalAmount();
-    }
-}
-
-function validateWithdrawalAmount() {
-    const amountInput = document.getElementById('withdrawalAmount');
-    const amount = parseFloat(amountInput.value) || 0;
-    const slider = document.getElementById('withdrawalSlider');
-    const warning = document.getElementById('withdrawalWarning');
-    const warningText = document.getElementById('withdrawalWarningText');
-    const btn = document.getElementById('confirmWithdrawalBtn');
-    const summaryAmount = document.getElementById('summaryAmount');
-    const summaryTotal = document.getElementById('summaryTotal');
-    
-    if (!warning || !btn || !summaryAmount || !summaryTotal) return;
-    
-    if (slider) {
-        slider.value = amount;
-    }
-    
-    summaryAmount.textContent = amount.toFixed(2) + ' USDT';
-    summaryTotal.textContent = amount.toFixed(2) + ' USDT + ' + CONFIG.WITHDRAWAL_FEE + ' BNB';
-    
-    warning.style.display = 'none';
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Withdrawal Request';
-    
-    const errors = [];
-    
-    if (amount > 0 && amount < CONFIG.MIN_WITHDRAWAL) {
-        errors.push(`Minimum withdrawal is ${CONFIG.MIN_WITHDRAWAL} USDT`);
-    }
-    
-    if (amount > walletData.usdtBalance) {
-        errors.push(`Insufficient USDT balance (Available: ${walletData.usdtBalance.toFixed(2)} USDT)`);
-    }
-    
-    if (walletData.bnbBalance < CONFIG.WITHDRAWAL_FEE) {
-        errors.push(`Insufficient BNB for network fee (Need: ${CONFIG.WITHDRAWAL_FEE} BNB)`);
-    }
-    
-    if (errors.length > 0) {
-        warningText.innerHTML = errors.join('<br>');
-        warning.style.display = 'block';
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-ban"></i> Cannot Withdraw';
-    }
-}
-
-function validateWithdrawalAddress() {
-    const address = document.getElementById('withdrawalAddress').value.trim();
-    const addressCheck = document.getElementById('addressCheck');
-    const addressError = document.getElementById('addressError');
-    const warning = document.getElementById('withdrawalWarning');
-    const warningText = document.getElementById('withdrawalWarningText');
-    const btn = document.getElementById('confirmWithdrawalBtn');
-    
-    if (!warning || !btn) return;
-    
-    if (addressCheck) addressCheck.style.display = 'none';
-    if (addressError) addressError.style.display = 'none';
-    
-    if (!address) {
-        if (addressError) addressError.style.display = 'block';
-        warningText.textContent = "Please enter your USDT wallet address";
-        warning.style.display = 'block';
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-ban"></i> Cannot Withdraw';
-        return false;
-    }
-    
-    if (!address.startsWith('0x') || address.length !== 42) {
-        if (addressError) addressError.style.display = 'block';
-        warningText.textContent = "Please enter a valid BEP20 address (must start with 0x and be 42 characters)";
-        warning.style.display = 'block';
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-ban"></i> Cannot Withdraw';
-        return false;
-    }
-    
-    if (addressCheck) addressCheck.style.display = 'block';
-    
-    if (warningText.textContent.includes('address')) {
-        warning.style.display = 'none';
-    }
-    
-    validateWithdrawalAmount();
-    
-    return true;
-}
-
-async function submitWithdrawal() {
-    const amount = parseFloat(document.getElementById('withdrawalAmount').value);
-    const address = document.getElementById('withdrawalAddress').value.trim();
-    
-    if (!validateWithdrawalAddress()) return;
-    
-    const errors = [];
-    
-    if (amount < CONFIG.MIN_WITHDRAWAL) {
-        errors.push(`Minimum withdrawal is ${CONFIG.MIN_WITHDRAWAL} USDT`);
-    }
-    
-    if (amount > walletData.usdtBalance) {
-        errors.push('Insufficient USDT balance');
-    }
-    
-    if (walletData.bnbBalance < CONFIG.WITHDRAWAL_FEE) {
-        errors.push(`Insufficient BNB for network fee`);
-    }
-    
-    if (errors.length > 0) {
-        showMessage(errors.join('. '), 'error');
         return;
     }
     
-    const withdrawalData = {
-        userId: userData.userId,
-        username: userData.username,
-        amount: amount,
-        address: address,
-        fee: CONFIG.WITHDRAWAL_FEE,
-        status: 'pending',
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        reviewNote: 'Awaiting manual processing'
-    };
-    
-    try {
-        let firebaseDocId = '';
-        
-        if (db) {
-            const docRef = await db.collection('withdrawals').add(withdrawalData);
-            firebaseDocId = docRef.id;
-            console.log("✅ Withdrawal sent to Firebase, Document ID:", firebaseDocId);
-        }
-        
-        const withdrawalRequest = {
-            ...withdrawalData,
-            id: firebaseDocId,
-            firebaseDocId: firebaseDocId,
-            timestamp: Date.now()
-        };
-        
-        walletData.usdtBalance -= amount;
-        walletData.bnbBalance -= CONFIG.WITHDRAWAL_FEE;
-        walletData.pendingWithdrawals.push(withdrawalRequest);
-        
-        saveWalletData();
-        updateWalletUI();
-        
-        closeModal();
-        showMessage(`✅ Withdrawal request submitted for ${amount.toFixed(2)} USDT.`, 'success');
-        
-    } catch (error) {
-        console.error("❌ Withdrawal submission error:", error);
-        showMessage("❌ Failed to submit withdrawal request", "error");
-    }
+    statusIcon.innerHTML = '<i class="fas fa-check-circle" style="color: #22c55e;"></i>';
+    statusText.innerHTML = '<span style="color: #22c55e;">Valid transaction hash detected</span>';
+    statusDiv.style.display = 'flex';
+    statusDiv.style.background = 'rgba(34, 197, 94, 0.1)';
+    statusDiv.style.border = '1px solid rgba(34, 197, 94, 0.3)';
+    verifyBtn.disabled = false;
 }
-
-// ============================================
-// SWAP SYSTEM
-// ============================================
 
 function openSwapModal(currency) {
     const isMWH = currency === 'MWH';
@@ -2765,103 +2744,167 @@ function executeSwap(fromCurrency, toCurrency) {
     showMessage(`✅ Swapped ${formatNumber(fromAmount)} ${fromCurrency} to ${formatNumber(toAmount)} ${toCurrency}`, 'success');
 }
 
-// ============================================
-// TRANSACTION HISTORY
-// ============================================
-
-function showTransactionHistory() {
-    console.log("📜 Showing transaction history");
-    
-    const hasTransactions = 
-        walletData.pendingDeposits.length > 0 ||
-        walletData.pendingWithdrawals.length > 0 ||
-        walletData.depositHistory.length > 0 ||
-        walletData.withdrawalHistory.length > 0;
-    
-    if (!hasTransactions) {
-        const modalHTML = `
-            <div class="modal-overlay" id="historyModal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3><i class="fas fa-history"></i> Transaction History</h3>
-                        <button class="modal-close" onclick="closeModal()">×</button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="empty-history" style="display: block;">
-                            <div class="empty-icon">
-                                <i class="fas fa-inbox"></i>
-                            </div>
-                            <div class="empty-title">📭 No Transactions Yet</div>
-                            <div class="empty-text">
-                                Your transaction history will appear here<br>
-                                once you make deposits or withdrawals.
-                            </div>
-                            <div style="margin-top: 20px;">
-                                <button class="btn-primary" onclick="closeModal()" style="width: 100%; padding: 12px;">
-                                    <i class="fas fa-check"></i> OK
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        return;
-    }
+function openWithdrawalModal() {
+    const usdtBalance = walletData.usdtBalance;
+    const bnbBalance = walletData.bnbBalance;
     
     const modalHTML = `
-        <div class="modal-overlay" id="historyModal">
-            <div class="modal-content history-modal">
+        <div class="modal-overlay" id="withdrawalModal">
+            <div class="modal-content withdrawal-modal">
                 <div class="modal-header">
-                    <h3><i class="fas fa-history"></i> Transaction History</h3>
+                    <h3><i class="fas fa-upload"></i> Withdraw USDT</h3>
                     <button class="modal-close" onclick="closeModal()">×</button>
                 </div>
                 
                 <div class="modal-body">
-                    <div class="history-tabs">
-                        <button class="tab-btn active" onclick="switchHistoryTab('pending')">
-                            <i class="fas fa-clock"></i>
-                            <span>Pending</span>
-                            ${walletData.pendingDeposits.length + walletData.pendingWithdrawals.length > 0 ? 
-                              `<span class="tab-badge">${walletData.pendingDeposits.length + walletData.pendingWithdrawals.length}</span>` : ''}
-                        </button>
-                        <button class="tab-btn" onclick="switchHistoryTab('deposits')">
-                            <i class="fas fa-download"></i>
-                            <span>Deposits</span>
-                        </button>
-                        <button class="tab-btn" onclick="switchHistoryTab('withdrawals')">
-                            <i class="fas fa-upload"></i>
-                            <span>Withdrawals</span>
-                        </button>
+                    <div class="withdrawal-balance-overview">
+                        <div class="balance-card-professional">
+                            <div class="balance-header-professional">
+                                <i class="fas fa-coins"></i>
+                                <span>Available Balance</span>
+                            </div>
+                            <div class="balance-amount-professional">
+                                ${usdtBalance.toFixed(2)} <span class="balance-currency">USDT</span>
+                            </div>
+                            <div class="balance-subtitle">
+                                ≈ $${usdtBalance.toFixed(2)}
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="history-content" id="pendingTab">
-                        <div class="section-title">
-                            <i class="fas fa-clock"></i>
-                            <span>Pending Transactions</span>
+                    <div class="withdrawal-form">
+                        <div class="form-section">
+                            <div class="form-section-header">
+                                <i class="fas fa-wallet"></i>
+                                <span>Wallet Address</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">BEP20 USDT Address</label>
+                                <div class="input-with-validation">
+                                    <input type="text" 
+                                           id="withdrawalAddress" 
+                                           class="form-input address-input"
+                                           placeholder="0x..."
+                                           oninput="validateWithdrawalAddress()"
+                                           maxlength="42">
+                                    <div class="input-validation">
+                                        <i class="fas fa-check" id="addressCheck" style="display: none;"></i>
+                                        <i class="fas fa-times" id="addressError" style="display: none;"></i>
+                                    </div>
+                                </div>
+                                <div class="form-hint">
+                                    Your BEP20 USDT wallet address (must start with 0x)
+                                </div>
+                            </div>
                         </div>
                         
-                        ${renderPendingTransactions()}
+                        <div class="form-section">
+                            <div class="form-section-header">
+                                <i class="fas fa-money-bill-wave"></i>
+                                <span>Withdrawal Amount</span>
+                            </div>
+                            <div class="form-group">
+                                <div class="amount-input-container">
+                                    <div class="amount-input-with-max">
+                                        <input type="number" 
+                                               id="withdrawalAmount" 
+                                               class="form-input amount-input"
+                                               value="${usdtBalance > 0 ? usdtBalance.toFixed(2) : '0'}"
+                                               min="0"
+                                               max="${usdtBalance}"
+                                               step="0.01"
+                                               oninput="validateWithdrawalAmount()">
+                                        <button class="max-amount-btn" onclick="setMaxWithdrawalAmount()">
+                                            MAX
+                                        </button>
+                                    </div>
+                                    <div class="amount-slider">
+                                        <input type="range" 
+                                               id="withdrawalSlider" 
+                                               min="0" 
+                                               max="${usdtBalance}" 
+                                               value="${usdtBalance > 0 ? usdtBalance : '0'}"
+                                               step="0.01"
+                                               oninput="updateWithdrawalAmountFromSlider()">
+                                    </div>
+                                    <div class="amount-range-labels">
+                                        <span>0 USDT</span>
+                                        <span>${usdtBalance.toFixed(2)} USDT</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="requirements-section">
+                            <div class="requirements-header">
+                                <i class="fas fa-clipboard-check"></i>
+                                <span>Withdrawal Requirements</span>
+                            </div>
+                            <div class="requirements-grid">
+                                <div class="requirement-card ${usdtBalance >= CONFIG.MIN_WITHDRAWAL ? 'requirement-met' : 'requirement-not-met'}">
+                                    <div class="requirement-icon">
+                                        <i class="fas ${usdtBalance >= CONFIG.MIN_WITHDRAWAL ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                                    </div>
+                                    <div class="requirement-content">
+                                        <div class="requirement-title">Minimum Withdrawal</div>
+                                        <div class="requirement-value">${CONFIG.MIN_WITHDRAWAL} USDT</div>
+                                        <div class="requirement-status">
+                                            ${usdtBalance >= CONFIG.MIN_WITHDRAWAL ? '✓ Requirement met' : '✗ Not met'}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="requirement-card ${bnbBalance >= CONFIG.WITHDRAWAL_FEE ? 'requirement-met' : 'requirement-not-met'}">
+                                    <div class="requirement-icon">
+                                        <i class="fas ${bnbBalance >= CONFIG.WITHDRAWAL_FEE ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                                    </div>
+                                    <div class="requirement-content">
+                                        <div class="requirement-title">Network Fee</div>
+                                        <div class="requirement-value">${CONFIG.WITHDRAWAL_FEE} BNB</div>
+                                        <div class="requirement-status">
+                                            ${bnbBalance >= CONFIG.WITHDRAWAL_FEE ? '✓ Sufficient BNB' : '✗ Insufficient BNB'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="withdrawal-warning" id="withdrawalWarning" style="display: none;">
+                            <div class="warning-header">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>Cannot Proceed</span>
+                            </div>
+                            <div class="warning-text" id="withdrawalWarningText"></div>
+                        </div>
+                        
+                        <div class="summary-section">
+                            <div class="summary-header">
+                                <i class="fas fa-file-invoice-dollar"></i>
+                                <span>Withdrawal Summary</span>
+                            </div>
+                            <div class="summary-details">
+                                <div class="summary-row">
+                                    <span class="summary-label">Withdrawal Amount:</span>
+                                    <span class="summary-value" id="summaryAmount">${usdtBalance > 0 ? usdtBalance.toFixed(2) : '0'} USDT</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="summary-label">Network Fee:</span>
+                                    <span class="summary-value">${CONFIG.WITHDRAWAL_FEE} BNB</span>
+                                </div>
+                                <div class="summary-row total">
+                                    <span class="summary-label">Total Cost:</span>
+                                    <span class="summary-value" id="summaryTotal">${usdtBalance > 0 ? usdtBalance.toFixed(2) : '0'} USDT + ${CONFIG.WITHDRAWAL_FEE} BNB</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="history-content" id="depositsTab" style="display: none;">
-                        <div class="section-title">
-                            <i class="fas fa-download"></i>
-                            <span>Deposit History</span>
-                        </div>
-                        
-                        ${renderDepositHistory()}
-                    </div>
-                    
-                    <div class="history-content" id="withdrawalsTab" style="display: none;">
-                        <div class="section-title">
-                            <i class="fas fa-upload"></i>
-                            <span>Withdrawal History</span>
-                        </div>
-                        
-                        ${renderWithdrawalHistory()}
+                    <div class="modal-actions">
+                        <button class="btn-secondary-large" onclick="closeModal()">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        <button class="btn-primary-large" id="confirmWithdrawalBtn" onclick="submitWithdrawal()">
+                            <i class="fas fa-paper-plane"></i> Submit Withdrawal Request
+                        </button>
                     </div>
                 </div>
             </div>
@@ -2869,260 +2912,497 @@ function showTransactionHistory() {
     `;
     
     document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    validateWithdrawalAmount();
+    
+    setTimeout(() => {
+        const slider = document.getElementById('withdrawalSlider');
+        if (slider) {
+            slider.value = usdtBalance > 0 ? usdtBalance : 0;
+        }
+    }, 100);
 }
 
-function renderPendingTransactions() {
-    if (walletData.pendingDeposits.length === 0 && walletData.pendingWithdrawals.length === 0) {
-        return `
-            <div class="empty-pending">
-                <div class="empty-icon-small">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <div class="empty-text">No pending transactions</div>
-            </div>
-        `;
+function setMaxWithdrawalAmount() {
+    const input = document.getElementById('withdrawalAmount');
+    const slider = document.getElementById('withdrawalSlider');
+    
+    if (input) {
+        input.value = walletData.usdtBalance.toFixed(2);
+        if (slider) {
+            slider.value = walletData.usdtBalance;
+        }
+        validateWithdrawalAmount();
+    }
+}
+
+function updateWithdrawalAmountFromSlider() {
+    const slider = document.getElementById('withdrawalSlider');
+    const input = document.getElementById('withdrawalAmount');
+    
+    if (slider && input) {
+        input.value = parseFloat(slider.value).toFixed(2);
+        validateWithdrawalAmount();
+    }
+}
+
+function validateWithdrawalAmount() {
+    const amountInput = document.getElementById('withdrawalAmount');
+    const amount = parseFloat(amountInput.value) || 0;
+    const slider = document.getElementById('withdrawalSlider');
+    const warning = document.getElementById('withdrawalWarning');
+    const warningText = document.getElementById('withdrawalWarningText');
+    const btn = document.getElementById('confirmWithdrawalBtn');
+    const summaryAmount = document.getElementById('summaryAmount');
+    const summaryTotal = document.getElementById('summaryTotal');
+    
+    if (!warning || !btn || !summaryAmount || !summaryTotal) return;
+    
+    if (slider) {
+        slider.value = amount;
     }
     
-    let html = '';
+    summaryAmount.textContent = amount.toFixed(2) + ' USDT';
+    summaryTotal.textContent = amount.toFixed(2) + ' USDT + ' + CONFIG.WITHDRAWAL_FEE + ' BNB';
     
-    walletData.pendingDeposits.forEach(deposit => {
-        const date = new Date(deposit.timestamp);
-        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        
-        html += `
-            <div class="transaction-card pending">
-                <div class="transaction-header">
-                    <div class="transaction-type">
-                        <div class="type-icon deposit">
-                            <i class="fas fa-download"></i>
-                        </div>
-                        <div class="type-info">
-                            <div class="type-title">Deposit Request</div>
-                            <div class="type-subtitle">${deposit.currency}</div>
-                        </div>
-                    </div>
-                    <div class="transaction-status pending-badge">
-                        <i class="fas fa-clock"></i>
-                        <span>Pending Review</span>
-                    </div>
-                </div>
-                <div class="transaction-details">
-                    <div class="detail-row">
-                        <span>Amount:</span>
-                        <span class="detail-value">${deposit.amount} ${deposit.currency}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span>Transaction Hash:</span>
-                        <span class="detail-value hash">${deposit.transactionHash ? deposit.transactionHash.substring(0, 12) + '...' : 'N/A'}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span>Submitted:</span>
-                        <span class="detail-value">${formattedDate}</span>
-                    </div>
-                </div>
-                <div class="transaction-note">
-                    <i class="fas fa-info-circle"></i>
-                    <span>Awaiting manual review by admin</span>
-                </div>
-            </div>
-        `;
-    });
+    warning.style.display = 'none';
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Withdrawal Request';
     
-    walletData.pendingWithdrawals.forEach(withdrawal => {
-        const date = new Date(withdrawal.timestamp);
-        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        
-        html += `
-            <div class="transaction-card pending">
-                <div class="transaction-header">
-                    <div class="transaction-type">
-                        <div class="type-icon withdrawal">
-                            <i class="fas fa-upload"></i>
-                        </div>
-                        <div class="type-info">
-                            <div class="type-title">Withdrawal Request</div>
-                            <div class="type-subtitle">USDT</div>
-                        </div>
-                    </div>
-                    <div class="transaction-status pending-badge">
-                        <i class="fas fa-clock"></i>
-                        <span>Pending Processing</span>
-                    </div>
-                </div>
-                <div class="transaction-details">
-                    <div class="detail-row">
-                        <span>Amount:</span>
-                        <span class="detail-value">${withdrawal.amount} USDT</span>
-                    </div>
-                    <div class="detail-row">
-                        <span>Address:</span>
-                        <span class="detail-value hash">${withdrawal.address ? withdrawal.address.substring(0, 12) + '...' : 'N/A'}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span>Network Fee:</span>
-                        <span class="detail-value">${withdrawal.fee} BNB</span>
-                    </div>
-                    <div class="detail-row">
-                        <span>Submitted:</span>
-                        <span class="detail-value">${formattedDate}</span>
-                    </div>
-                </div>
-                <div class="transaction-note">
-                    <i class="fas fa-info-circle"></i>
-                    <span>Awaiting manual processing by admin</span>
-                </div>
-            </div>
-        `;
-    });
+    const errors = [];
     
-    return html;
-}
-
-function renderDepositHistory() {
-    if (walletData.depositHistory.length === 0) {
-        return `
-            <div class="empty-history-section">
-                <div class="empty-icon-small">
-                    <i class="fas fa-download"></i>
-                </div>
-                <div class="empty-text">No completed deposits</div>
-            </div>
-        `;
+    if (amount > 0 && amount < CONFIG.MIN_WITHDRAWAL) {
+        errors.push(`Minimum withdrawal is ${CONFIG.MIN_WITHDRAWAL} USDT`);
     }
     
-    let html = '';
-    
-    walletData.depositHistory.forEach(deposit => {
-        const date = new Date(deposit.timestamp);
-        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        
-        html += `
-            <div class="transaction-card completed">
-                <div class="transaction-header">
-                    <div class="transaction-type">
-                        <div class="type-icon deposit">
-                            <i class="fas fa-download"></i>
-                        </div>
-                        <div class="type-info">
-                            <div class="type-title">Deposit ${deposit.status === 'approved' ? 'Approved' : 'Completed'}</div>
-                            <div class="type-subtitle">${deposit.currency}</div>
-                        </div>
-                    </div>
-                    <div class="transaction-status ${deposit.status === 'approved' ? 'approved-badge' : 'completed-badge'}">
-                        <i class="fas ${deposit.status === 'approved' ? 'fa-check-circle' : 'fa-check'}"></i>
-                        <span>${deposit.status === 'approved' ? 'Approved' : 'Completed'}</span>
-                    </div>
-                </div>
-                <div class="transaction-details">
-                    <div class="detail-row">
-                        <span>Amount:</span>
-                        <span class="detail-value">${deposit.amount} ${deposit.currency}</span>
-                    </div>
-                    ${deposit.transactionHash ? `
-                    <div class="detail-row">
-                        <span>Transaction Hash:</span>
-                        <span class="detail-value hash">${deposit.transactionHash.substring(0, 12)}...${deposit.transactionHash.substring(deposit.transactionHash.length - 6)}</span>
-                    </div>
-                    ` : ''}
-                    <div class="detail-row">
-                        <span>Date:</span>
-                        <span class="detail-value">${formattedDate}</span>
-                    </div>
-                </div>
-            </div>
-        `;
-    });
-    
-    return html;
-}
-
-function renderWithdrawalHistory() {
-    if (walletData.withdrawalHistory.length === 0) {
-        return `
-            <div class="empty-history-section">
-                <div class="empty-icon-small">
-                    <i class="fas fa-upload"></i>
-                </div>
-                <div class="empty-text">No completed withdrawals</div>
-            </div>
-        `;
+    if (amount > walletData.usdtBalance) {
+        errors.push(`Insufficient USDT balance (Available: ${walletData.usdtBalance.toFixed(2)} USDT)`);
     }
     
-    let html = '';
+    if (walletData.bnbBalance < CONFIG.WITHDRAWAL_FEE) {
+        errors.push(`Insufficient BNB for network fee (Need: ${CONFIG.WITHDRAWAL_FEE} BNB)`);
+    }
     
-    walletData.withdrawalHistory.forEach(withdrawal => {
-        const date = new Date(withdrawal.timestamp);
-        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        
-        html += `
-            <div class="transaction-card completed">
-                <div class="transaction-header">
-                    <div class="transaction-type">
-                        <div class="type-icon withdrawal">
-                            <i class="fas fa-upload"></i>
-                        </div>
-                        <div class="type-info">
-                            <div class="type-title">Withdrawal ${withdrawal.status === 'completed' ? 'Completed' : 'Processed'}</div>
-                            <div class="type-subtitle">USDT</div>
-                        </div>
-                    </div>
-                    <div class="transaction-status completed-badge">
-                        <i class="fas fa-check-circle"></i>
-                        <span>${withdrawal.status === 'completed' ? 'Completed' : 'Processed'}</span>
-                    </div>
-                </div>
-                <div class="transaction-details">
-                    <div class="detail-row">
-                        <span>Amount:</span>
-                        <span class="detail-value">${withdrawal.amount} USDT</span>
-                    </div>
-                    <div class="detail-row">
-                        <span>Address:</span>
-                        <span class="detail-value hash">${withdrawal.address.substring(0, 12)}...${withdrawal.address.substring(withdrawal.address.length - 6)}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span>Network Fee:</span>
-                        <span class="detail-value">${withdrawal.fee} BNB</span>
-                    </div>
-                    <div class="detail-row">
-                        <span>Date:</span>
-                        <span class="detail-value">${formattedDate}</span>
-                    </div>
-                </div>
-            </div>
-        `;
-    });
-    
-    return html;
+    if (errors.length > 0) {
+        warningText.innerHTML = errors.join('<br>');
+        warning.style.display = 'block';
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-ban"></i> Cannot Withdraw';
+    }
 }
 
-function switchHistoryTab(tabName) {
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
+function validateWithdrawalAddress() {
+    const address = document.getElementById('withdrawalAddress').value.trim();
+    const addressCheck = document.getElementById('addressCheck');
+    const addressError = document.getElementById('addressError');
+    const warning = document.getElementById('withdrawalWarning');
+    const warningText = document.getElementById('withdrawalWarningText');
+    const btn = document.getElementById('confirmWithdrawalBtn');
     
-    document.querySelectorAll('.history-content').forEach(content => {
-        content.style.display = 'none';
-    });
+    if (!warning || !btn) return;
     
-    const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => 
-        btn.querySelector('span').textContent.toLowerCase().includes(tabName)
+    if (addressCheck) addressCheck.style.display = 'none';
+    if (addressError) addressError.style.display = 'none';
+    
+    if (!address) {
+        if (addressError) addressError.style.display = 'block';
+        warningText.textContent = "Please enter your USDT wallet address";
+        warning.style.display = 'block';
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-ban"></i> Cannot Withdraw';
+        return false;
+    }
+    
+    if (!address.startsWith('0x') || address.length !== 42) {
+        if (addressError) addressError.style.display = 'block';
+        warningText.textContent = "Please enter a valid BEP20 address (must start with 0x and be 42 characters)";
+        warning.style.display = 'block';
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-ban"></i> Cannot Withdraw';
+        return false;
+    }
+    
+    if (addressCheck) addressCheck.style.display = 'block';
+    
+    if (warningText.textContent.includes('address')) {
+        warning.style.display = 'none';
+    }
+    
+    validateWithdrawalAmount();
+    
+    return true;
+}
+
+function submitWithdrawal() {
+    const amount = parseFloat(document.getElementById('withdrawalAmount').value);
+    const address = document.getElementById('withdrawalAddress').value.trim();
+    
+    if (!validateWithdrawalAddress()) return;
+    
+    const errors = [];
+    
+    if (amount < CONFIG.MIN_WITHDRAWAL) {
+        errors.push(`Minimum withdrawal is ${CONFIG.MIN_WITHDRAWAL} USDT`);
+    }
+    
+    if (amount > walletData.usdtBalance) {
+        errors.push('Insufficient USDT balance');
+    }
+    
+    if (walletData.bnbBalance < CONFIG.WITHDRAWAL_FEE) {
+        errors.push(`Insufficient BNB for network fee`);
+    }
+    
+    if (errors.length > 0) {
+        showMessage(errors.join('. '), 'error');
+        return;
+    }
+    
+    const withdrawalRequest = {
+        id: 'withdrawal_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        userId: userData.userId,
+        username: userData.username,
+        amount: amount,
+        address: address,
+        fee: CONFIG.WITHDRAWAL_FEE,
+        timestamp: Date.now(),
+        status: 'pending',
+        reviewNote: 'Awaiting manual processing'
+    };
+    
+    walletData.usdtBalance -= amount;
+    walletData.bnbBalance -= CONFIG.WITHDRAWAL_FEE;
+    walletData.pendingWithdrawals.push(withdrawalRequest);
+    
+    saveWalletData();
+    updateWalletUI();
+    
+    if (db) {
+        saveWithdrawalToFirebase(withdrawalRequest);
+    }
+    
+    closeModal();
+    showMessage(`✅ Withdrawal request submitted for ${amount.toFixed(2)} USDT. Manual processing required.`, 'success');
+}
+
+function saveWithdrawalToFirebase(withdrawalRequest) {
+    if (!db) return;
+    
+    try {
+        db.collection('withdrawals').add({
+            ...withdrawalRequest,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+            console.log("✅ Withdrawal saved to Firebase");
+        }).catch(error => {
+            console.error("❌ Withdrawal save error:", error);
+        });
+    } catch (error) {
+        console.error("❌ Withdrawal Firebase save error:", error);
+    }
+}
+
+function closeModal() {
+    const modal = document.querySelector('.modal-overlay');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text)
+        .then(() => {
+            showMessage('✅ Copied to clipboard!', 'success');
+        })
+        .catch(err => {
+            console.error('Copy error:', err);
+            showMessage('❌ Failed to copy', 'error');
+        });
+}
+
+function formatNumber(num, decimals = 0) {
+    return num.toLocaleString(undefined, {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+    });
+}
+
+function showMessage(text, type = 'info') {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}`;
+    messageDiv.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 
+                         type === 'error' ? 'exclamation-circle' : 
+                         type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+        <span>${text}</span>
+    `;
+    
+    messageDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-100px);
+        background: ${type === 'success' ? '#10b981' : 
+                     type === 'error' ? '#ef4444' : 
+                     type === 'warning' ? '#f59e0b' : '#3b82f6'};
+        color: white;
+        padding: 12px 24px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        z-index: 2000;
+        opacity: 0;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        font-weight: 500;
+    `;
+    
+    document.body.appendChild(messageDiv);
+    
+    setTimeout(() => {
+        messageDiv.style.opacity = '1';
+        messageDiv.style.transform = 'translateX(-50%) translateY(0)';
+    }, 10);
+    
+    setTimeout(() => {
+        messageDiv.style.opacity = '0';
+        messageDiv.style.transform = 'translateX(-50%) translateY(-100px)';
+        setTimeout(() => {
+            if (messageDiv.parentNode) {
+                messageDiv.parentNode.removeChild(messageDiv);
+            }
+        }, 300);
+    }, 3000);
+}
+
+function updateEnergyBelt() {
+    const energyBelt = document.getElementById('energyBelt');
+    const beltFill = document.getElementById('beltFill');
+    const beltKnob = document.getElementById('beltKnob');
+    const mineBtn = document.getElementById('mineBtn');
+    const cooldownTimer = document.getElementById('cooldownTimer');
+    
+    if (!energyBelt || !beltFill || !beltKnob || !mineBtn) return;
+    
+    const now = Date.now();
+    const timeSinceLastMine = now - userData.lastMineTime;
+    const cooldown = CONFIG.MINE_COOLDOWN;
+    
+    let fillPercentage = 0;
+    
+    if (userData.lastMineTime > 0) {
+        fillPercentage = Math.min((timeSinceLastMine / cooldown) * 100, 100);
+    } else {
+        fillPercentage = 100;
+    }
+    
+    beltFill.style.width = `${fillPercentage}%`;
+    beltKnob.style.left = `${fillPercentage}%`;
+    
+    const isReady = timeSinceLastMine >= cooldown || userData.lastMineTime === 0;
+    
+    if (isReady) {
+        energyBelt.classList.add('belt-ready');
+        energyBelt.classList.remove('belt-emptying');
+        mineBtn.classList.add('mine-ready');
+        mineBtn.disabled = false;
+        
+        if (cooldownTimer) {
+            cooldownTimer.textContent = 'READY';
+            cooldownTimer.style.color = '#22c55e';
+            cooldownTimer.style.background = 'rgba(34, 197, 94, 0.1)';
+        }
+    } else {
+        energyBelt.classList.remove('belt-ready');
+        mineBtn.classList.remove('mine-ready');
+        mineBtn.disabled = true;
+        
+        if (cooldownTimer) {
+            const timeLeft = cooldown - timeSinceLastMine;
+            const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            
+            cooldownTimer.textContent = `${hours}h ${minutes}m`;
+            cooldownTimer.style.color = '#ef4444';
+            cooldownTimer.style.background = 'rgba(239, 68, 68, 0.1)';
+        }
+    }
+}
+
+function animateBeltEmpty() {
+    const energyBelt = document.getElementById('energyBelt');
+    if (energyBelt) {
+        energyBelt.classList.add('belt-emptying');
+        setTimeout(() => {
+            energyBelt.classList.remove('belt-emptying');
+        }, 1000);
+    }
+}
+
+function updateUI() {
+    const currentRank = CONFIG.RANKS.find(r => r.name === userData.rank) || CONFIG.RANKS[0];
+    
+    if (elements.balance) {
+        elements.balance.textContent = userData.balance.toLocaleString();
+    }
+    
+    if (elements.referrals) {
+        elements.referrals.textContent = `${userData.referrals} Referrals`;
+    }
+    
+    if (elements.totalEarned) {
+        elements.totalEarned.textContent = `${userData.totalEarned.toLocaleString()} MWH`;
+    }
+    
+    if (elements.rankBadge) {
+        elements.rankBadge.textContent = userData.rank;
+    }
+    
+    if (elements.rewardAmount) {
+        elements.rewardAmount.textContent = currentRank.reward;
+    }
+    
+    if (elements.miningPower) {
+        elements.miningPower.innerHTML = `<i class="fas fa-bolt"></i> Yield: ${currentRank.power}`;
+    }
+    
+    if (elements.refCount) {
+        elements.refCount.textContent = userData.referrals;
+    }
+    
+    if (elements.refEarned) {
+        elements.refEarned.textContent = userData.referralEarnings.toLocaleString() + " MWH";
+    }
+    
+    if (elements.refRank) {
+        elements.refRank.textContent = userData.rank;
+    }
+    
+    updateUSDBalance();
+    updateProgress();
+    updateReferralLink();
+    updateWalletUI();
+    updateEnergyBelt();
+}
+
+function updateUSDBalance() {
+    const usdValue = (userData.balance * CONFIG.MWH_TO_USD).toFixed(3);
+    
+    if (elements.balanceUSD) {
+        elements.balanceUSD.textContent = `≈ $${usdValue}`;
+    }
+}
+
+function updateProgress() {
+    const currentRank = CONFIG.RANKS.find(r => r.name === userData.rank) || CONFIG.RANKS[0];
+    const nextRank = CONFIG.RANKS[CONFIG.RANKS.indexOf(currentRank) + 1];
+    
+    if (nextRank) {
+        const progress = ((userData.totalEarned - currentRank.min) / (nextRank.min - currentRank.min)) * 100;
+        const clampedProgress = Math.min(progress, 100);
+        
+        if (elements.progressFill) {
+            elements.progressFill.style.width = `${clampedProgress}%`;
+        }
+        
+        if (elements.nextRank) {
+            elements.nextRank.textContent = `Next: ${nextRank.name} (${nextRank.min.toLocaleString()} MWH)`;
+        }
+        
+        if (elements.currentPoints) {
+            elements.currentPoints.textContent = `${userData.totalEarned.toLocaleString()} MWH`;
+        }
+        
+        if (elements.targetPoints) {
+            elements.targetPoints.textContent = `${nextRank.min.toLocaleString()} MWH`;
+        }
+        
+        if (elements.remainingPoints) {
+            const remaining = Math.max(0, nextRank.min - userData.totalEarned);
+            elements.remainingPoints.textContent = `${remaining.toLocaleString()} MWH`;
+        }
+        
+        if (elements.nextRankBonus) {
+            const bonusIncrease = nextRank.reward - currentRank.reward;
+            elements.nextRankBonus.textContent = `+${bonusIncrease} MWH bonus on upgrade`;
+        }
+    } else {
+        if (elements.progressFill) elements.progressFill.style.width = '100%';
+        if (elements.nextRank) elements.nextRank.textContent = 'Highest Rank! 🏆';
+        if (elements.remainingPoints) elements.remainingPoints.textContent = '0 MWH';
+        if (elements.nextRankBonus) elements.nextRankBonus.textContent = 'Max rank achieved!';
+    }
+}
+
+function checkRankUp() {
+    const currentRank = CONFIG.RANKS.find(r => r.name === userData.rank);
+    const newRank = CONFIG.RANKS.find(r => 
+        userData.totalEarned >= r.min && userData.totalEarned <= r.max
     );
     
-    if (activeBtn) {
-        activeBtn.classList.add('active');
-    }
-    
-    const contentId = tabName + 'Tab';
-    const content = document.getElementById(contentId);
-    if (content) {
-        content.style.display = 'block';
+    if (newRank && newRank.name !== userData.rank) {
+        const oldRank = userData.rank;
+        userData.rank = newRank.name;
+        saveUserData();
+        updateUI();
+        
+        const oldReward = currentRank ? currentRank.reward : 250;
+        const increase = newRank.reward - oldReward;
+        
+        showMessage(`🏆 Rank Up! ${oldRank} → ${newRank.name} (+${increase} MWH bonus!)`, 'success');
     }
 }
 
-// ============================================
-// DATA MANAGEMENT
-// ============================================
+function setupEventListeners() {
+    console.log("🎯 Setting up event listeners...");
+    
+    if (elements.mineBtn) {
+        elements.mineBtn.addEventListener('click', minePoints);
+        console.log("✅ Mine button listener added");
+    }
+    
+    if (elements.copyBtn) {
+        elements.copyBtn.addEventListener('click', copyReferralLink);
+        console.log("✅ Copy button listener added");
+    }
+    
+    if (elements.shareBtn) {
+        elements.shareBtn.addEventListener('click', shareOnTelegram);
+        console.log("✅ Share button listener added");
+    }
+    
+    console.log("✅ Event listeners setup complete");
+}
+
+function copyReferralLink() {
+    const refLink = generateReferralLink();
+    
+    navigator.clipboard.writeText(refLink)
+        .then(() => {
+            showMessage('✅ Link copied to clipboard!', 'success');
+            if (elements.copyBtn) {
+                elements.copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    elements.copyBtn.innerHTML = '<i class="far fa-copy"></i>';
+                }, 2000);
+            }
+        })
+        .catch(err => {
+            console.error('Copy error:', err);
+            showMessage('❌ Failed to copy link', 'error');
+        });
+}
+
+function shareOnTelegram() {
+    const refLink = generateReferralLink();
+    const shareText = `🚀 *Join VIP Mining Wealth PRO!*\n\n⛏️ *Mine 250 MWH every 4 hours*\n👥 *Get +50 MWH BONUS with my link*\n💰 *Earn 50 MWH for each referral*\n\n👉 ${refLink}\n\n💎 *Start earning now!* @VIPMainingPROBot`;
+    
+    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(shareText)}`;
+    
+    window.open(shareUrl, '_blank');
+    showMessage('📱 Opening Telegram...', 'info');
+}
 
 async function loadUserData() {
     console.log("📂 Loading user data for:", userData.userId);
@@ -3399,143 +3679,6 @@ function saveWalletToFirebase() {
 }
 
 // ============================================
-// UTILITY FUNCTIONS
-// ============================================
-
-function copyDepositAddress() {
-    const depositAddress = CONFIG.DEPOSIT_ADDRESS;
-    
-    navigator.clipboard.writeText(depositAddress)
-        .then(() => {
-            const btn = document.querySelector('.copy-address-btn');
-            if (btn) {
-                const originalHTML = btn.innerHTML;
-                btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-                btn.style.background = 'linear-gradient(135deg, #22c55e, #10b981)';
-                
-                setTimeout(() => {
-                    btn.innerHTML = originalHTML;
-                    btn.style.background = 'linear-gradient(135deg, #3b82f6, #6366f1)';
-                }, 2000);
-            }
-            showMessage('✅ Address copied to clipboard!', 'success');
-        })
-        .catch(err => {
-            console.error('Copy error:', err);
-            showMessage('❌ Failed to copy address', 'error');
-        });
-}
-
-function validateTransactionHash() {
-    const hash = document.getElementById('transactionHash').value.trim();
-    const statusDiv = document.getElementById('transactionStatus');
-    const statusIcon = document.getElementById('statusIcon');
-    const statusText = document.getElementById('statusText');
-    const verifyBtn = document.getElementById('verifyDepositBtn');
-    
-    if (!hash) {
-        statusDiv.style.display = 'none';
-        verifyBtn.disabled = true;
-        return;
-    }
-    
-    if (walletData.usedTransactions.includes(hash.toLowerCase())) {
-        statusIcon.innerHTML = '<i class="fas fa-exclamation-circle" style="color: #ef4444;"></i>';
-        statusText.innerHTML = '<span style="color: #ef4444;">This transaction hash has already been used</span>';
-        statusDiv.style.display = 'flex';
-        statusDiv.style.background = 'rgba(239, 68, 68, 0.1)';
-        statusDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
-        verifyBtn.disabled = true;
-        return;
-    }
-    
-    if (hash.length < CONFIG.MIN_TRANSACTION_LENGTH) {
-        statusIcon.innerHTML = '<i class="fas fa-times-circle" style="color: #ef4444;"></i>';
-        statusText.innerHTML = '<span style="color: #ef4444;">Invalid transaction hash (too short)</span>';
-        statusDiv.style.display = 'flex';
-        statusDiv.style.background = 'rgba(239, 68, 68, 0.1)';
-        statusDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
-        verifyBtn.disabled = true;
-        return;
-    }
-    
-    if (!hash.startsWith('0x') || hash.length !== 66) {
-        statusIcon.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i>';
-        statusText.innerHTML = '<span style="color: #f59e0b;">Verify this is a valid BEP20 transaction hash</span>';
-        statusDiv.style.display = 'flex';
-        statusDiv.style.background = 'rgba(245, 158, 11, 0.1)';
-        statusDiv.style.border = '1px solid rgba(245, 158, 11, 0.3)';
-        verifyBtn.disabled = false;
-        return;
-    }
-    
-    statusIcon.innerHTML = '<i class="fas fa-check-circle" style="color: #22c55e;"></i>';
-    statusText.innerHTML = '<span style="color: #22c55e;">Valid transaction hash detected</span>';
-    statusDiv.style.display = 'flex';
-    statusDiv.style.background = 'rgba(34, 197, 94, 0.1)';
-    statusDiv.style.border = '1px solid rgba(34, 197, 94, 0.3)';
-    verifyBtn.disabled = false;
-}
-
-function formatNumber(num, decimals = 0) {
-    return num.toLocaleString(undefined, {
-        minimumFractionDigits: decimals,
-        maximumFractionDigits: decimals
-    });
-}
-
-function showMessage(text, type = 'info') {
-    console.log(`📢 ${type}: ${text}`);
-    
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${type}`;
-    messageDiv.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : 
-                         type === 'error' ? 'exclamation-circle' : 
-                         type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
-        <span>${text}</span>
-    `;
-    
-    messageDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%) translateY(-100px);
-        background: ${type === 'success' ? '#10b981' : 
-                     type === 'error' ? '#ef4444' : 
-                     type === 'warning' ? '#f59e0b' : '#3b82f6'};
-        color: white;
-        padding: 12px 24px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        z-index: 2000;
-        opacity: 0;
-        transition: all 0.3s ease;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        font-weight: 500;
-    `;
-    
-    document.body.appendChild(messageDiv);
-    
-    setTimeout(() => {
-        messageDiv.style.opacity = '1';
-        messageDiv.style.transform = 'translateX(-50%) translateY(0)';
-    }, 10);
-    
-    setTimeout(() => {
-        messageDiv.style.opacity = '0';
-        messageDiv.style.transform = 'translateX(-50%) translateY(-100px)';
-        setTimeout(() => {
-            if (messageDiv.parentNode) {
-                messageDiv.parentNode.removeChild(messageDiv);
-            }
-        }, 300);
-    }, 3000);
-}
-
-// ============================================
 // INITIALIZE APPLICATION
 // ============================================
 
@@ -3553,13 +3696,13 @@ async function initApp() {
         
         initAdminSystem();
         
-        initNotificationSystem();
-        
         updateUI();
         
         updateWalletUI();
         
         checkForReferral();
+        
+        initNotificationSystem();
         
         userData.isInitialized = true;
         
@@ -3575,7 +3718,10 @@ async function initApp() {
     }
 }
 
-// Auto-save every 30 seconds
+setInterval(() => {
+    updateEnergyBelt();
+}, 1000);
+
 setInterval(() => {
     if (userData.userId && userData.isInitialized) {
         saveUserData();
@@ -3583,16 +3729,6 @@ setInterval(() => {
     }
 }, 30000);
 
-// Update energy belt every second
-setInterval(() => {
-    updateEnergyBelt();
-}, 1000);
-
-// Check notifications on page change
-window.addEventListener('hashchange', checkAndShowNotification);
-window.addEventListener('popstate', checkAndShowNotification);
-
-// Save before page unload
 window.addEventListener('beforeunload', function() {
     if (userData.userId) {
         console.log("💾 Saving data before page unload...");
@@ -3602,7 +3738,6 @@ window.addEventListener('beforeunload', function() {
     }
 });
 
-// Start the app
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initApp);
 } else {
@@ -3619,22 +3754,7 @@ window.openWithdrawalModal = openWithdrawalModal;
 window.openDepositModal = openDepositModal;
 window.updateWalletUI = updateWalletUI;
 window.showMessage = showMessage;
-window.switchToPage = window.switchToPage || function(page) {
-    console.log("📄 Switching to page:", page);
-    const containers = document.querySelectorAll('.container');
-    containers.forEach(container => {
-        container.classList.remove('active');
-        container.classList.add('hidden');
-    });
-    
-    const targetPage = document.getElementById(page + 'Page');
-    if (targetPage) {
-        targetPage.classList.remove('hidden');
-        targetPage.classList.add('active');
-    }
-    
-    checkAndShowNotification();
-};
+window.switchToPage = window.switchToPage || function(page) {};
 window.closeModal = closeModal;
 window.copyToClipboard = copyToClipboard;
 window.calculateSwap = calculateSwap;
@@ -3650,19 +3770,16 @@ window.validateTransactionHash = validateTransactionHash;
 window.validateDepositAmount = validateDepositAmount;
 window.submitDepositRequest = submitDepositRequest;
 window.switchHistoryTab = switchHistoryTab;
-window.showComingSoon = function() {
-    showMessage("🚧 Feature coming soon!", "info");
-};
+window.showComingSoon = showComingSoon;
 
-// Admin functions
 window.checkAdminPassword = checkAdminPassword;
 window.switchAdminTab = switchAdminTab;
 window.approveDepositRequest = approveDepositRequest;
 window.rejectDepositRequest = rejectDepositRequest;
 window.approveWithdrawalRequest = approveWithdrawalRequest;
 window.rejectWithdrawalRequest = rejectWithdrawalRequest;
+window.addBalanceToAllUsers = addBalanceToAllUsers;
 window.addBalanceToSpecificUser = addBalanceToSpecificUser;
 window.searchUserById = searchUserById;
-window.addBalanceToAllUsers = addBalanceToAllUsers;
 
-console.log("🎮 VIP Mining Wallet v6.5 COMPLETE - ALL SYSTEMS FIXED");
+console.log("🎮 VIP Mining Wallet v6.5 loaded with Admin Panel - FIXED VERSION");
