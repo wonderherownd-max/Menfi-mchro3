@@ -106,13 +106,14 @@ const CONFIG = {
 };
 
 // ============================================
-// ADMIN PANEL SYSTEM - UPDATED WITH FIREBASE ID FIX
+// ADMIN PANEL SYSTEM - WITH TELEGRAM ID SECURITY
 // ============================================
 
 let adminAccess = false;
 let gemClickCount = 0;
 let lastGemClickTime = 0;
 const ADMIN_PASSWORD = "Ali97$";
+const ADMIN_TELEGRAM_ID = "1653918641"; // معرف تلجرام الوحيد المسموح
 
 function initAdminSystem() {
     const gemIcon = document.querySelector('.logo i.fa-gem');
@@ -167,7 +168,7 @@ function showAdminLogin() {
                         </button>
                         
                         <div id="adminError" style="color: #ef4444; margin-top: 15px; display: none;">
-                            <i class="fas fa-exclamation-circle"></i> Incorrect password
+                            <i class="fas fa-exclamation-circle"></i> <span id="adminErrorText"></span>
                         </div>
                     </div>
                 </div>
@@ -181,23 +182,57 @@ function showAdminLogin() {
 function checkAdminPassword() {
     const passwordInput = document.getElementById('adminPasswordInput');
     const errorDiv = document.getElementById('adminError');
+    const errorText = document.getElementById('adminErrorText');
     
-    if (!passwordInput) return;
+    if (!passwordInput || !errorDiv || !errorText) return;
     
-    if (passwordInput.value === ADMIN_PASSWORD) {
-        adminAccess = true;
-        closeModal();
-        showAdminPanel();
-        showMessage('✅ Admin access granted', 'success');
-        console.log("🔓 Admin access granted");
-    } else {
-        if (errorDiv) errorDiv.style.display = 'block';
+    // التحقق من كلمة السر أولاً
+    if (passwordInput.value !== ADMIN_PASSWORD) {
+        errorText.textContent = "Incorrect password";
+        errorDiv.style.display = 'block';
         passwordInput.style.borderColor = '#ef4444';
         setTimeout(() => {
-            if (errorDiv) errorDiv.style.display = 'none';
+            errorDiv.style.display = 'none';
             passwordInput.style.borderColor = 'rgba(59,130,246,0.3)';
         }, 2000);
+        return;
     }
+    
+    // التحقق من معرف تلجرام
+    let telegramUserId = null;
+    if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        telegramUserId = tg.initDataUnsafe.user.id.toString();
+        console.log("🔍 Checking Telegram ID:", telegramUserId);
+    }
+    
+    if (!telegramUserId) {
+        errorText.textContent = "Telegram user not detected";
+        errorDiv.style.display = 'block';
+        passwordInput.style.borderColor = '#ef4444';
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+            passwordInput.style.borderColor = 'rgba(59,130,246,0.3)';
+        }, 2000);
+        return;
+    }
+    
+    if (telegramUserId !== ADMIN_TELEGRAM_ID) {
+        errorText.textContent = "Access denied: Invalid Telegram ID";
+        errorDiv.style.display = 'block';
+        passwordInput.style.borderColor = '#ef4444';
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+            passwordInput.style.borderColor = 'rgba(59,130,246,0.3)';
+        }, 2000);
+        return;
+    }
+    
+    // إذا مرت جميع الاختبارات
+    adminAccess = true;
+    closeModal();
+    showAdminPanel();
+    showMessage('✅ Admin access granted', 'success');
+    console.log("🔓 Admin access granted for Telegram ID:", telegramUserId);
 }
 
 function showAdminPanel() {
@@ -729,9 +764,6 @@ async function rejectDepositRequest(firebaseId) {
             rejectionReason: reason
         });
         
-        // 3. تحديث بيانات المستخدم المحلية (حذف من pending)
-        removePendingRequestFromUser(userId, firebaseId, 'deposit');
-        
         showMessage(`❌ تم رفض طلب الإيداع. السبب: ${reason}`, 'warning');
         
         setTimeout(loadAdminPendingRequests, 1000);
@@ -767,9 +799,6 @@ async function approveWithdrawalRequest(firebaseId) {
             completedAt: firebase.firestore.FieldValue.serverTimestamp(),
             completedBy: 'admin'
         });
-        
-        // 2. تحديث بيانات المستخدم المحلية (نقل من pending إلى history)
-        moveWithdrawalToHistory(userId, firebaseId);
         
         console.log(`✅ تمت الموافقة على سحب ${amount} USDT للمستخدم ${userId}`);
         
@@ -809,9 +838,6 @@ async function rejectWithdrawalRequest(firebaseId) {
             rejectedBy: 'admin',
             rejectionReason: reason
         });
-        
-        // 2. تحديث بيانات المستخدم المحلية (حذف من pending وإرجاع الرصيد)
-        rejectWithdrawalForUser(userId, firebaseId, requestData.amount, requestData.fee);
         
         showMessage(`❌ تم رفض طلب السحب. السبب: ${reason}`, 'warning');
         
@@ -1017,27 +1043,7 @@ async function searchUserById() {
 }
 
 // ============================================
-// HELPER FUNCTIONS FOR LOCAL DATA UPDATES
-// ============================================
-
-function updateLocalUserData(userId, amount, currency) {
-    console.log(`🔄 تحديث بيانات المستخدم المحلية: ${userId}`);
-}
-
-function removePendingRequestFromUser(userId, firebaseId, type) {
-    console.log(`🗑️ حذف طلب ${type} ${firebaseId} للمستخدم ${userId}`);
-}
-
-function moveWithdrawalToHistory(userId, firebaseId) {
-    console.log(`📥 نقل سحب ${firebaseId} إلى التاريخ للمستخدم ${userId}`);
-}
-
-function rejectWithdrawalForUser(userId, firebaseId, amount, fee) {
-    console.log(`↩️ رفض سحب ${firebaseId} وإرجاع ${amount} USDT للمستخدم ${userId}`);
-}
-
-// ============================================
-// REAL-TIME LISTENER FOR USER DATA
+// REAL-TIME LISTENER FOR USER DATA - IMPROVED
 // ============================================
 
 function setupRealTimeListeners() {
@@ -1050,10 +1056,10 @@ function setupRealTimeListeners() {
         .where('userId', '==', userData.userId)
         .onSnapshot((snapshot) => {
             snapshot.docChanges().forEach((change) => {
+                const data = change.doc.data();
+                console.log('🔄 تحديث طلب إيداع:', data.status);
+                
                 if (change.type === 'modified') {
-                    const data = change.doc.data();
-                    console.log('🔄 تحديث طلب إيداع:', data.status);
-                    
                     // تحديث البيانات المحلية
                     updateUserLocalDeposit(change.doc.id, data);
                 }
@@ -1065,10 +1071,10 @@ function setupRealTimeListeners() {
         .where('userId', '==', userData.userId)
         .onSnapshot((snapshot) => {
             snapshot.docChanges().forEach((change) => {
+                const data = change.doc.data();
+                console.log('🔄 تحديث طلب سحب:', data.status);
+                
                 if (change.type === 'modified') {
-                    const data = change.doc.data();
-                    console.log('🔄 تحديث طلب سحب:', data.status);
-                    
                     // تحديث البيانات المحلية
                     updateUserLocalWithdrawal(change.doc.id, data);
                 }
@@ -1078,22 +1084,31 @@ function setupRealTimeListeners() {
 
 function updateUserLocalDeposit(firebaseId, depositData) {
     // البحث عن الطلب في pendingDeposits المحلية
-    const index = walletData.pendingDeposits.findIndex(d => {
+    const pendingIndex = walletData.pendingDeposits.findIndex(d => {
         return d.transactionHash === depositData.transactionHash || 
                (d.id && d.id.includes(depositData.transactionHash?.substring(0, 10)));
     });
     
-    if (index !== -1) {
-        if (depositData.status === 'approved') {
-            // نقل من pending إلى history
+    // البحث عن الطلب في depositHistory (في حال تم تحديثه بعد النقل)
+    const historyIndex = walletData.depositHistory.findIndex(d => {
+        return d.transactionHash === depositData.transactionHash || 
+               (d.id && d.id.includes(depositData.transactionHash?.substring(0, 10)));
+    });
+    
+    const status = depositData.status ? depositData.status.toLowerCase() : '';
+    
+    if (status === 'approved') {
+        // إذا كان الطلب في pending، انقله إلى history
+        if (pendingIndex !== -1) {
             const approvedDeposit = {
-                ...walletData.pendingDeposits[index],
+                ...walletData.pendingDeposits[pendingIndex],
                 status: 'approved',
-                approvedAt: Date.now()
+                approvedAt: depositData.approvedAt || Date.now(),
+                adminNote: depositData.adminNote || 'تمت الموافقة'
             };
             
             walletData.depositHistory.unshift(approvedDeposit);
-            walletData.pendingDeposits.splice(index, 1);
+            walletData.pendingDeposits.splice(pendingIndex, 1);
             
             // تحديث الرصيد
             if (depositData.currency === 'MWH') {
@@ -1110,55 +1125,127 @@ function updateUserLocalDeposit(firebaseId, depositData) {
             
             console.log('✅ تمت الموافقة على الإيداع محلياً');
             
-        } else if (depositData.status === 'rejected') {
-            // حذف من pending فقط
-            walletData.pendingDeposits.splice(index, 1);
-            showMessage(`❌ تم رفض طلب الإيداع: ${depositData.rejectionReason || 'غير محدد'}`, 'warning');
-            console.log('❌ تم رفض الإيداع محلياً');
+        } else if (historyIndex !== -1) {
+            // تحديث الطلب الموجود في history
+            walletData.depositHistory[historyIndex] = {
+                ...walletData.depositHistory[historyIndex],
+                status: 'approved',
+                approvedAt: depositData.approvedAt || Date.now(),
+                adminNote: depositData.adminNote || 'تمت الموافقة'
+            };
         }
         
-        saveWalletData();
-        saveUserData();
-        updateUI();
-        updateWalletUI();
+    } else if (status === 'rejected') {
+        // إذا كان الطلب في pending، انقله إلى history مع حالة rejected
+        if (pendingIndex !== -1) {
+            const rejectedDeposit = {
+                ...walletData.pendingDeposits[pendingIndex],
+                status: 'rejected',
+                rejectedAt: depositData.rejectedAt || Date.now(),
+                rejectionReason: depositData.rejectionReason || 'تم الرفض',
+                rejectedBy: depositData.rejectedBy || 'admin'
+            };
+            
+            walletData.depositHistory.unshift(rejectedDeposit);
+            walletData.pendingDeposits.splice(pendingIndex, 1);
+            
+            showMessage(`❌ تم رفض إيداع ${depositData.amount} ${depositData.currency || ''}. السبب: ${depositData.rejectionReason || 'غير محدد'}`, 'warning');
+            console.log('❌ تم رفض الإيداع محلياً');
+            
+        } else if (historyIndex !== -1) {
+            // تحديث الطلب الموجود في history
+            walletData.depositHistory[historyIndex] = {
+                ...walletData.depositHistory[historyIndex],
+                status: 'rejected',
+                rejectedAt: depositData.rejectedAt || Date.now(),
+                rejectionReason: depositData.rejectionReason || 'تم الرفض',
+                rejectedBy: depositData.rejectedBy || 'admin'
+            };
+        }
     }
+    
+    saveWalletData();
+    saveUserData();
+    updateUI();
+    updateWalletUI();
 }
 
 function updateUserLocalWithdrawal(firebaseId, withdrawalData) {
     // البحث عن الطلب في pendingWithdrawals المحلية
-    const index = walletData.pendingWithdrawals.findIndex(w => {
+    const pendingIndex = walletData.pendingWithdrawals.findIndex(w => {
         return w.address === withdrawalData.address && 
                Math.abs(w.amount - withdrawalData.amount) < 0.01;
     });
     
-    if (index !== -1) {
-        if (withdrawalData.status === 'completed') {
-            // نقل من pending إلى history
+    // البحث عن الطلب في withdrawalHistory (في حال تم تحديثه بعد النقل)
+    const historyIndex = walletData.withdrawalHistory.findIndex(w => {
+        return w.address === withdrawalData.address && 
+               Math.abs(w.amount - withdrawalData.amount) < 0.01;
+    });
+    
+    const status = withdrawalData.status ? withdrawalData.status.toLowerCase() : '';
+    
+    if (status === 'completed') {
+        // إذا كان الطلب في pending، انقله إلى history
+        if (pendingIndex !== -1) {
             const completedWithdrawal = {
-                ...walletData.pendingWithdrawals[index],
+                ...walletData.pendingWithdrawals[pendingIndex],
                 status: 'completed',
-                completedAt: Date.now()
+                completedAt: withdrawalData.completedAt || Date.now(),
+                completedBy: withdrawalData.completedBy || 'admin'
             };
             
             walletData.withdrawalHistory.unshift(completedWithdrawal);
-            walletData.pendingWithdrawals.splice(index, 1);
+            walletData.pendingWithdrawals.splice(pendingIndex, 1);
             
             showMessage(`✅ تم إكمال سحب ${withdrawalData.amount} USDT`, 'success');
             console.log('✅ تم إكمال السحب محلياً');
             
-        } else if (withdrawalData.status === 'rejected') {
-            // إرجاع الرصيد وحذف من pending
-            walletData.usdtBalance += withdrawalData.amount;
-            walletData.bnbBalance += withdrawalData.fee || 0;
-            walletData.pendingWithdrawals.splice(index, 1);
-            
-            showMessage(`❌ تم رفض السحب: ${withdrawalData.rejectionReason || 'غير محدد'}`, 'warning');
-            console.log('❌ تم رفض السحب وإرجاع الرصيد');
+        } else if (historyIndex !== -1) {
+            // تحديث الطلب الموجود في history
+            walletData.withdrawalHistory[historyIndex] = {
+                ...walletData.withdrawalHistory[historyIndex],
+                status: 'completed',
+                completedAt: withdrawalData.completedAt || Date.now(),
+                completedBy: withdrawalData.completedBy || 'admin'
+            };
         }
         
-        saveWalletData();
-        updateWalletUI();
+    } else if (status === 'rejected') {
+        // إذا كان الطلب في pending، انقله إلى history مع حالة rejected
+        if (pendingIndex !== -1) {
+            const rejectedWithdrawal = {
+                ...walletData.pendingWithdrawals[pendingIndex],
+                status: 'rejected',
+                rejectedAt: withdrawalData.rejectedAt || Date.now(),
+                rejectionReason: withdrawalData.rejectionReason || 'تم الرفض',
+                rejectedBy: withdrawalData.rejectedBy || 'admin'
+            };
+            
+            walletData.withdrawalHistory.unshift(rejectedWithdrawal);
+            walletData.pendingWithdrawals.splice(pendingIndex, 1);
+            
+            // إرجاع الرصيد للمستخدم
+            walletData.usdtBalance += withdrawalData.amount;
+            walletData.bnbBalance += withdrawalData.fee || 0;
+            
+            showMessage(`❌ تم رفض سحب ${withdrawalData.amount} USDT. السبب: ${withdrawalData.rejectionReason || 'غير محدد'}`, 'warning');
+            console.log('❌ تم رفض السحب وإرجاع الرصيد');
+            
+        } else if (historyIndex !== -1) {
+            // تحديث الطلب الموجود في history
+            walletData.withdrawalHistory[historyIndex] = {
+                ...walletData.withdrawalHistory[historyIndex],
+                status: 'rejected',
+                rejectedAt: withdrawalData.rejectedAt || Date.now(),
+                rejectionReason: withdrawalData.rejectionReason || 'تم الرفض',
+                rejectedBy: withdrawalData.rejectedBy || 'admin'
+            };
+        }
     }
+    
+    saveWalletData();
+    updateWalletUI();
 }
 
 // ============================================
@@ -1466,7 +1553,7 @@ function checkAndShowNotification() {
 }
 
 // ============================================
-// TRANSACTION HISTORY SYSTEM
+// TRANSACTION HISTORY SYSTEM - IMPROVED WITH REJECTED STATUS
 // ============================================
 
 function showTransactionHistory() {
@@ -1695,7 +1782,7 @@ function renderDepositHistory() {
                 <div class="empty-icon-small">
                     <i class="fas fa-download"></i>
                 </div>
-                <div class="empty-text">No completed deposits</div>
+                <div class="empty-text">No deposit history</div>
             </div>
         `;
     }
@@ -1706,21 +1793,36 @@ function renderDepositHistory() {
         const date = new Date(deposit.timestamp);
         const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
+        const status = deposit.status ? deposit.status.toLowerCase() : '';
+        let statusClass = 'completed-badge';
+        let statusIcon = 'fa-check';
+        let statusText = 'Completed';
+        
+        if (status === 'approved') {
+            statusClass = 'approved-badge';
+            statusIcon = 'fa-check-circle';
+            statusText = 'Approved';
+        } else if (status === 'rejected') {
+            statusClass = 'rejected-badge';
+            statusIcon = 'fa-times-circle';
+            statusText = 'Rejected';
+        }
+        
         html += `
-            <div class="transaction-card completed">
+            <div class="transaction-card ${status === 'rejected' ? 'rejected' : 'completed'}">
                 <div class="transaction-header">
                     <div class="transaction-type">
-                        <div class="type-icon deposit">
+                        <div class="type-icon deposit ${status === 'rejected' ? 'rejected-icon' : ''}">
                             <i class="fas fa-download"></i>
                         </div>
                         <div class="type-info">
-                            <div class="type-title">Deposit ${deposit.status === 'approved' ? 'Approved' : 'Completed'}</div>
+                            <div class="type-title">Deposit ${statusText}</div>
                             <div class="type-subtitle">${deposit.currency}</div>
                         </div>
                     </div>
-                    <div class="transaction-status ${deposit.status === 'approved' ? 'approved-badge' : 'completed-badge'}">
-                        <i class="fas ${deposit.status === 'approved' ? 'fa-check-circle' : 'fa-check'}"></i>
-                        <span>${deposit.status === 'approved' ? 'Approved' : 'Completed'}</span>
+                    <div class="transaction-status ${statusClass}">
+                        <i class="fas ${statusIcon}"></i>
+                        <span>${statusText}</span>
                     </div>
                 </div>
                 <div class="transaction-details">
@@ -1738,6 +1840,18 @@ function renderDepositHistory() {
                         <span>Date:</span>
                         <span class="detail-value">${formattedDate}</span>
                     </div>
+                    ${deposit.rejectionReason ? `
+                    <div class="detail-row rejection-reason">
+                        <span>Reason:</span>
+                        <span class="detail-value" style="color: #ef4444;">${deposit.rejectionReason}</span>
+                    </div>
+                    ` : ''}
+                    ${deposit.adminNote && !deposit.rejectionReason ? `
+                    <div class="detail-row">
+                        <span>Note:</span>
+                        <span class="detail-value" style="color: #22c55e;">${deposit.adminNote}</span>
+                    </div>
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -1753,7 +1867,7 @@ function renderWithdrawalHistory() {
                 <div class="empty-icon-small">
                     <i class="fas fa-upload"></i>
                 </div>
-                <div class="empty-text">No completed withdrawals</div>
+                <div class="empty-text">No withdrawal history</div>
             </div>
         `;
     }
@@ -1764,21 +1878,32 @@ function renderWithdrawalHistory() {
         const date = new Date(withdrawal.timestamp);
         const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
+        const status = withdrawal.status ? withdrawal.status.toLowerCase() : '';
+        let statusClass = 'completed-badge';
+        let statusIcon = 'fa-check-circle';
+        let statusText = 'Completed';
+        
+        if (status === 'rejected') {
+            statusClass = 'rejected-badge';
+            statusIcon = 'fa-times-circle';
+            statusText = 'Rejected';
+        }
+        
         html += `
-            <div class="transaction-card completed">
+            <div class="transaction-card ${status === 'rejected' ? 'rejected' : 'completed'}">
                 <div class="transaction-header">
                     <div class="transaction-type">
-                        <div class="type-icon withdrawal">
+                        <div class="type-icon withdrawal ${status === 'rejected' ? 'rejected-icon' : ''}">
                             <i class="fas fa-upload"></i>
                         </div>
                         <div class="type-info">
-                            <div class="type-title">Withdrawal ${withdrawal.status === 'completed' ? 'Completed' : 'Processed'}</div>
+                            <div class="type-title">Withdrawal ${statusText}</div>
                             <div class="type-subtitle">USDT</div>
                         </div>
                     </div>
-                    <div class="transaction-status completed-badge">
-                        <i class="fas fa-check-circle"></i>
-                        <span>${withdrawal.status === 'completed' ? 'Completed' : 'Processed'}</span>
+                    <div class="transaction-status ${statusClass}">
+                        <i class="fas ${statusIcon}"></i>
+                        <span>${statusText}</span>
                     </div>
                 </div>
                 <div class="transaction-details">
@@ -1798,6 +1923,18 @@ function renderWithdrawalHistory() {
                         <span>Date:</span>
                         <span class="detail-value">${formattedDate}</span>
                     </div>
+                    ${withdrawal.rejectionReason ? `
+                    <div class="detail-row rejection-reason">
+                        <span>Reason:</span>
+                        <span class="detail-value" style="color: #ef4444;">${withdrawal.rejectionReason}</span>
+                    </div>
+                    ` : ''}
+                    ${withdrawal.completedBy && !withdrawal.rejectionReason ? `
+                    <div class="detail-row">
+                        <span>Processed by:</span>
+                        <span class="detail-value" style="color: #22c55e;">${withdrawal.completedBy}</span>
+                    </div>
+                    ` : ''}
                 </div>
             </div>
         `;
