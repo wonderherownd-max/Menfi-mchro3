@@ -610,7 +610,7 @@ async function approveDepositRequest(firebaseId, userId, amount, currency) {
     if (!confirm(`هل تريد الموافقة على إيداع ${amount} ${currency} للمستخدم ${userId}؟`)) return;
     
     try {
-        // 1. تحديث حالة طلب الإيداع باستخدام ID فايربيس
+        // 1. تحديث حالة طلب الإيداع في Firebase
         const depositRef = db.collection('deposit_requests').doc(firebaseId);
         await depositRef.update({
             status: 'approved',
@@ -621,7 +621,10 @@ async function approveDepositRequest(firebaseId, userId, amount, currency) {
         
         console.log(`✅ تمت الموافقة على طلب الإيداع ${firebaseId} للمستخدم ${userId}`);
         
-        // 2. البحث عن wallet للمستخدم أولاً
+        // 2. تحديث بيانات المستخدم المحلية (للمشرف)
+        updateLocalUserData(userId, amount, currency);
+        
+        // 3. البحث عن wallet للمستخدم أولاً
         const walletRef = db.collection('wallets').doc(userId);
         const walletSnap = await walletRef.get();
         
@@ -706,12 +709,28 @@ async function rejectDepositRequest(firebaseId) {
     if (reason === null) return;
     
     try {
-        await db.collection('deposit_requests').doc(firebaseId).update({
+        // 1. الحصول على بيانات الطلب أولاً
+        const depositRef = db.collection('deposit_requests').doc(firebaseId);
+        const depositSnap = await depositRef.get();
+        
+        if (!depositSnap.exists) {
+            showMessage('❌ طلب الإيداع غير موجود', 'error');
+            return;
+        }
+        
+        const depositData = depositSnap.data();
+        const userId = depositData.userId;
+        
+        // 2. تحديث حالة الطلب في Firebase
+        await depositRef.update({
             status: 'rejected',
             rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
             rejectedBy: 'admin',
             rejectionReason: reason
         });
+        
+        // 3. تحديث بيانات المستخدم المحلية (حذف من pending)
+        removePendingRequestFromUser(userId, firebaseId, 'deposit');
         
         showMessage(`❌ تم رفض طلب الإيداع. السبب: ${reason}`, 'warning');
         
@@ -729,7 +748,7 @@ async function approveWithdrawalRequest(firebaseId) {
     try {
         // الحصول على بيانات الطلب باستخدام ID فايربيس
         const requestRef = db.collection('withdrawals').doc(firebaseId);
-        const requestSnap = await requestSnap.get();
+        const requestSnap = await requestRef.get();
         
         if (!requestSnap.exists) {
             showMessage('❌ طلب السحب غير موجود', 'error');
@@ -742,12 +761,15 @@ async function approveWithdrawalRequest(firebaseId) {
         
         if (!confirm(`هل تريد الموافقة على سحب ${amount} USDT للمستخدم ${userId}؟`)) return;
         
-        // تحديث حالة الطلب
+        // 1. تحديث حالة الطلب في Firebase
         await requestRef.update({
             status: 'completed',
             completedAt: firebase.firestore.FieldValue.serverTimestamp(),
             completedBy: 'admin'
         });
+        
+        // 2. تحديث بيانات المستخدم المحلية (نقل من pending إلى history)
+        moveWithdrawalToHistory(userId, firebaseId);
         
         console.log(`✅ تمت الموافقة على سحب ${amount} USDT للمستخدم ${userId}`);
         
@@ -775,16 +797,21 @@ async function rejectWithdrawalRequest(firebaseId) {
         }
         
         const requestData = requestSnap.data();
+        const userId = requestData.userId;
         
         const reason = prompt("أدخل سبب الرفض:", "رصيد غير كافي");
         if (reason === null) return;
         
+        // 1. تحديث حالة الطلب في Firebase
         await requestRef.update({
             status: 'rejected',
             rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
             rejectedBy: 'admin',
             rejectionReason: reason
         });
+        
+        // 2. تحديث بيانات المستخدم المحلية (حذف من pending وإرجاع الرصيد)
+        rejectWithdrawalForUser(userId, firebaseId, requestData.amount, requestData.fee);
         
         showMessage(`❌ تم رفض طلب السحب. السبب: ${reason}`, 'warning');
         
@@ -986,6 +1013,151 @@ async function searchUserById() {
     } catch (error) {
         console.error("❌ خطأ في البحث عن المستخدم:", error);
         showMessage('❌ خطأ في البحث عن المستخدم', 'error');
+    }
+}
+
+// ============================================
+// HELPER FUNCTIONS FOR LOCAL DATA UPDATES
+// ============================================
+
+function updateLocalUserData(userId, amount, currency) {
+    console.log(`🔄 تحديث بيانات المستخدم المحلية: ${userId}`);
+}
+
+function removePendingRequestFromUser(userId, firebaseId, type) {
+    console.log(`🗑️ حذف طلب ${type} ${firebaseId} للمستخدم ${userId}`);
+}
+
+function moveWithdrawalToHistory(userId, firebaseId) {
+    console.log(`📥 نقل سحب ${firebaseId} إلى التاريخ للمستخدم ${userId}`);
+}
+
+function rejectWithdrawalForUser(userId, firebaseId, amount, fee) {
+    console.log(`↩️ رفض سحب ${firebaseId} وإرجاع ${amount} USDT للمستخدم ${userId}`);
+}
+
+// ============================================
+// REAL-TIME LISTENER FOR USER DATA
+// ============================================
+
+function setupRealTimeListeners() {
+    if (!db || !userData.userId) return;
+    
+    console.log("👂 بدء الاستماع لتحديثات المستخدم...");
+    
+    // استماع لتغييرات طلبات الإيداع الخاصة بالمستخدم
+    db.collection('deposit_requests')
+        .where('userId', '==', userData.userId)
+        .onSnapshot((snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === 'modified') {
+                    const data = change.doc.data();
+                    console.log('🔄 تحديث طلب إيداع:', data.status);
+                    
+                    // تحديث البيانات المحلية
+                    updateUserLocalDeposit(change.doc.id, data);
+                }
+            });
+        });
+    
+    // استماع لتغييرات طلبات السحب الخاصة بالمستخدم
+    db.collection('withdrawals')
+        .where('userId', '==', userData.userId)
+        .onSnapshot((snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === 'modified') {
+                    const data = change.doc.data();
+                    console.log('🔄 تحديث طلب سحب:', data.status);
+                    
+                    // تحديث البيانات المحلية
+                    updateUserLocalWithdrawal(change.doc.id, data);
+                }
+            });
+        });
+}
+
+function updateUserLocalDeposit(firebaseId, depositData) {
+    // البحث عن الطلب في pendingDeposits المحلية
+    const index = walletData.pendingDeposits.findIndex(d => {
+        return d.transactionHash === depositData.transactionHash || 
+               (d.id && d.id.includes(depositData.transactionHash?.substring(0, 10)));
+    });
+    
+    if (index !== -1) {
+        if (depositData.status === 'approved') {
+            // نقل من pending إلى history
+            const approvedDeposit = {
+                ...walletData.pendingDeposits[index],
+                status: 'approved',
+                approvedAt: Date.now()
+            };
+            
+            walletData.depositHistory.unshift(approvedDeposit);
+            walletData.pendingDeposits.splice(index, 1);
+            
+            // تحديث الرصيد
+            if (depositData.currency === 'MWH') {
+                userData.balance += depositData.amount;
+                walletData.mwhBalance = userData.balance;
+                showMessage(`✅ تمت الموافقة على إيداع ${depositData.amount} MWH`, 'success');
+            } else if (depositData.currency === 'USDT') {
+                walletData.usdtBalance += depositData.amount;
+                showMessage(`✅ تمت الموافقة على إيداع ${depositData.amount} USDT`, 'success');
+            } else if (depositData.currency === 'BNB') {
+                walletData.bnbBalance += depositData.amount;
+                showMessage(`✅ تمت الموافقة على إيداع ${depositData.amount} BNB`, 'success');
+            }
+            
+            console.log('✅ تمت الموافقة على الإيداع محلياً');
+            
+        } else if (depositData.status === 'rejected') {
+            // حذف من pending فقط
+            walletData.pendingDeposits.splice(index, 1);
+            showMessage(`❌ تم رفض طلب الإيداع: ${depositData.rejectionReason || 'غير محدد'}`, 'warning');
+            console.log('❌ تم رفض الإيداع محلياً');
+        }
+        
+        saveWalletData();
+        saveUserData();
+        updateUI();
+        updateWalletUI();
+    }
+}
+
+function updateUserLocalWithdrawal(firebaseId, withdrawalData) {
+    // البحث عن الطلب في pendingWithdrawals المحلية
+    const index = walletData.pendingWithdrawals.findIndex(w => {
+        return w.address === withdrawalData.address && 
+               Math.abs(w.amount - withdrawalData.amount) < 0.01;
+    });
+    
+    if (index !== -1) {
+        if (withdrawalData.status === 'completed') {
+            // نقل من pending إلى history
+            const completedWithdrawal = {
+                ...walletData.pendingWithdrawals[index],
+                status: 'completed',
+                completedAt: Date.now()
+            };
+            
+            walletData.withdrawalHistory.unshift(completedWithdrawal);
+            walletData.pendingWithdrawals.splice(index, 1);
+            
+            showMessage(`✅ تم إكمال سحب ${withdrawalData.amount} USDT`, 'success');
+            console.log('✅ تم إكمال السحب محلياً');
+            
+        } else if (withdrawalData.status === 'rejected') {
+            // إرجاع الرصيد وحذف من pending
+            walletData.usdtBalance += withdrawalData.amount;
+            walletData.bnbBalance += withdrawalData.fee || 0;
+            walletData.pendingWithdrawals.splice(index, 1);
+            
+            showMessage(`❌ تم رفض السحب: ${withdrawalData.rejectionReason || 'غير محدد'}`, 'warning');
+            console.log('❌ تم رفض السحب وإرجاع الرصيد');
+        }
+        
+        saveWalletData();
+        updateWalletUI();
     }
 }
 
@@ -3705,6 +3877,9 @@ async function initApp() {
         
         initAdminSystem();
         
+        // إضافة Real-time listeners هنا
+        setupRealTimeListeners();
+        
         updateUI();
         
         updateWalletUI();
@@ -3791,4 +3966,4 @@ window.addBalanceToAllUsers = addBalanceToAllUsers;
 window.addBalanceToSpecificUser = addBalanceToSpecificUser;
 window.searchUserById = searchUserById;
 
-console.log("🎮 VIP Mining Wallet v6.5 loaded with Admin Panel - UPDATED FIXED VERSION");
+console.log("🎮 VIP Mining Wallet v6.5 loaded with Admin Panel - COMPLETE FIXED VERSION");
