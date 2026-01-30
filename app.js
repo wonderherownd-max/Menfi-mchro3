@@ -1249,6 +1249,116 @@ function updateUserLocalWithdrawal(firebaseId, withdrawalData) {
 }
 
 // ============================================
+// NEW: AUTO-CHECK TRANSACTIONS ON APP START
+// ============================================
+
+async function checkAndUpdateTransactionsOnStart() {
+    if (!db || !userData.userId) {
+        console.log("❌ لا يوجد اتصال أو معرف مستخدم");
+        return;
+    }
+    
+    console.log("🔍 فحص المعاملات المعلقة عند بدء التطبيق...");
+    
+    let updated = false;
+    
+    try {
+        // 1. فحص طلبات الإيداع
+        const depositsQuery = await db.collection('deposit_requests')
+            .where('userId', '==', userData.userId)
+            .get();
+        
+        depositsQuery.forEach(doc => {
+            const depositData = doc.data();
+            const status = depositData.status ? depositData.status.toLowerCase() : '';
+            
+            // إذا كانت الحالة approved أو rejected ولا تزال في pendingDeposits
+            if (status === 'approved' || status === 'rejected') {
+                const foundIndex = walletData.pendingDeposits.findIndex(d => 
+                    d.transactionHash === depositData.transactionHash
+                );
+                
+                if (foundIndex !== -1) {
+                    // نقل من pending إلى history
+                    const processedDeposit = walletData.pendingDeposits.splice(foundIndex, 1)[0];
+                    processedDeposit.status = status;
+                    processedDeposit.approvedAt = depositData.approvedAt;
+                    processedDeposit.rejectedAt = depositData.rejectedAt;
+                    processedDeposit.adminNote = depositData.adminNote;
+                    processedDeposit.rejectionReason = depositData.rejectionReason;
+                    
+                    walletData.depositHistory.unshift(processedDeposit);
+                    
+                    // إذا كانت approved، أضف الرصيد
+                    if (status === 'approved') {
+                        if (depositData.currency === 'MWH') {
+                            userData.balance += depositData.amount;
+                            walletData.mwhBalance = userData.balance;
+                        } else if (depositData.currency === 'USDT') {
+                            walletData.usdtBalance += depositData.amount;
+                        } else if (depositData.currency === 'BNB') {
+                            walletData.bnbBalance += depositData.amount;
+                        }
+                    }
+                    
+                    updated = true;
+                    console.log(`✅ تم تحديث إيداع ${depositData.amount} ${depositData.currency}: ${status}`);
+                }
+            }
+        });
+        
+        // 2. فحص طلبات السحب
+        const withdrawalsQuery = await db.collection('withdrawals')
+            .where('userId', '==', userData.userId)
+            .get();
+        
+        withdrawalsQuery.forEach(doc => {
+            const withdrawalData = doc.data();
+            const status = withdrawalData.status ? withdrawalData.status.toLowerCase() : '';
+            
+            // إذا كانت الحالة completed أو rejected ولا تزال في pendingWithdrawals
+            if (status === 'completed' || status === 'rejected') {
+                const foundIndex = walletData.pendingWithdrawals.findIndex(w => 
+                    w.address === withdrawalData.address && 
+                    Math.abs(w.amount - withdrawalData.amount) < 0.01
+                );
+                
+                if (foundIndex !== -1) {
+                    // نقل من pending إلى history
+                    const processedWithdrawal = walletData.pendingWithdrawals.splice(foundIndex, 1)[0];
+                    processedWithdrawal.status = status;
+                    processedWithdrawal.completedAt = withdrawalData.completedAt;
+                    processedWithdrawal.rejectedAt = withdrawalData.rejectedAt;
+                    processedWithdrawal.rejectionReason = withdrawalData.rejectionReason;
+                    
+                    walletData.withdrawalHistory.unshift(processedWithdrawal);
+                    
+                    // إذا كانت rejected، أعد الرصيد
+                    if (status === 'rejected') {
+                        walletData.usdtBalance += withdrawalData.amount;
+                        walletData.bnbBalance += withdrawalData.fee || 0;
+                    }
+                    
+                    updated = true;
+                    console.log(`✅ تم تحديث سحب ${withdrawalData.amount} USDT: ${status}`);
+                }
+            }
+        });
+        
+        if (updated) {
+            saveWalletData();
+            saveUserData();
+            updateUI();
+            updateWalletUI();
+            showMessage('✅ تم تحديث معاملاتك المعلقة', 'success');
+        }
+        
+    } catch (error) {
+        console.error("❌ خطأ في فحص المعاملات:", error);
+    }
+}
+
+// ============================================
 // FLOATING NOTIFICATION SYSTEM
 // ============================================
 
@@ -3780,6 +3890,11 @@ async function loadUserData() {
         
         if (db) {
             await loadUserFromFirebase();
+            
+            // ✅ **هنا أضفنا الفحص التلقائي عند فتح التطبيق**
+            setTimeout(() => {
+                checkAndUpdateTransactionsOnStart();
+            }, 2000);
         }
         
         console.log("✅ Data loading complete. Final balance:", userData.balance);
@@ -4102,5 +4217,6 @@ window.rejectWithdrawalRequest = rejectWithdrawalRequest;
 window.addBalanceToAllUsers = addBalanceToAllUsers;
 window.addBalanceToSpecificUser = addBalanceToSpecificUser;
 window.searchUserById = searchUserById;
+window.checkAndUpdateTransactionsOnStart = checkAndUpdateTransactionsOnStart;
 
-console.log("🎮 VIP Mining Wallet v6.5 loaded with Admin Panel - COMPLETE FIXED VERSION");
+console.log("🎮 VIP Mining Wallet v6.5 loaded with Auto-Transaction Update System");
