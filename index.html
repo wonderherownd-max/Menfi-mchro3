@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIP Mining - Telegram Mini App</title>
+    <title>VIP Mining - Professional Wallet</title>
     
     <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -20,6 +20,41 @@
     
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛏️</text></svg>">
+    
+    <!-- Page Styles -->
+    <style>
+        .page {
+            min-height: 100vh;
+            padding-bottom: 80px;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        #earningContent {
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Loading screen spinner */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
     <!-- Loading Screen -->
@@ -47,12 +82,12 @@
             margin-bottom: 20px;
         "></div>
         <p style="color: white; font-size: 18px; font-weight: 600; margin-bottom: 10px;">VIP Mining Wealth PRO</p>
-        <p id="loadingStatus" style="color: #94a3b8; font-size: 14px; margin-top: 10px;">جاري التهيئة...</p>
+        <p id="loadingStatus" style="color: #94a3b8; font-size: 14px; margin-top: 10px;">Initializing...</p>
     </div>
 
     <!-- Main Home Page -->
-    <div class="container" id="homePage">
-        <!-- Header Section - Compact Version -->
+    <div class="container active" id="homePage">
+        <!-- Header Section -->
         <header class="app-header compact">
             <div class="logo">
                 <i class="fas fa-gem"></i>
@@ -64,7 +99,7 @@
             <div class="user-section compact" id="userSection">
                 <div class="user-avatar" id="userAvatar">U</div>
                 <div class="user-info compact">
-                    <div class="username" id="username">Loading...</div>
+                    <div class="username" id="username">User</div>
                     <div class="user-id" id="userId">ID: ---</div>
                 </div>
             </div>
@@ -208,10 +243,7 @@
         </div>
     </div>
 
-    <!-- =========================================== -->
-    <!-- Wallet Page - Professional Design -->
-    <!-- =========================================== -->
-
+    <!-- Wallet Page -->
     <div id="walletPage" class="page hidden">
         <div class="page-header">
             <div class="back-btn" onclick="switchToPage('home')">
@@ -221,7 +253,7 @@
         </div>
         
         <div class="wallet-container">
-            <!-- Total Balance - Compact Version -->
+            <!-- Total Balance -->
             <div class="total-balance-card compact">
                 <div class="total-balance-label">
                     <i class="fas fa-chart-line"></i> Assets
@@ -230,7 +262,7 @@
                 <div class="total-balance-sub">Total Balance</div>
             </div>
 
-            <!-- Quick Actions - Compact Version -->
+            <!-- Quick Actions -->
             <div class="wallet-quick-actions compact">
                 <div class="action-title">
                     <i class="fas fa-bolt"></i> Quick Actions
@@ -290,9 +322,6 @@
                         <button class="action-btn-small" onclick="openSwapModal('MWH')">
                             <i class="fas fa-exchange-alt"></i> Swap
                         </button>
-                        <button class="action-btn-small disabled" onclick="showComingSoon()">
-                            <i class="fas fa-download"></i> Receive
-                        </button>
                     </div>
                 </div>
 
@@ -317,16 +346,6 @@
                     <div class="crypto-value" id="walletUSDTValue">
                         ≈ $0.00
                     </div>
-                    <div class="crypto-withdrawal-info" id="usdtWithdrawalInfo" style="display: none;">
-                        <div class="withdrawal-minimum">
-                            <i class="fas fa-info-circle"></i>
-                            Min withdrawal: 50 USDT
-                        </div>
-                        <div class="withdrawal-fee" id="usdtWithdrawalFee" style="display: none;">
-                            <i class="fas fa-gas-pump"></i>
-                            Network fee: 0.0005 BNB
-                        </div>
-                    </div>
                     <div class="crypto-actions">
                         <button class="action-btn-small" onclick="openSwapModal('USDT')">
                             <i class="fas fa-exchange-alt"></i> Swap
@@ -334,7 +353,7 @@
                         <button class="action-btn-small" onclick="openDepositModal('USDT')">
                             <i class="fas fa-download"></i> Deposit
                         </button>
-                        <button class="action-btn-small withdraw-btn" id="withdrawUSDTBtn" onclick="openWithdrawalModal()">
+                        <button class="action-btn-small" onclick="openWithdrawalModal()">
                             <i class="fas fa-upload"></i> Withdraw
                         </button>
                     </div>
@@ -351,7 +370,7 @@
                             <div class="crypto-symbol">BNB</div>
                         </div>
                         <div class="crypto-price">
-                            1 BNB ≈ $903
+                            1 BNB ≈ $875
                         </div>
                     </div>
                     <div class="crypto-balance">
@@ -396,9 +415,6 @@
                         <button class="action-btn-small disabled" onclick="showComingSoon()">
                             <i class="fas fa-download"></i> Deposit
                         </button>
-                        <button class="action-btn-small disabled" onclick="showComingSoon()">
-                            <i class="fas fa-exchange-alt"></i> Swap
-                        </button>
                     </div>
                 </div>
 
@@ -426,9 +442,6 @@
                     <div class="crypto-actions">
                         <button class="action-btn-small disabled" onclick="showComingSoon()">
                             <i class="fas fa-download"></i> Deposit
-                        </button>
-                        <button class="action-btn-small disabled" onclick="showComingSoon()">
-                            <i class="fas fa-exchange-alt"></i> Swap
                         </button>
                     </div>
                 </div>
@@ -462,60 +475,29 @@
         </div>
     </div>
 
-    <!-- =========================================== -->
     <!-- Earning Page -->
-    <!-- =========================================== -->
-
     <div id="earningPage" class="page hidden">
         <div class="page-header">
             <div class="back-btn" onclick="switchToPage('home')">
                 <i class="fas fa-arrow-left"></i>
             </div>
-            <h2><i class="fas fa-chart-line"></i> Earning</h2>
+            <h2><i class="fas fa-money-bill-wave"></i> Earnings Center</h2>
         </div>
         
-        <div class="earning-content">
-            <div class="coming-soon">
-                <div class="rocket-animation">
-                    🚀
-                </div>
-                <h3>Coming Soon!</h3>
-                <p>Working on new earning features</p>
-                
-                <div class="features-list">
-                    <div class="feature-item">
-                        <i class="fas fa-ad"></i>
-                        <span>Watch Ads</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-tasks"></i>
-                        <span>Daily Tasks</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-gift"></i>
-                        <span>Exclusive Offers</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-trophy"></i>
-                        <span>Contests & Rewards</span>
-                    </div>
-                </div>
-            </div>
+        <div id="earningContent">
+            <!-- Content loaded dynamically -->
         </div>
     </div>
 
-    <!-- =========================================== -->
     <!-- Bottom Navigation -->
-    <!-- =========================================== -->
-
     <div id="bottomNav" class="bottom-nav">
         <div class="nav-item active" onclick="switchToPage('home')">
             <i class="fas fa-home"></i>
             <span>Home</span>
         </div>
         <div class="nav-item" onclick="switchToPage('earning')">
-            <i class="fas fa-chart-line"></i>
-            <span>Earning</span>
+            <i class="fas fa-money-bill-wave"></i>
+            <span>Earnings</span>
         </div>
         <div class="nav-item" onclick="switchToPage('wallet')">
             <i class="fas fa-wallet"></i>
@@ -523,45 +505,11 @@
         </div>
     </div>
 
-    <!-- JavaScript Files -->
-    <script src="app.js"></script>
-    
-    <!-- Navigation System -->
+    <!-- JavaScript -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log("🎯 Navigation system loading...");
-            setupNavigation();
-            setTimeout(initializeHomePage, 1000);
-        });
-        
-        function setupNavigation() {
-            const navItems = document.querySelectorAll('.nav-item');
-            
-            navItems.forEach(item => {
-                item.onclick = null;
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    const text = this.querySelector('span').textContent.toLowerCase();
-                    let pageName = 'home';
-                    
-                    if (text.includes('wallet')) pageName = 'wallet';
-                    else if (text.includes('earning')) pageName = 'earning';
-                    
-                    console.log("🚀 Switching to page:", pageName);
-                    switchToPage(pageName);
-                    
-                    return false;
-                });
-            });
-            
-            console.log("✅ Navigation setup complete");
-        }
-        
+        // Navigation System
         function switchToPage(pageName) {
-            const allPages = document.querySelectorAll('.page, .container');
-            allPages.forEach(page => {
+            document.querySelectorAll('.page, .container').forEach(page => {
                 page.classList.remove('active');
                 page.classList.add('hidden');
             });
@@ -571,126 +519,59 @@
             });
             
             if (pageName === 'home') {
-                const homePage = document.querySelector('.container');
-                if (homePage) {
-                    homePage.classList.remove('hidden');
-                    homePage.classList.add('active');
-                }
-                
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    if (item.querySelector('span').textContent.toLowerCase().includes('home')) {
-                        item.classList.add('active');
-                    }
-                });
-                
-                // بدء الإشعارات عند فتح الصفحة الرئيسية
-                setTimeout(() => {
-                    if (window.initNotificationSystem) {
-                        window.initNotificationSystem();
-                    }
-                    if (window.startNotificationTimer) {
-                        window.startNotificationTimer();
-                    }
-                }, 500);
-                
-            } else if (pageName === 'wallet') {
-                const walletPage = document.getElementById('walletPage');
-                if (walletPage) {
-                    walletPage.classList.remove('hidden');
-                    walletPage.classList.add('active');
-                }
-                
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    if (item.querySelector('span').textContent.toLowerCase().includes('wallet')) {
-                        item.classList.add('active');
-                    }
-                });
-                
-                // Update wallet UI when opened
-                if (window.updateWalletUI) {
-                    window.updateWalletUI();
-                }
-                
-                // إيقاف الإشعارات عند فتح المحفظة
-                if (window.stopNotificationTimer) {
-                    window.stopNotificationTimer();
-                }
-                
-            } else if (pageName === 'earning') {
-                const earningPage = document.getElementById('earningPage');
-                if (earningPage) {
-                    earningPage.classList.remove('hidden');
-                    earningPage.classList.add('active');
-                }
-                
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    if (item.querySelector('span').textContent.toLowerCase().includes('earning')) {
-                        item.classList.add('active');
-                    }
-                });
-                
-                // إيقاف الإشعارات عند فتح صفحة الأرباح
-                if (window.stopNotificationTimer) {
-                    window.stopNotificationTimer();
-                }
+                document.getElementById('homePage').classList.remove('hidden');
+                document.getElementById('homePage').classList.add('active');
+                document.querySelector('.nav-item:nth-child(1)').classList.add('active');
+                if (window.startNotificationTimer) startNotificationTimer();
+            } 
+            else if (pageName === 'wallet') {
+                document.getElementById('walletPage').classList.remove('hidden');
+                document.getElementById('walletPage').classList.add('active');
+                document.querySelector('.nav-item:nth-child(3)').classList.add('active');
+                if (window.stopNotificationTimer) stopNotificationTimer();
+                if (window.updateWalletUI) updateWalletUI();
+            }
+            else if (pageName === 'earning') {
+                document.getElementById('earningPage').classList.remove('hidden');
+                document.getElementById('earningPage').classList.add('active');
+                document.querySelector('.nav-item:nth-child(2)').classList.add('active');
+                if (window.stopNotificationTimer) stopNotificationTimer();
+                if (window.updateEarningUI) updateEarningUI();
             }
         }
         
         function showComingSoon() {
             if (window.showMessage) {
-                window.showMessage('🚀 This feature is under development!', 'info');
+                showMessage('🚀 Feature coming soon!', 'info');
             } else {
-                console.log('🚀 This feature is under development!');
+                alert('Feature coming soon!');
             }
         }
         
-        function initializeHomePage() {
-            console.log("🏠 Initializing home page...");
+        // Initialize loading screen
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            const statusEl = document.getElementById('loadingStatus');
+            
+            if (statusEl) {
+                statusEl.textContent = "Loading app...";
+            }
+            
             setTimeout(() => {
-                if (window.initNotificationSystem) {
-                    window.initNotificationSystem();
-                }
-                // إخفاء شاشة التحميل بعد 2 ثانية
-                const loadingScreen = document.getElementById('loadingScreen');
                 if (loadingScreen) {
+                    loadingScreen.style.opacity = '0';
                     setTimeout(() => {
-                        loadingScreen.style.opacity = '0';
-                        setTimeout(() => {
-                            loadingScreen.style.display = 'none';
-                        }, 500);
-                    }, 2000);
+                        loadingScreen.style.display = 'none';
+                    }, 500);
                 }
             }, 1500);
-        }
-        
-        // وظيفة تحديث حالة التحميل
-        function updateLoadingStatus(text) {
-            const statusEl = document.getElementById('loadingStatus');
-            if (statusEl) {
-                statusEl.textContent = text;
-            }
-            console.log("📱 Loading:", text);
-        }
-        
-        // تهيئة حالة التحميل الأولية
-        updateLoadingStatus("Data is being updated...");
+        });
         
         window.switchToPage = switchToPage;
         window.showComingSoon = showComingSoon;
-        window.initializeHomePage = initializeHomePage;
-        window.updateLoadingStatus = updateLoadingStatus;
-        
-        console.log("✅ Navigation system ready");
-        
-        // Animation for spinner
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-        `;
-        document.head.appendChild(style);
     </script>
+    
+    <!-- Main App JavaScript -->
+    <script src="app.js"></script>
 </body>
 </html>
