@@ -3411,3 +3411,640 @@ body {
         font-size: 10px;
     }
 }
+/* =========================================== */
+/* NEW: EARNING PAGE STYLES - ADD TO END OF FILE */
+/* =========================================== */
+
+.earning-content {
+    padding: 0 10px;
+    padding-bottom: 20px;
+}
+
+/* Daily Reset Card */
+.daily-reset-card {
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.reset-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.reset-info i {
+    font-size: 24px;
+    color: #60a5fa;
+    background: rgba(59, 130, 246, 0.1);
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.reset-label {
+    color: #cbd5e0;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.reset-countdown {
+    color: #fbbf24;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.reset-stats {
+    text-align: right;
+}
+
+.reset-stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #22c55e;
+    margin-bottom: 4px;
+}
+
+.reset-stat-label {
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+/* Earning Sections */
+.earning-section {
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.section-header-earning {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.section-title-earning {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.section-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
+
+.ad-icon {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 2px solid rgba(59, 130, 246, 0.3);
+}
+
+.task-icon {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+    border: 2px solid rgba(34, 197, 94, 0.3);
+}
+
+.section-title-earning h3 {
+    font-size: 18px;
+    color: #f8fafc;
+    margin-bottom: 4px;
+}
+
+.section-subtitle {
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+.section-badge {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.challenge-badge {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+/* Ad Stats Card */
+.ad-stats-card {
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.ad-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ad-stat-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #cbd5e0;
+    font-size: 14px;
+}
+
+.ad-stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #fbbf24;
+}
+
+/* Progress Bars */
+.ad-progress, .challenge-progress {
+    margin-bottom: 20px;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    color: #cbd5e0;
+    font-size: 14px;
+}
+
+.progress-bar-earning {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill-earning {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+/* Watch Ad Button */
+.watch-ad-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #3b82f6, #6366f1);
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.watch-ad-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+}
+
+.watch-ad-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.ad-btn-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.ad-btn-icon {
+    background: rgba(255, 255, 255, 0.2);
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+}
+
+.ad-btn-text {
+    flex: 1;
+    text-align: left;
+}
+
+.ad-btn-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 4px;
+}
+
+.ad-btn-subtitle {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.ad-note {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #94a3b8;
+    font-size: 13px;
+    padding: 10px;
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Referral Stats Card */
+.referral-stats-card {
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.referral-stat-main {
+    margin-bottom: 10px;
+}
+
+.referral-stat-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: #22c55e;
+    margin-bottom: 5px;
+}
+
+.referral-stat-label {
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+.referral-stat-sub {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+}
+
+.referral-stat-sub-item {
+    text-align: center;
+}
+
+.sub-label {
+    color: #cbd5e0;
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+
+.sub-value {
+    color: #fbbf24;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* Challenge Cards */
+.challenge-card {
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+
+.challenge-card.premium {
+    border: 2px solid rgba(245, 158, 11, 0.3);
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9));
+}
+
+.challenge-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.challenge-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.challenge-number {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.challenge-info {
+    flex: 1;
+}
+
+.challenge-name {
+    font-size: 16px;
+    color: #f8fafc;
+    margin-bottom: 4px;
+}
+
+.challenge-reward {
+    color: #fbbf24;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* Claim Buttons */
+.claim-challenge-btn {
+    background: linear-gradient(135deg, #22c55e, #10b981);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+}
+
+.claim-challenge-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
+}
+
+.claim-challenge-btn:disabled {
+    background: rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+.claim-challenge-btn.premium-btn {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.premium-badge {
+    position: absolute;
+    top: -10px;
+    right: 20px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.challenge-note {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #f59e0b;
+    font-size: 13px;
+    padding: 12px 15px;
+    background: rgba(245, 158, 11, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    margin-top: 10px;
+}
+
+/* Coming Soon Grid */
+.coming-soon-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.coming-soon-card {
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s;
+}
+
+.coming-soon-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(59, 130, 246, 0.4);
+}
+
+.coming-soon-icon {
+    font-size: 32px;
+    color: #94a3b8;
+    margin-bottom: 15px;
+}
+
+.coming-soon-content h4 {
+    font-size: 16px;
+    color: #f8fafc;
+    margin-bottom: 8px;
+}
+
+.coming-soon-content p {
+    color: #94a3b8;
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+.coming-soon-badge {
+    background: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* Earning Tips */
+.earning-tips {
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tips-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    color: #f8fafc;
+}
+
+.tips-header i {
+    color: #fbbf24;
+    font-size: 20px;
+}
+
+.tips-header h4 {
+    font-size: 16px;
+}
+
+.tips-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.tip-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 8px;
+}
+
+.tip-icon {
+    font-size: 20px;
+    width: 36px;
+    height: 36px;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.tip-text {
+    color: #cbd5e0;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+/* Responsive Design for Earning Page */
+@media (max-width: 480px) {
+    .earning-section {
+        padding: 15px;
+    }
+    
+    .section-header-earning {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+    
+    .section-badge {
+        align-self: flex-start;
+    }
+    
+    .ad-stats-card {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .ad-btn-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .ad-btn-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+    
+    .referral-stat-sub {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .challenge-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .claim-challenge-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .coming-soon-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .daily-reset-card {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .reset-info {
+        justify-content: center;
+    }
+    
+    .reset-stats {
+        text-align: center;
+    }
+}
+
+@media (max-width: 380px) {
+    .section-title-earning {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .section-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+    
+    .challenge-title {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .challenge-number {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+    }
+    
+    .tip-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+    }
+    
+    .tip-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+}
