@@ -70,6 +70,15 @@ let walletData = {
     lastUpdate: Date.now()
 };
 
+// Daily Earning Stats
+let dailyStats = {
+    adsWatched: 0,
+    adsEarned: 0,
+    referralCount: 0,
+    referralEarned: 0,
+    lastReset: Date.now()
+};
+
 // Configuration
 const CONFIG = {
     MINE_COOLDOWN: 14400000,
@@ -102,7 +111,16 @@ const CONFIG = {
     
     DEPOSIT_ADDRESS: "0x790CAB511055F63db2F30AD227f7086bA3B6376a",
     
-    MIN_TRANSACTION_LENGTH: 64
+    MIN_TRANSACTION_LENGTH: 64,
+    
+    // New Earning Config
+    AD_REWARD: 25,
+    DAILY_AD_LIMIT: 100,
+    REFERRAL_CHALLENGES: [
+        { target: 10, reward: 1000, claimed: false },
+        { target: 25, reward: 3000, claimed: false },
+        { target: 100, reward: 12000, bonusBNB: 0.05, claimed: false }
+    ]
 };
 
 // ============================================
@@ -727,13 +745,15 @@ async function approveDepositRequest(firebaseId, userId, amount, currency) {
             }
         }
         
-        showMessage(`✅ تمت الموافقة على الإيداع! تم إضافة ${amount} ${currency} للمستخدم`, 'success');
+        // ✅ تم إصلاح المشكلة هنا: كانت الرسالة بالعربية فقط للمشرف
+        // الآن الرسالة ستظهر بشكل صحيح
+        showMessage(`✅ Deposit approved! ${amount} ${currency} added to user`, 'success');
         
         setTimeout(loadAdminPendingRequests, 1000);
         
     } catch (error) {
-        console.error("❌ خطأ في الموافقة على الإيداع:", error);
-        showMessage('❌ خطأ في الموافقة على الإيداع', 'error');
+        console.error("❌ Error approving deposit:", error);
+        showMessage('❌ Error approving deposit request', 'error');
     }
 }
 
@@ -764,7 +784,7 @@ async function rejectDepositRequest(firebaseId) {
             rejectionReason: reason
         });
         
-        showMessage(`❌ تم رفض طلب الإيداع. السبب: ${reason}`, 'warning');
+        showMessage(`❌ Deposit request rejected. Reason: ${reason}`, 'warning');
         
         setTimeout(loadAdminPendingRequests, 1000);
         
@@ -802,7 +822,7 @@ async function approveWithdrawalRequest(firebaseId) {
         
         console.log(`✅ تمت الموافقة على سحب ${amount} USDT للمستخدم ${userId}`);
         
-        showMessage(`✅ تمت الموافقة على السحب! تم إرسال ${amount} USDT للمستخدم`, 'success');
+        showMessage(`✅ Withdrawal approved! ${amount} USDT sent to user`, 'success');
         
         setTimeout(loadAdminPendingRequests, 1000);
         
@@ -839,7 +859,7 @@ async function rejectWithdrawalRequest(firebaseId) {
             rejectionReason: reason
         });
         
-        showMessage(`❌ تم رفض طلب السحب. السبب: ${reason}`, 'warning');
+        showMessage(`❌ Withdrawal request rejected. Reason: ${reason}`, 'warning');
         
         setTimeout(loadAdminPendingRequests, 1000);
         
@@ -857,14 +877,14 @@ async function addBalanceToAllUsers() {
     
     const amount = parseFloat(amountInput.value);
     if (!amount || amount <= 0) {
-        showMessage('❌ الرجاء إدخال مبلغ صحيح', 'error');
+        showMessage('❌ Please enter a valid amount', 'error');
         return;
     }
     
     if (!confirm(`هل تريد إضافة ${amount} MWH لجميع المستخدمين؟ هذا الإجراء لا يمكن التراجع عنه.`)) return;
     
     try {
-        showMessage('⏳ جاري إضافة الرصيد لجميع المستخدمين...', 'info');
+        showMessage('⏳ Adding balance to all users...', 'info');
         
         const usersSnapshot = await db.collection('users').get();
         let processed = 0;
@@ -882,12 +902,12 @@ async function addBalanceToAllUsers() {
         
         await batch.commit();
         
-        showMessage(`✅ تم إضافة ${amount} MWH لـ ${processed} مستخدم`, 'success');
+        showMessage(`✅ Added ${amount} MWH to ${processed} users`, 'success');
         amountInput.value = '';
         
     } catch (error) {
-        console.error("❌ خطأ في إضافة الرصيد لجميع المستخدمين:", error);
-        showMessage('❌ خطأ في إضافة الرصيد للمستخدمين', 'error');
+        console.error("❌ Error adding balance to all users:", error);
+        showMessage('❌ Error adding balance to users', 'error');
     }
 }
 
@@ -903,19 +923,19 @@ async function addBalanceToSpecificUser() {
     const amount = parseFloat(amountInput.value);
     
     if (!searchTerm) {
-        showMessage('❌ الرجاء إدخال معرف المستخدم أو اسم المستخدم', 'error');
+        showMessage('❌ Please enter user ID or username', 'error');
         return;
     }
     
     if (!amount || amount <= 0) {
-        showMessage('❌ الرجاء إدخال مبلغ صحيح', 'error');
+        showMessage('❌ Please enter a valid amount', 'error');
         return;
     }
     
     if (!confirm(`هل تريد إضافة ${amount} MWH للمستخدم ${searchTerm}؟`)) return;
     
     try {
-        showMessage('⏳ جاري إضافة الرصيد للمستخدم...', 'info');
+        showMessage('⏳ Adding balance to user...', 'info');
         
         let userDoc;
         
@@ -938,17 +958,63 @@ async function addBalanceToSpecificUser() {
         }
         
         if (!userDoc) {
-            showMessage(`❌ المستخدم ${searchTerm} غير موجود`, 'error');
+            showMessage(`❌ User ${searchTerm} not found`, 'error');
             return;
         }
         
+        // Add admin transaction to user's deposit history
+        const adminTransaction = {
+            id: 'admin_bonus_' + Date.now(),
+            userId: userDoc.id,
+            amount: amount,
+            currency: 'MWH',
+            type: 'admin_bonus',
+            status: 'completed',
+            timestamp: Date.now(),
+            note: 'Added by admin'
+        };
+        
+        // Add to user's balance
         await userDoc.ref.update({
             balance: firebase.firestore.FieldValue.increment(amount),
             totalEarned: firebase.firestore.FieldValue.increment(amount),
             lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
         });
         
-        showMessage(`✅ تم إضافة ${amount} MWH للمستخدم ${userDoc.data().username || searchTerm}`, 'success');
+        // Save admin transaction to user's wallet
+        const walletRef = db.collection('wallets').doc(userDoc.id);
+        const walletSnap = await walletRef.get();
+        
+        if (walletSnap.exists) {
+            const walletData = walletSnap.data();
+            const updatedDepositHistory = walletData.depositHistory || [];
+            updatedDepositHistory.unshift(adminTransaction);
+            
+            await walletRef.update({
+                mwhBalance: firebase.firestore.FieldValue.increment(amount),
+                depositHistory: updatedDepositHistory,
+                lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        } else {
+            // Create wallet if doesn't exist
+            await walletRef.set({
+                userId: userDoc.id,
+                mwhBalance: amount,
+                usdtBalance: 0,
+                bnbBalance: 0,
+                tonBalance: 0,
+                ethBalance: 0,
+                totalWithdrawn: 0,
+                pendingWithdrawals: [],
+                pendingDeposits: [],
+                depositHistory: [adminTransaction],
+                withdrawalHistory: [],
+                usedTransactions: [],
+                lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+        
+        showMessage(`✅ Added ${amount} MWH to user ${userDoc.data().username || searchTerm}`, 'success');
         userIdInput.value = '';
         amountInput.value = '';
         
@@ -963,8 +1029,8 @@ async function addBalanceToSpecificUser() {
         }
         
     } catch (error) {
-        console.error("❌ خطأ في إضافة الرصيد للمستخدم:", error);
-        showMessage('❌ خطأ في إضافة الرصيد للمستخدم', 'error');
+        console.error("❌ Error adding balance to user:", error);
+        showMessage('❌ Error adding balance to user', 'error');
     }
 }
 
@@ -976,12 +1042,12 @@ async function searchUserById() {
     
     const searchTerm = searchInput.value.trim();
     if (!searchTerm) {
-        showMessage('❌ الرجاء إدخال معرف المستخدم أو اسم المستخدم', 'error');
+        showMessage('❌ Please enter user ID or username', 'error');
         return;
     }
     
     try {
-        showMessage('🔍 جاري البحث عن المستخدم...', 'info');
+        showMessage('🔍 Searching for user...', 'info');
         
         let userDoc;
         let foundById = false;
@@ -1006,7 +1072,7 @@ async function searchUserById() {
         }
         
         if (!userDoc) {
-            showMessage(`❌ المستخدم ${searchTerm} غير موجود`, 'error');
+            showMessage(`❌ User ${searchTerm} not found`, 'error');
             document.getElementById('adminUserInfo').style.display = 'none';
             return;
         }
@@ -1014,11 +1080,11 @@ async function searchUserById() {
         const userData = userDoc.data();
         
         // تحديث الواجهة
-        document.getElementById('adminFoundUsername').textContent = userData.username || 'غير معروف';
+        document.getElementById('adminFoundUsername').textContent = userData.username || 'Unknown';
         document.getElementById('adminFoundBalance').textContent = `${userData.balance || 0} MWH`;
         document.getElementById('adminFoundTotalEarned').textContent = `${userData.totalEarned || 0} MWH`;
         document.getElementById('adminFoundReferrals').textContent = userData.referrals || 0;
-        document.getElementById('adminFoundRank').textContent = userData.rank || 'مبتدئ';
+        document.getElementById('adminFoundRank').textContent = userData.rank || 'Beginner';
         document.getElementById('adminFoundUserId').textContent = userDoc.id;
         
         // تعبئة خانة إضافة الرصيد
@@ -1034,11 +1100,324 @@ async function searchUserById() {
         // إظهار معلومات المستخدم
         document.getElementById('adminUserInfo').style.display = 'block';
         
-        showMessage(`✅ تم العثور على المستخدم: ${userData.username}`, 'success');
+        showMessage(`✅ User found: ${userData.username}`, 'success');
         
     } catch (error) {
-        console.error("❌ خطأ في البحث عن المستخدم:", error);
-        showMessage('❌ خطأ في البحث عن المستخدم', 'error');
+        console.error("❌ Error searching for user:", error);
+        showMessage('❌ Error searching for user', 'error');
+    }
+}
+
+// ============================================
+// NEW: EARNING SYSTEM FUNCTIONS
+// ============================================
+
+function initEarningPage() {
+    console.log("💰 Initializing earning page...");
+    checkDailyReset();
+    updateEarningUI();
+}
+
+function checkDailyReset() {
+    const now = Date.now();
+    const lastReset = dailyStats.lastReset;
+    const resetTime = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+    
+    // Check if 24 hours have passed since last reset
+    if (now - lastReset >= resetTime) {
+        resetDailyStats();
+    }
+    
+    // Update countdown timer
+    updateResetCountdown();
+}
+
+function resetDailyStats() {
+    dailyStats.adsWatched = 0;
+    dailyStats.adsEarned = 0;
+    dailyStats.referralCount = 0;
+    dailyStats.referralEarned = 0;
+    dailyStats.lastReset = Date.now();
+    
+    // Reset referral challenges
+    CONFIG.REFERRAL_CHALLENGES.forEach(challenge => {
+        challenge.claimed = false;
+    });
+    
+    saveDailyStats();
+    updateEarningUI();
+    
+    console.log("🔄 Daily stats reset");
+}
+
+function updateResetCountdown() {
+    const now = Date.now();
+    const resetTime = 24 * 60 * 60 * 1000; // 24 hours
+    const nextReset = dailyStats.lastReset + resetTime;
+    const timeLeft = nextReset - now;
+    
+    if (timeLeft <= 0) {
+        resetDailyStats();
+        return;
+    }
+    
+    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    
+    // Update countdown display
+    const countdownElement = document.getElementById('dailyResetCountdown');
+    if (countdownElement) {
+        countdownElement.textContent = `Daily reset in: ${hours}h ${minutes}m`;
+    }
+}
+
+function updateEarningUI() {
+    // Update Ads Section
+    const adsCountElement = document.getElementById('adsWatchedCount');
+    const adsEarnedElement = document.getElementById('adsEarnedAmount');
+    const adsProgressElement = document.getElementById('adsProgress');
+    const watchAdButton = document.getElementById('watchAdButton');
+    
+    if (adsCountElement) {
+        adsCountElement.textContent = `${dailyStats.adsWatched}/${CONFIG.DAILY_AD_LIMIT}`;
+    }
+    
+    if (adsEarnedElement) {
+        adsEarnedElement.textContent = `${dailyStats.adsEarned} MWH`;
+    }
+    
+    if (adsProgressElement) {
+        const progress = (dailyStats.adsWatched / CONFIG.DAILY_AD_LIMIT) * 100;
+        adsProgressElement.style.width = `${progress}%`;
+    }
+    
+    if (watchAdButton) {
+        if (dailyStats.adsWatched >= CONFIG.DAILY_AD_LIMIT) {
+            watchAdButton.disabled = true;
+            watchAdButton.innerHTML = '<i class="fas fa-ban"></i> Daily Limit Reached';
+        } else {
+            watchAdButton.disabled = false;
+            watchAdButton.innerHTML = '<i class="fas fa-play"></i> Watch Ad & Earn 25 MWH';
+        }
+    }
+    
+    // Update Referral Challenges
+    updateReferralChallengesUI();
+}
+
+function updateReferralChallengesUI() {
+    const challenges = CONFIG.REFERRAL_CHALLENGES;
+    
+    challenges.forEach((challenge, index) => {
+        const progressElement = document.getElementById(`referralChallenge${index + 1}Progress`);
+        const progressBarElement = document.getElementById(`referralChallenge${index + 1}ProgressBar`);
+        const rewardElement = document.getElementById(`referralChallenge${index + 1}Reward`);
+        const claimButton = document.getElementById(`claimReferralChallenge${index + 1}`);
+        
+        if (progressElement) {
+            const progress = Math.min((dailyStats.referralCount / challenge.target) * 100, 100);
+            progressElement.textContent = `${dailyStats.referralCount}/${challenge.target}`;
+            
+            if (progressBarElement) {
+                progressBarElement.style.width = `${progress}%`;
+            }
+        }
+        
+        if (rewardElement) {
+            let rewardText = `${challenge.reward} MWH`;
+            if (challenge.bonusBNB) {
+                rewardText += ` + ${challenge.bonusBNB} BNB`;
+            }
+            rewardElement.textContent = rewardText;
+        }
+        
+        if (claimButton) {
+            if (challenge.claimed) {
+                claimButton.disabled = true;
+                claimButton.innerHTML = '<i class="fas fa-check"></i> Claimed';
+            } else if (dailyStats.referralCount >= challenge.target) {
+                claimButton.disabled = false;
+                claimButton.innerHTML = '<i class="fas fa-gift"></i> Claim Reward';
+            } else {
+                claimButton.disabled = true;
+                claimButton.innerHTML = '<i class="fas fa-lock"></i> In Progress';
+            }
+        }
+    });
+}
+
+function watchAd() {
+    // Check daily limit
+    if (dailyStats.adsWatched >= CONFIG.DAILY_AD_LIMIT) {
+        showMessage('❌ Daily ad limit reached! Come back tomorrow.', 'error');
+        return;
+    }
+    
+    // Show loading
+    const watchAdButton = document.getElementById('watchAdButton');
+    if (watchAdButton) {
+        watchAdButton.disabled = true;
+        watchAdButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading ad...';
+    }
+    
+    try {
+        // Show rewarded ad
+        show_10539656('pop').then(() => {
+            // User watched ad completely
+            rewardAdWatched();
+        }).catch(e => {
+            // User closed ad or error occurred
+            if (watchAdButton) {
+                watchAdButton.disabled = false;
+                watchAdButton.innerHTML = '<i class="fas fa-play"></i> Watch Ad & Earn 25 MWH';
+            }
+            console.log("Ad closed or error:", e);
+        });
+        
+    } catch (error) {
+        console.error("Ad error:", error);
+        if (watchAdButton) {
+            watchAdButton.disabled = false;
+            watchAdButton.innerHTML = '<i class="fas fa-play"></i> Watch Ad & Earn 25 MWH';
+        }
+        showMessage('❌ Ad service not available', 'error');
+    }
+}
+
+function rewardAdWatched() {
+    // Add reward
+    const reward = CONFIG.AD_REWARD;
+    userData.balance += reward;
+    walletData.mwhBalance = userData.balance;
+    userData.totalEarned += reward;
+    
+    // Update daily stats
+    dailyStats.adsWatched++;
+    dailyStats.adsEarned += reward;
+    
+    // Save data
+    saveUserData();
+    saveWalletData();
+    saveDailyStats();
+    
+    // Update UI
+    updateUI();
+    updateWalletUI();
+    updateEarningUI();
+    
+    // Show success message
+    showMessage(`✅ +${reward} MWH earned from watching ad!`, 'success');
+    
+    // Update button
+    const watchAdButton = document.getElementById('watchAdButton');
+    if (watchAdButton) {
+        if (dailyStats.adsWatched >= CONFIG.DAILY_AD_LIMIT) {
+            watchAdButton.disabled = true;
+            watchAdButton.innerHTML = '<i class="fas fa-ban"></i> Daily Limit Reached';
+        } else {
+            watchAdButton.disabled = false;
+            watchAdButton.innerHTML = '<i class="fas fa-play"></i> Watch Ad & Earn 25 MWH';
+        }
+    }
+}
+
+function claimReferralChallenge(challengeIndex) {
+    const challenge = CONFIG.REFERRAL_CHALLENGES[challengeIndex];
+    
+    if (!challenge) {
+        showMessage('❌ Challenge not found', 'error');
+        return;
+    }
+    
+    if (challenge.claimed) {
+        showMessage('❌ Challenge already claimed', 'error');
+        return;
+    }
+    
+    if (dailyStats.referralCount < challenge.target) {
+        showMessage(`❌ Need ${challenge.target - dailyStats.referralCount} more referrals`, 'error');
+        return;
+    }
+    
+    // Add reward
+    userData.balance += challenge.reward;
+    walletData.mwhBalance = userData.balance;
+    userData.totalEarned += challenge.reward;
+    dailyStats.referralEarned += challenge.reward;
+    
+    // Add BNB bonus if available
+    if (challenge.bonusBNB) {
+        walletData.bnbBalance += challenge.bonusBNB;
+    }
+    
+    // Mark as claimed
+    challenge.claimed = true;
+    
+    // Save data
+    saveUserData();
+    saveWalletData();
+    saveDailyStats();
+    
+    // Update UI
+    updateUI();
+    updateWalletUI();
+    updateEarningUI();
+    
+    // Show success message
+    let message = `✅ +${challenge.reward} MWH earned from referral challenge!`;
+    if (challenge.bonusBNB) {
+        message += ` +${challenge.bonusBNB} BNB bonus!`;
+    }
+    showMessage(message, 'success');
+}
+
+function saveDailyStats() {
+    if (!userData.userId) return;
+    
+    try {
+        const storageKey = `vip_daily_stats_${userData.userId}`;
+        
+        const dataToSave = {
+            ...dailyStats,
+            referralChallenges: CONFIG.REFERRAL_CHALLENGES
+        };
+        
+        localStorage.setItem(storageKey, JSON.stringify(dataToSave));
+        console.log("💾 Daily stats saved");
+        
+    } catch (error) {
+        console.error("❌ Daily stats save error:", error);
+    }
+}
+
+function loadDailyStats() {
+    if (!userData.userId) return;
+    
+    try {
+        const storageKey = `vip_daily_stats_${userData.userId}`;
+        const savedData = localStorage.getItem(storageKey);
+        
+        if (savedData) {
+            const parsedData = JSON.parse(savedData);
+            dailyStats.adsWatched = parsedData.adsWatched || 0;
+            dailyStats.adsEarned = parsedData.adsEarned || 0;
+            dailyStats.referralCount = parsedData.referralCount || 0;
+            dailyStats.referralEarned = parsedData.referralEarned || 0;
+            dailyStats.lastReset = parsedData.lastReset || Date.now();
+            
+            // Load referral challenges
+            if (parsedData.referralChallenges) {
+                parsedData.referralChallenges.forEach((savedChallenge, index) => {
+                    if (CONFIG.REFERRAL_CHALLENGES[index]) {
+                        CONFIG.REFERRAL_CHALLENGES[index].claimed = savedChallenge.claimed || false;
+                    }
+                });
+            }
+            
+            console.log("✅ Daily stats loaded");
+        }
+    } catch (error) {
+        console.error("❌ Daily stats load error:", error);
     }
 }
 
@@ -1049,33 +1428,31 @@ async function searchUserById() {
 function setupRealTimeListeners() {
     if (!db || !userData.userId) return;
     
-    console.log("👂 بدء الاستماع لتحديثات المستخدم...");
+    console.log("👂 Setting up real-time listeners...");
     
-    // استماع لتغييرات طلبات الإيداع الخاصة بالمستخدم
+    // Listen for user deposit changes
     db.collection('deposit_requests')
         .where('userId', '==', userData.userId)
         .onSnapshot((snapshot) => {
             snapshot.docChanges().forEach((change) => {
                 const data = change.doc.data();
-                console.log('🔄 تحديث طلب إيداع:', data.status);
+                console.log('🔄 Deposit update:', data.status);
                 
                 if (change.type === 'modified') {
-                    // تحديث البيانات المحلية
                     updateUserLocalDeposit(change.doc.id, data);
                 }
             });
         });
     
-    // استماع لتغييرات طلبات السحب الخاصة بالمستخدم
+    // Listen for user withdrawal changes
     db.collection('withdrawals')
         .where('userId', '==', userData.userId)
         .onSnapshot((snapshot) => {
             snapshot.docChanges().forEach((change) => {
                 const data = change.doc.data();
-                console.log('🔄 تحديث طلب سحب:', data.status);
+                console.log('🔄 Withdrawal update:', data.status);
                 
                 if (change.type === 'modified') {
-                    // تحديث البيانات المحلية
                     updateUserLocalWithdrawal(change.doc.id, data);
                 }
             });
@@ -1083,13 +1460,13 @@ function setupRealTimeListeners() {
 }
 
 function updateUserLocalDeposit(firebaseId, depositData) {
-    // البحث عن الطلب في pendingDeposits المحلية
+    // Search in pendingDeposits
     const pendingIndex = walletData.pendingDeposits.findIndex(d => {
         return d.transactionHash === depositData.transactionHash || 
                (d.id && d.id.includes(depositData.transactionHash?.substring(0, 10)));
     });
     
-    // البحث عن الطلب في depositHistory (في حال تم تحديثه بعد النقل)
+    // Search in depositHistory
     const historyIndex = walletData.depositHistory.findIndex(d => {
         return d.transactionHash === depositData.transactionHash || 
                (d.id && d.id.includes(depositData.transactionHash?.substring(0, 10)));
@@ -1098,67 +1475,67 @@ function updateUserLocalDeposit(firebaseId, depositData) {
     const status = depositData.status ? depositData.status.toLowerCase() : '';
     
     if (status === 'approved') {
-        // إذا كان الطلب في pending، انقله إلى history
+        // Move from pending to history
         if (pendingIndex !== -1) {
             const approvedDeposit = {
                 ...walletData.pendingDeposits[pendingIndex],
                 status: 'approved',
                 approvedAt: depositData.approvedAt || Date.now(),
-                adminNote: depositData.adminNote || 'تمت الموافقة'
+                adminNote: depositData.adminNote || 'Approved'
             };
             
             walletData.depositHistory.unshift(approvedDeposit);
             walletData.pendingDeposits.splice(pendingIndex, 1);
             
-            // تحديث الرصيد
+            // Update balance
             if (depositData.currency === 'MWH') {
                 userData.balance += depositData.amount;
                 walletData.mwhBalance = userData.balance;
-                showMessage(`✅ تمت الموافقة على إيداع ${depositData.amount} MWH`, 'success');
+                showMessage(`✅ Deposit approved! +${depositData.amount} MWH added`, 'success');
             } else if (depositData.currency === 'USDT') {
                 walletData.usdtBalance += depositData.amount;
-                showMessage(`✅ تمت الموافقة على إيداع ${depositData.amount} USDT`, 'success');
+                showMessage(`✅ Deposit approved! +${depositData.amount} USDT added`, 'success');
             } else if (depositData.currency === 'BNB') {
                 walletData.bnbBalance += depositData.amount;
-                showMessage(`✅ تمت الموافقة على إيداع ${depositData.amount} BNB`, 'success');
+                showMessage(`✅ Deposit approved! +${depositData.amount} BNB added`, 'success');
             }
             
-            console.log('✅ تمت الموافقة على الإيداع محلياً');
+            console.log('✅ Deposit approved locally');
             
         } else if (historyIndex !== -1) {
-            // تحديث الطلب الموجود في history
+            // Update existing history item
             walletData.depositHistory[historyIndex] = {
                 ...walletData.depositHistory[historyIndex],
                 status: 'approved',
                 approvedAt: depositData.approvedAt || Date.now(),
-                adminNote: depositData.adminNote || 'تمت الموافقة'
+                adminNote: depositData.adminNote || 'Approved'
             };
         }
         
     } else if (status === 'rejected') {
-        // إذا كان الطلب في pending، انقله إلى history مع حالة rejected
+        // Move from pending to history with rejected status
         if (pendingIndex !== -1) {
             const rejectedDeposit = {
                 ...walletData.pendingDeposits[pendingIndex],
                 status: 'rejected',
                 rejectedAt: depositData.rejectedAt || Date.now(),
-                rejectionReason: depositData.rejectionReason || 'تم الرفض',
+                rejectionReason: depositData.rejectionReason || 'Rejected',
                 rejectedBy: depositData.rejectedBy || 'admin'
             };
             
             walletData.depositHistory.unshift(rejectedDeposit);
             walletData.pendingDeposits.splice(pendingIndex, 1);
             
-            showMessage(`❌ تم رفض إيداع ${depositData.amount} ${depositData.currency || ''}. السبب: ${depositData.rejectionReason || 'غير محدد'}`, 'warning');
-            console.log('❌ تم رفض الإيداع محلياً');
+            showMessage(`❌ Deposit rejected. Reason: ${depositData.rejectionReason || 'Not specified'}`, 'warning');
+            console.log('❌ Deposit rejected locally');
             
         } else if (historyIndex !== -1) {
-            // تحديث الطلب الموجود في history
+            // Update existing history item
             walletData.depositHistory[historyIndex] = {
                 ...walletData.depositHistory[historyIndex],
                 status: 'rejected',
                 rejectedAt: depositData.rejectedAt || Date.now(),
-                rejectionReason: depositData.rejectionReason || 'تم الرفض',
+                rejectionReason: depositData.rejectionReason || 'Rejected',
                 rejectedBy: depositData.rejectedBy || 'admin'
             };
         }
@@ -1171,13 +1548,13 @@ function updateUserLocalDeposit(firebaseId, depositData) {
 }
 
 function updateUserLocalWithdrawal(firebaseId, withdrawalData) {
-    // البحث عن الطلب في pendingWithdrawals المحلية
+    // Search in pendingWithdrawals
     const pendingIndex = walletData.pendingWithdrawals.findIndex(w => {
         return w.address === withdrawalData.address && 
                Math.abs(w.amount - withdrawalData.amount) < 0.01;
     });
     
-    // البحث عن الطلب في withdrawalHistory (في حال تم تحديثه بعد النقل)
+    // Search in withdrawalHistory
     const historyIndex = walletData.withdrawalHistory.findIndex(w => {
         return w.address === withdrawalData.address && 
                Math.abs(w.amount - withdrawalData.amount) < 0.01;
@@ -1186,7 +1563,7 @@ function updateUserLocalWithdrawal(firebaseId, withdrawalData) {
     const status = withdrawalData.status ? withdrawalData.status.toLowerCase() : '';
     
     if (status === 'completed') {
-        // إذا كان الطلب في pending، انقله إلى history
+        // Move from pending to history
         if (pendingIndex !== -1) {
             const completedWithdrawal = {
                 ...walletData.pendingWithdrawals[pendingIndex],
@@ -1198,11 +1575,11 @@ function updateUserLocalWithdrawal(firebaseId, withdrawalData) {
             walletData.withdrawalHistory.unshift(completedWithdrawal);
             walletData.pendingWithdrawals.splice(pendingIndex, 1);
             
-            showMessage(`✅ تم إكمال سحب ${withdrawalData.amount} USDT`, 'success');
-            console.log('✅ تم إكمال السحب محلياً');
+            showMessage(`✅ Withdrawal completed! ${withdrawalData.amount} USDT sent`, 'success');
+            console.log('✅ Withdrawal completed locally');
             
         } else if (historyIndex !== -1) {
-            // تحديث الطلب الموجود في history
+            // Update existing history item
             walletData.withdrawalHistory[historyIndex] = {
                 ...walletData.withdrawalHistory[historyIndex],
                 status: 'completed',
@@ -1212,33 +1589,33 @@ function updateUserLocalWithdrawal(firebaseId, withdrawalData) {
         }
         
     } else if (status === 'rejected') {
-        // إذا كان الطلب في pending، انقله إلى history مع حالة rejected
+        // Move from pending to history with rejected status
         if (pendingIndex !== -1) {
             const rejectedWithdrawal = {
                 ...walletData.pendingWithdrawals[pendingIndex],
                 status: 'rejected',
                 rejectedAt: withdrawalData.rejectedAt || Date.now(),
-                rejectionReason: withdrawalData.rejectionReason || 'تم الرفض',
+                rejectionReason: withdrawalData.rejectionReason || 'Rejected',
                 rejectedBy: withdrawalData.rejectedBy || 'admin'
             };
             
             walletData.withdrawalHistory.unshift(rejectedWithdrawal);
             walletData.pendingWithdrawals.splice(pendingIndex, 1);
             
-            // إرجاع الرصيد للمستخدم
+            // Return balance to user
             walletData.usdtBalance += withdrawalData.amount;
             walletData.bnbBalance += withdrawalData.fee || 0;
             
-            showMessage(`❌ تم رفض سحب ${withdrawalData.amount} USDT. السبب: ${withdrawalData.rejectionReason || 'غير محدد'}`, 'warning');
-            console.log('❌ تم رفض السحب وإرجاع الرصيد');
+            showMessage(`❌ Withdrawal rejected. Reason: ${withdrawalData.rejectionReason || 'Not specified'}`, 'warning');
+            console.log('❌ Withdrawal rejected and balance returned');
             
         } else if (historyIndex !== -1) {
-            // تحديث الطلب الموجود في history
+            // Update existing history item
             walletData.withdrawalHistory[historyIndex] = {
                 ...walletData.withdrawalHistory[historyIndex],
                 status: 'rejected',
                 rejectedAt: withdrawalData.rejectedAt || Date.now(),
-                rejectionReason: withdrawalData.rejectionReason || 'تم الرفض',
+                rejectionReason: withdrawalData.rejectionReason || 'Rejected',
                 rejectedBy: withdrawalData.rejectedBy || 'admin'
             };
         }
@@ -1254,16 +1631,16 @@ function updateUserLocalWithdrawal(firebaseId, withdrawalData) {
 
 async function checkAndUpdateTransactionsOnStart() {
     if (!db || !userData.userId) {
-        console.log("❌ لا يوجد اتصال أو معرف مستخدم");
+        console.log("❌ No connection or user ID");
         return;
     }
     
-    console.log("🔍 فحص المعاملات المعلقة عند بدء التطبيق...");
+    console.log("🔍 Checking pending transactions on app start...");
     
     let updated = false;
     
     try {
-        // 1. فحص طلبات الإيداع
+        // 1. Check deposit requests
         const depositsQuery = await db.collection('deposit_requests')
             .where('userId', '==', userData.userId)
             .get();
@@ -1272,14 +1649,14 @@ async function checkAndUpdateTransactionsOnStart() {
             const depositData = doc.data();
             const status = depositData.status ? depositData.status.toLowerCase() : '';
             
-            // إذا كانت الحالة approved أو rejected ولا تزال في pendingDeposits
+            // If status is approved or rejected and still in pendingDeposits
             if (status === 'approved' || status === 'rejected') {
                 const foundIndex = walletData.pendingDeposits.findIndex(d => 
                     d.transactionHash === depositData.transactionHash
                 );
                 
                 if (foundIndex !== -1) {
-                    // نقل من pending إلى history
+                    // Move from pending to history
                     const processedDeposit = walletData.pendingDeposits.splice(foundIndex, 1)[0];
                     processedDeposit.status = status;
                     processedDeposit.approvedAt = depositData.approvedAt;
@@ -1289,7 +1666,7 @@ async function checkAndUpdateTransactionsOnStart() {
                     
                     walletData.depositHistory.unshift(processedDeposit);
                     
-                    // إذا كانت approved، أضف الرصيد
+                    // If approved, add balance
                     if (status === 'approved') {
                         if (depositData.currency === 'MWH') {
                             userData.balance += depositData.amount;
@@ -1302,12 +1679,12 @@ async function checkAndUpdateTransactionsOnStart() {
                     }
                     
                     updated = true;
-                    console.log(`✅ تم تحديث إيداع ${depositData.amount} ${depositData.currency}: ${status}`);
+                    console.log(`✅ Updated deposit ${depositData.amount} ${depositData.currency}: ${status}`);
                 }
             }
         });
         
-        // 2. فحص طلبات السحب
+        // 2. Check withdrawal requests
         const withdrawalsQuery = await db.collection('withdrawals')
             .where('userId', '==', userData.userId)
             .get();
@@ -1316,7 +1693,7 @@ async function checkAndUpdateTransactionsOnStart() {
             const withdrawalData = doc.data();
             const status = withdrawalData.status ? withdrawalData.status.toLowerCase() : '';
             
-            // إذا كانت الحالة completed أو rejected ولا تزال في pendingWithdrawals
+            // If status is completed or rejected and still in pendingWithdrawals
             if (status === 'completed' || status === 'rejected') {
                 const foundIndex = walletData.pendingWithdrawals.findIndex(w => 
                     w.address === withdrawalData.address && 
@@ -1324,7 +1701,7 @@ async function checkAndUpdateTransactionsOnStart() {
                 );
                 
                 if (foundIndex !== -1) {
-                    // نقل من pending إلى history
+                    // Move from pending to history
                     const processedWithdrawal = walletData.pendingWithdrawals.splice(foundIndex, 1)[0];
                     processedWithdrawal.status = status;
                     processedWithdrawal.completedAt = withdrawalData.completedAt;
@@ -1333,14 +1710,14 @@ async function checkAndUpdateTransactionsOnStart() {
                     
                     walletData.withdrawalHistory.unshift(processedWithdrawal);
                     
-                    // إذا كانت rejected، أعد الرصيد
+                    // If rejected, return balance
                     if (status === 'rejected') {
                         walletData.usdtBalance += withdrawalData.amount;
                         walletData.bnbBalance += withdrawalData.fee || 0;
                     }
                     
                     updated = true;
-                    console.log(`✅ تم تحديث سحب ${withdrawalData.amount} USDT: ${status}`);
+                    console.log(`✅ Updated withdrawal ${withdrawalData.amount} USDT: ${status}`);
                 }
             }
         });
@@ -1350,14 +1727,13 @@ async function checkAndUpdateTransactionsOnStart() {
             saveUserData();
             updateUI();
             updateWalletUI();
-            showMessage('✅ تم تحديث معاملاتك المعلقة', 'success');
+            showMessage('✅ Your pending transactions have been updated', 'success');
         }
         
     } catch (error) {
-        console.error("❌ خطأ في فحص المعاملات:", error);
+        console.error("❌ Error checking transactions:", error);
     }
 }
-
 // ============================================
 // FLOATING NOTIFICATION SYSTEM
 // ============================================
@@ -3971,134 +4347,6 @@ function saveWalletData() {
             depositHistory: walletData.depositHistory,
             withdrawalHistory: walletData.withdrawalHistory,
             usedTransactions: walletData.usedTransactions,
-            lastUpdate: Date.now()
-        };
-        
-        localStorage.setItem(storageKey, JSON.stringify(dataToSave));
-        console.log("💾 Wallet data saved");
-        
-        if (db) {
-            saveWalletToFirebase();
-        }
-        
-    } catch (error) {
-        console.error("❌ Wallet save error:", error);
-    }
-}
-
-async function syncUserWithFirebase() {
-    if (!db) return;
-    
-    try {
-        const userRef = db.collection('users').doc(userData.userId);
-        const userSnap = await userRef.get();
-        
-        if (!userSnap.exists) {
-            await userRef.set({
-                userId: userData.userId,
-                username: userData.username,
-                firstName: userData.firstName,
-                referralCode: userData.referralCode,
-                referredBy: userData.referredBy || null,
-                balance: userData.balance,
-                referrals: userData.referrals,
-                referralEarnings: userData.referralEarnings,
-                totalEarned: userData.totalEarned,
-                rank: userData.rank,
-                lastMineTime: userData.lastMineTime || 0,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                lastActive: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            console.log("🔥 Created new user in Firebase");
-        } else {
-            await userRef.update({
-                lastActive: firebase.firestore.FieldValue.serverTimestamp(),
-                username: userData.username,
-                firstName: userData.firstName
-            });
-        }
-    } catch (error) {
-        console.error("❌ Firebase sync error:", error);
-    }
-}
-
-async function loadUserFromFirebase() {
-    if (!db) return;
-    
-    try {
-        const userRef = db.collection('users').doc(userData.userId);
-        const userSnap = await userRef.get();
-        
-        if (userSnap.exists) {
-            const firebaseData = userSnap.data();
-            
-            if (firebaseData.balance !== undefined && firebaseData.balance > userData.balance) {
-                console.log("📈 Updating balance from Firebase:", firebaseData.balance);
-                userData.balance = firebaseData.balance;
-                walletData.mwhBalance = firebaseData.balance;
-            }
-            
-            if (firebaseData.totalEarned !== undefined && firebaseData.totalEarned > userData.totalEarned) {
-                userData.totalEarned = firebaseData.totalEarned;
-            }
-            
-            console.log("✅ Firebase data merged");
-        }
-    } catch (error) {
-        console.error("❌ Firebase load error:", error);
-    }
-}
-
-function saveUserToFirebase() {
-    if (!db) return;
-    
-    try {
-        const userRef = db.collection('users').doc(userData.userId);
-        
-        userRef.set({
-            userId: userData.userId,
-            username: userData.username,
-            firstName: userData.firstName,
-            referralCode: userData.referralCode,
-            referredBy: userData.referredBy,
-            balance: userData.balance,
-            referrals: userData.referrals,
-            referralEarnings: userData.referralEarnings,
-            totalEarned: userData.totalEarned,
-            rank: userData.rank,
-            lastMineTime: userData.lastMineTime,
-            lastActive: firebase.firestore.FieldValue.serverTimestamp(),
-            lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true }).then(() => {
-            console.log("✅ User saved to Firebase");
-        }).catch(error => {
-            console.error("❌ Firebase save error:", error);
-        });
-        
-    } catch (error) {
-        console.error("❌ Firebase save error:", error);
-    }
-}
-
-function saveWalletToFirebase() {
-    if (!db) return;
-    
-    try {
-        const walletRef = db.collection('wallets').doc(userData.userId);
-        
-        walletRef.set({
-            userId: userData.userId,
-            mwhBalance: walletData.mwhBalance,
-            usdtBalance: walletData.usdtBalance,
-            bnbBalance: walletData.bnbBalance,
-            tonBalance: walletData.tonBalance,
-            ethBalance: walletData.ethBalance,
-            totalWithdrawn: walletData.totalWithdrawn,
-            pendingWithdrawals: walletData.pendingWithdrawals,
-            pendingDeposits: walletData.pendingDeposits,
-            depositHistory: walletData.depositHistory,
-            withdrawalHistory: walletData.withdrawalHistory,
-            usedTransactions: walletData.usedTransactions,
             lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true }).then(() => {
             console.log("✅ Wallet saved to Firebase");
@@ -4219,4 +4467,12 @@ window.addBalanceToSpecificUser = addBalanceToSpecificUser;
 window.searchUserById = searchUserById;
 window.checkAndUpdateTransactionsOnStart = checkAndUpdateTransactionsOnStart;
 
-console.log("🎮 VIP Mining Wallet v6.5 loaded with Auto-Transaction Update System");
+// New Earning Functions
+
+window.initEarningPage = initEarningPage;
+
+window.watchAd = watchAd;
+
+window.claimReferral Challenge = claimReferral Challenge;
+
+console.log(" VIP Mining Wallet v6.6 loaded with Advanced Earning System!");
