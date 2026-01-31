@@ -8,6 +8,9 @@
     <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
+    <!-- Ad SDK - Added for rewarded ads -->
+    <script src='//libtl.com/sdk.js' data-zone='10539656' data-sdk='show_10539656'></script>
+    
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -47,7 +50,7 @@
             margin-bottom: 20px;
         "></div>
         <p style="color: white; font-size: 18px; font-weight: 600; margin-bottom: 10px;">VIP Mining Wealth PRO</p>
-        <p id="loadingStatus" style="color: #94a3b8; font-size: 14px; margin-top: 10px;">جاري التهيئة...</p>
+        <p id="loadingStatus" style="color: #94a3b8; font-size: 14px; margin-top: 10px;">Initializing...</p>
     </div>
 
     <!-- Main Home Page -->
@@ -463,7 +466,7 @@
     </div>
 
     <!-- =========================================== -->
-    <!-- Earning Page -->
+    <!-- Earning Page - NEW COMPLETE VERSION -->
     <!-- =========================================== -->
 
     <div id="earningPage" class="page hidden">
@@ -471,33 +474,250 @@
             <div class="back-btn" onclick="switchToPage('home')">
                 <i class="fas fa-arrow-left"></i>
             </div>
-            <h2><i class="fas fa-chart-line"></i> Earning</h2>
+            <h2><i class="fas fa-chart-line"></i> Earning Center</h2>
         </div>
         
         <div class="earning-content">
-            <div class="coming-soon">
-                <div class="rocket-animation">
-                    🚀
+            <!-- Daily Reset Info -->
+            <div class="daily-reset-card">
+                <div class="reset-info">
+                    <i class="fas fa-history"></i>
+                    <div>
+                        <div class="reset-label">Daily Reset</div>
+                        <div class="reset-countdown" id="dailyResetCountdown">Resets in: 24h 00m</div>
+                    </div>
                 </div>
-                <h3>Coming Soon!</h3>
-                <p>Working on new earning features</p>
+                <div class="reset-stats">
+                    <div class="reset-stat">
+                        <div class="reset-stat-value" id="totalEarnedToday">0 MWH</div>
+                        <div class="reset-stat-label">Earned Today</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Watch Ads Section -->
+            <div class="earning-section">
+                <div class="section-header-earning">
+                    <div class="section-title-earning">
+                        <div class="section-icon ad-icon">
+                            <i class="fas fa-play-circle"></i>
+                        </div>
+                        <div>
+                            <h3>Watch Ads & Earn</h3>
+                            <div class="section-subtitle">Earn 25 MWH per ad watched</div>
+                        </div>
+                    </div>
+                    <div class="section-badge">
+                        <i class="fas fa-gem"></i> +25 MWH
+                    </div>
+                </div>
                 
-                <div class="features-list">
-                    <div class="feature-item">
-                        <i class="fas fa-ad"></i>
-                        <span>Watch Ads</span>
+                <div class="ad-stats-card">
+                    <div class="ad-stat">
+                        <div class="ad-stat-label">
+                            <i class="fas fa-eye"></i>
+                            <span>Ads Watched Today</span>
+                        </div>
+                        <div class="ad-stat-value" id="adsWatchedCount">0/100</div>
                     </div>
-                    <div class="feature-item">
-                        <i class="fas fa-tasks"></i>
-                        <span>Daily Tasks</span>
+                    <div class="ad-stat">
+                        <div class="ad-stat-label">
+                            <i class="fas fa-coins"></i>
+                            <span>Earned from Ads</span>
+                        </div>
+                        <div class="ad-stat-value" id="adsEarnedAmount">0 MWH</div>
                     </div>
-                    <div class="feature-item">
+                </div>
+                
+                <div class="ad-progress">
+                    <div class="progress-label">
+                        <span>Daily Progress</span>
+                        <span id="adsProgressText">0%</span>
+                    </div>
+                    <div class="progress-bar-earning">
+                        <div class="progress-fill-earning" id="adsProgress"></div>
+                    </div>
+                </div>
+                
+                <button class="watch-ad-btn" id="watchAdButton" onclick="watchAd()">
+                    <div class="ad-btn-content">
+                        <div class="ad-btn-icon">
+                            <i class="fas fa-play"></i>
+                        </div>
+                        <div class="ad-btn-text">
+                            <div class="ad-btn-title">Watch Ad & Earn 25 MWH</div>
+                            <div class="ad-btn-subtitle">Click to watch a rewarded ad</div>
+                        </div>
+                    </div>
+                </button>
+                
+                <div class="ad-note">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Daily limit: 100 ads (2500 MWH max per day)</span>
+                </div>
+            </div>
+
+            <!-- Daily Tasks - Referral Challenges -->
+            <div class="earning-section">
+                <div class="section-header-earning">
+                    <div class="section-title-earning">
+                        <div class="section-icon task-icon">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <div>
+                            <h3>Daily Referral Challenges</h3>
+                            <div class="section-subtitle">Complete referrals and earn big rewards</div>
+                        </div>
+                    </div>
+                    <div class="section-badge challenge-badge">
+                        <i class="fas fa-fire"></i> DAILY
+                    </div>
+                </div>
+                
+                <div class="referral-stats-card">
+                    <div class="referral-stat-main">
+                        <div class="referral-stat-value" id="dailyReferralCount">0</div>
+                        <div class="referral-stat-label">Referrals Today</div>
+                    </div>
+                    <div class="referral-stat-sub">
+                        <div class="referral-stat-sub-item">
+                            <div class="sub-label">Earned Today</div>
+                            <div class="sub-value" id="dailyReferralEarned">0 MWH</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Challenge 1 -->
+                <div class="challenge-card">
+                    <div class="challenge-header">
+                        <div class="challenge-title">
+                            <div class="challenge-number">1</div>
+                            <div class="challenge-info">
+                                <div class="challenge-name">Refer 10 Friends</div>
+                                <div class="challenge-reward" id="referralChallenge1Reward">1000 MWH</div>
+                            </div>
+                        </div>
+                        <button class="claim-challenge-btn" id="claimReferralChallenge1" onclick="claimReferralChallenge(0)">
+                            <i class="fas fa-gift"></i>
+                            <span>Claim</span>
+                        </button>
+                    </div>
+                    <div class="challenge-progress">
+                        <div class="progress-label">
+                            <span>Progress</span>
+                            <span id="referralChallenge1Progress">0/10</span>
+                        </div>
+                        <div class="progress-bar-earning">
+                            <div class="progress-fill-earning" id="referralChallenge1ProgressBar"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Challenge 2 -->
+                <div class="challenge-card">
+                    <div class="challenge-header">
+                        <div class="challenge-title">
+                            <div class="challenge-number">2</div>
+                            <div class="challenge-info">
+                                <div class="challenge-name">Refer 25 Friends</div>
+                                <div class="challenge-reward" id="referralChallenge2Reward">3000 MWH</div>
+                            </div>
+                        </div>
+                        <button class="claim-challenge-btn" id="claimReferralChallenge2" onclick="claimReferralChallenge(1)">
+                            <i class="fas fa-gift"></i>
+                            <span>Claim</span>
+                        </button>
+                    </div>
+                    <div class="challenge-progress">
+                        <div class="progress-label">
+                            <span>Progress</span>
+                            <span id="referralChallenge2Progress">0/25</span>
+                        </div>
+                        <div class="progress-bar-earning">
+                            <div class="progress-fill-earning" id="referralChallenge2ProgressBar"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Challenge 3 -->
+                <div class="challenge-card premium">
+                    <div class="challenge-header">
+                        <div class="challenge-title">
+                            <div class="challenge-number">3</div>
+                            <div class="challenge-info">
+                                <div class="challenge-name">Refer 100 Friends</div>
+                                <div class="challenge-reward" id="referralChallenge3Reward">12000 MWH + 0.05 BNB</div>
+                            </div>
+                        </div>
+                        <button class="claim-challenge-btn premium-btn" id="claimReferralChallenge3" onclick="claimReferralChallenge(2)">
+                            <i class="fas fa-crown"></i>
+                            <span>Claim</span>
+                        </button>
+                    </div>
+                    <div class="challenge-progress">
+                        <div class="progress-label">
+                            <span>Progress</span>
+                            <span id="referralChallenge3Progress">0/100</span>
+                        </div>
+                        <div class="progress-bar-earning">
+                            <div class="progress-fill-earning" id="referralChallenge3ProgressBar"></div>
+                        </div>
+                    </div>
+                    <div class="premium-badge">
+                        <i class="fas fa-star"></i>
+                        <span>PREMIUM REWARD</span>
+                    </div>
+                </div>
+                
+                <div class="challenge-note">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Daily challenges reset at midnight (00:00 UTC). Progress resets daily.</span>
+                </div>
+            </div>
+
+            <!-- Coming Soon Sections -->
+            <div class="coming-soon-grid">
+                <div class="coming-soon-card">
+                    <div class="coming-soon-icon">
                         <i class="fas fa-gift"></i>
-                        <span>Exclusive Offers</span>
                     </div>
-                    <div class="feature-item">
+                    <div class="coming-soon-content">
+                        <h4>Exclusive Offers</h4>
+                        <p>Special offers and promotions</p>
+                        <div class="coming-soon-badge">Coming Soon</div>
+                    </div>
+                </div>
+                
+                <div class="coming-soon-card">
+                    <div class="coming-soon-icon">
                         <i class="fas fa-trophy"></i>
-                        <span>Contests & Rewards</span>
+                    </div>
+                    <div class="coming-soon-content">
+                        <h4>Contests & Rewards</h4>
+                        <p>Win big in weekly contests</p>
+                        <div class="coming-soon-badge">Coming Soon</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Earning Tips -->
+            <div class="earning-tips">
+                <div class="tips-header">
+                    <i class="fas fa-lightbulb"></i>
+                    <h4>Earning Tips</h4>
+                </div>
+                <div class="tips-content">
+                    <div class="tip-item">
+                        <div class="tip-icon">💡</div>
+                        <div class="tip-text">Watch ads regularly to maximize daily earnings</div>
+                    </div>
+                    <div class="tip-item">
+                        <div class="tip-icon">👥</div>
+                        <div class="tip-text">Share your referral link for bonus rewards</div>
+                    </div>
+                    <div class="tip-item">
+                        <div class="tip-icon">⏰</div>
+                        <div class="tip-text">Complete daily challenges before they reset</div>
                     </div>
                 </div>
             </div>
@@ -583,7 +803,7 @@
                     }
                 });
                 
-                // بدء الإشعارات عند فتح الصفحة الرئيسية
+                // Start notifications when opening home page
                 setTimeout(() => {
                     if (window.initNotificationSystem) {
                         window.initNotificationSystem();
@@ -611,7 +831,7 @@
                     window.updateWalletUI();
                 }
                 
-                // إيقاف الإشعارات عند فتح المحفظة
+                // Stop notifications when opening wallet
                 if (window.stopNotificationTimer) {
                     window.stopNotificationTimer();
                 }
@@ -629,7 +849,12 @@
                     }
                 });
                 
-                // إيقاف الإشعارات عند فتح صفحة الأرباح
+                // Initialize earning page when opened
+                if (window.initEarningPage) {
+                    window.initEarningPage();
+                }
+                
+                // Stop notifications when opening earning page
                 if (window.stopNotificationTimer) {
                     window.stopNotificationTimer();
                 }
@@ -650,7 +875,7 @@
                 if (window.initNotificationSystem) {
                     window.initNotificationSystem();
                 }
-                // إخفاء شاشة التحميل بعد 2 ثانية
+                // Hide loading screen after 2 seconds
                 const loadingScreen = document.getElementById('loadingScreen');
                 if (loadingScreen) {
                     setTimeout(() => {
@@ -663,7 +888,7 @@
             }, 1500);
         }
         
-        // وظيفة تحديث حالة التحميل
+        // Function to update loading status
         function updateLoadingStatus(text) {
             const statusEl = document.getElementById('loadingStatus');
             if (statusEl) {
@@ -672,7 +897,7 @@
             console.log("📱 Loading:", text);
         }
         
-        // تهيئة حالة التحميل الأولية
+        // Initialize loading status
         updateLoadingStatus("Data is being updated...");
         
         window.switchToPage = switchToPage;
