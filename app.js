@@ -15,26 +15,31 @@ try {
     console.log("⚠️ Not in Telegram environment");
 }
 
-// Firebase Configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyCuzWYapa7LBRg40OzcHLWFBpfSrjEVQoU",
-    authDomain: "vip-mining.firebaseapp.com",
-    projectId: "vip-mining",
-    storageBucket: "vip-mining.firebasestorage.app",
-    messagingSenderId: "205041694428",
-    appId: "1:205041694428:web:5b9a0ab2cc31b118d8be619"
+// Supabase Configuration
+const SUPABASE_CONFIG = {
+    URL: 'https://sxmmvuyqyevhudhhavcd.supabase.co',
+    ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4bW12dXlxeWV2aHVkaGhhdmNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3NTMxOTYsImV4cCI6MjA4NTMyOTE5Nn0.f1URAPGJzN9xHiissbY_7pdaVjuc13fFnPun548YgNI',
+    SERVICE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4bW12dXlxeWV2aHVkaGhhdmNkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTc1MzE5NiwiZXhwIjoyMDg1MzI5MTk2fQ.zfXkEBuNI7hewo6zldbyMlc4IPB0PoqkFiGU08dH70E'
 };
 
-// Initialize Firebase
-let firebaseApp, db;
-if (typeof firebase !== 'undefined') {
-    try {
-        firebaseApp = firebase.initializeApp(firebaseConfig);
-        db = firebase.firestore();
-        console.log("✅ Firebase initialized");
-    } catch (error) {
-        console.error("❌ Firebase error:", error);
+// Initialize Supabase
+let supabase = null;
+try {
+    if (window.supabase && SUPABASE_CONFIG.URL && SUPABASE_CONFIG.ANON_KEY) {
+        supabase = window.supabase.createClient(
+            SUPABASE_CONFIG.URL,
+            SUPABASE_CONFIG.ANON_KEY,
+            {
+                auth: {
+                    persistSession: false,
+                    autoRefreshToken: false
+                }
+            }
+        );
+        console.log("✅ Supabase initialized");
     }
+} catch (error) {
+    console.error("❌ Supabase error:", error);
 }
 
 // User Data
@@ -402,7 +407,7 @@ function showAdminPanel() {
                                         </div>
                                     </div>
                                     <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
-                                        <div style="font-size: 12px; color: #94a3b8;">User ID in Firebase:</div>
+                                        <div style="font-size: 12px; color: #94a3b8;">User ID in Supabase:</div>
                                         <div style="font-size: 13px; color: #cbd5e0; font-family: monospace; word-break: break-all;" id="adminFoundUserId">-</div>
                                     </div>
                                 </div>
@@ -422,7 +427,7 @@ function showAdminPanel() {
 }
 
 async function loadAdminPendingRequests() {
-    if (!adminAccess || !db) {
+    if (!adminAccess || !supabase) {
         console.log("❌ No admin access or connection");
         return;
     }
@@ -430,40 +435,27 @@ async function loadAdminPendingRequests() {
     console.log("🔄 Loading admin requests...");
     
     try {
-        const depositsQuery = await db.collection('deposit_requests')
-            .orderBy('timestamp', 'desc')
-            .limit(100)
-            .get();
+        // Load pending deposits
+        const { data: deposits, error: depositsError } = await supabase
+            .from('deposit_requests')
+            .select('*')
+            .eq('status', 'pending')
+            .order('timestamp', { ascending: false })
+            .limit(100);
         
-        console.log(`📥 Total deposits: ${depositsQuery.size}`);
+        if (depositsError) throw depositsError;
         
-        const pendingDeposits = [];
-        
-        depositsQuery.forEach(doc => {
-            const data = doc.data();
-            const status = data.status ? data.status.toString().toLowerCase().trim() : '';
-            
-            console.log(`🔍 Checking deposit ${doc.id}: status="${data.status}"`);
-            
-            if (!status || status === 'pending' || status === 'قيد الانتظار') {
-                pendingDeposits.push({ 
-                    firebaseId: doc.id,
-                    ...data 
-                });
-            }
-        });
-        
-        console.log(`⏳ Pending deposits: ${pendingDeposits.length}`);
+        console.log(`📥 Pending deposits: ${deposits?.length || 0}`);
         
         const depositsList = document.getElementById('adminDepositsList');
         const depositsCount = document.getElementById('pendingDepositsCount');
         
         if (depositsCount) {
-            depositsCount.textContent = pendingDeposits.length;
+            depositsCount.textContent = deposits?.length || 0;
         }
         
         if (depositsList) {
-            if (pendingDeposits.length === 0) {
+            if (!deposits || deposits.length === 0) {
                 depositsList.innerHTML = `
                     <div class="empty-pending">
                         <div class="empty-icon-small">
@@ -474,11 +466,11 @@ async function loadAdminPendingRequests() {
                 `;
             } else {
                 let html = '';
-                pendingDeposits.forEach(item => {
-                    const date = item.timestamp?.toDate ? item.timestamp.toDate() : new Date(item.timestamp || Date.now());
+                deposits.forEach(item => {
+                    const date = new Date(item.timestamp);
                     
                     const currency = item.currency || 'USDT';
-                    const safeCurrency = currency.replace(/'/g, "\\'");
+                    const safeCurrency = currency.replace(/'/g, "\\'").replace(/"/g, '\\"');
                     
                     html += `
                         <div class="transaction-card pending" style="margin-bottom: 10px;">
@@ -489,7 +481,7 @@ async function loadAdminPendingRequests() {
                                     </div>
                                     <div class="type-info">
                                         <div class="type-title">${item.username || 'User'}</div>
-                                        <div class="type-subtitle">ID: ${item.userId || 'Unknown'}</div>
+                                        <div class="type-subtitle">Telegram ID: ${item.telegram_id || 'Unknown'}</div>
                                     </div>
                                 </div>
                                 <div class="transaction-status pending-badge">
@@ -504,8 +496,8 @@ async function loadAdminPendingRequests() {
                                 </div>
                                 <div class="detail-row">
                                     <span>Transaction:</span>
-                                    <span class="detail-value hash" title="${item.transactionHash || 'None'}">
-                                        ${item.transactionHash ? item.transactionHash.substring(0, 10) + '...' + item.transactionHash.substring(item.transactionHash.length - 6) : 'Not available'}
+                                    <span class="detail-value hash" title="${item.transaction_hash || 'None'}">
+                                        ${item.transaction_hash ? item.transaction_hash.substring(0, 10) + '...' + item.transaction_hash.substring(item.transaction_hash.length - 6) : 'Not available'}
                                     </span>
                                 </div>
                                 <div class="detail-row">
@@ -514,11 +506,11 @@ async function loadAdminPendingRequests() {
                                 </div>
                             </div>
                             <div style="display: flex; gap: 10px; margin-top: 10px;">
-                                <button onclick="approveDepositRequest('${item.firebaseId}', '${item.userId}', ${item.amount}, '${safeCurrency}')" 
+                                <button onclick="approveDepositRequest('${item.id}', '${item.telegram_id}', ${item.amount}, '${safeCurrency}')" 
                                         style="flex: 1; padding: 8px; background: linear-gradient(135deg, #22c55e, #10b981); color: white; border: none; border-radius: 6px; font-weight: 600;">
                                     <i class="fas fa-check"></i> Approve
                                 </button>
-                                <button onclick="rejectDepositRequest('${item.firebaseId}')" 
+                                <button onclick="rejectDepositRequest('${item.id}')" 
                                         style="flex: 1; padding: 8px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 6px; font-weight: 600;">
                                     <i class="fas fa-times"></i> Reject
                                 </button>
@@ -530,37 +522,27 @@ async function loadAdminPendingRequests() {
             }
         }
         
-        const withdrawalsQuery = await db.collection('withdrawals')
-            .orderBy('timestamp', 'desc')
-            .limit(100)
-            .get();
+        // Load pending withdrawals
+        const { data: withdrawals, error: withdrawalsError } = await supabase
+            .from('withdrawal_requests')
+            .select('*')
+            .eq('status', 'pending')
+            .order('timestamp', { ascending: false })
+            .limit(100);
         
-        console.log(`📤 Total withdrawals: ${withdrawalsQuery.size}`);
+        if (withdrawalsError) throw withdrawalsError;
         
-        const pendingWithdrawals = [];
-        withdrawalsQuery.forEach(doc => {
-            const data = doc.data();
-            const status = data.status ? data.status.toString().toLowerCase().trim() : '';
-            
-            if (!status || status === 'pending' || status === 'قيد الانتظار') {
-                pendingWithdrawals.push({ 
-                    firebaseId: doc.id,
-                    ...data 
-                });
-            }
-        });
-        
-        console.log(`⏳ Pending withdrawals: ${pendingWithdrawals.length}`);
+        console.log(`⏳ Pending withdrawals: ${withdrawals?.length || 0}`);
         
         const withdrawalsList = document.getElementById('adminWithdrawalsList');
         const withdrawalsCount = document.getElementById('pendingWithdrawalsCount');
         
         if (withdrawalsCount) {
-            withdrawalsCount.textContent = pendingWithdrawals.length;
+            withdrawalsCount.textContent = withdrawals?.length || 0;
         }
         
         if (withdrawalsList) {
-            if (pendingWithdrawals.length === 0) {
+            if (!withdrawals || withdrawals.length === 0) {
                 withdrawalsList.innerHTML = `
                     <div class="empty-pending">
                         <div class="empty-icon-small">
@@ -571,8 +553,8 @@ async function loadAdminPendingRequests() {
                 `;
             } else {
                 let html = '';
-                pendingWithdrawals.forEach(item => {
-                    const date = item.timestamp?.toDate ? item.timestamp.toDate() : new Date(item.timestamp || Date.now());
+                withdrawals.forEach(item => {
+                    const date = new Date(item.timestamp);
                     html += `
                         <div class="transaction-card pending" style="margin-bottom: 10px;">
                             <div class="transaction-header">
@@ -582,7 +564,7 @@ async function loadAdminPendingRequests() {
                                     </div>
                                     <div class="type-info">
                                         <div class="type-title">${item.username || 'User'}</div>
-                                        <div class="type-subtitle">ID: ${item.userId || 'Unknown'}</div>
+                                        <div class="type-subtitle">Telegram ID: ${item.telegram_id || 'Unknown'}</div>
                                     </div>
                                 </div>
                                 <div class="transaction-status pending-badge">
@@ -607,11 +589,11 @@ async function loadAdminPendingRequests() {
                                 </div>
                             </div>
                             <div style="display: flex; gap: 10px; margin-top: 10px;">
-                                <button onclick="approveWithdrawalRequest('${item.firebaseId}')" 
+                                <button onclick="approveWithdrawalRequest('${item.id}')" 
                                         style="flex: 1; padding: 8px; background: linear-gradient(135deg, #22c55e, #10b981); color: white; border: none; border-radius: 6px; font-weight: 600;">
                                     <i class="fas fa-check"></i> Approve
                                 </button>
-                                <button onclick="rejectWithdrawalRequest('${item.firebaseId}')" 
+                                <button onclick="rejectWithdrawalRequest('${item.id}')" 
                                         style="flex: 1; padding: 8px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 6px; font-weight: 600;">
                                     <i class="fas fa-times"></i> Reject
                                 </button>
@@ -647,84 +629,73 @@ function switchAdminTab(tabName) {
     if (activeBtn) activeBtn.classList.add('active');
 }
 
-async function approveDepositRequest(firebaseId, userId, amount, currency) {
-    if (!adminAccess || !db) return;
+async function approveDepositRequest(depositId, telegramId, amount, currency) {
+    if (!adminAccess || !supabase) return;
     
-    if (!confirm(`Approve deposit of ${amount} ${currency} for user ${userId}?`)) return;
+    if (!confirm(`Approve deposit of ${amount} ${currency} for user ${telegramId}?`)) return;
     
     try {
-        const depositRef = db.collection('deposit_requests').doc(firebaseId);
-        await depositRef.update({
-            status: 'approved',
-            approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            approvedBy: 'admin',
-            adminNote: 'Manually approved'
-        });
+        // Update deposit status
+        const { error: updateError } = await supabase
+            .from('deposit_requests')
+            .update({
+                status: 'approved',
+                admin_note: 'Manually approved by admin',
+                reviewed_by: 'admin',
+                approved_at: new Date().toISOString()
+            })
+            .eq('id', depositId);
         
-        console.log(`✅ Deposit approved ${firebaseId} for user ${userId}`);
+        if (updateError) throw updateError;
         
-        updateLocalUserData(userId, amount, currency);
+        console.log(`✅ Deposit approved ${depositId} for user ${telegramId}`);
         
-        const walletRef = db.collection('wallets').doc(userId);
-        const walletSnap = await walletRef.get();
+        // Find user by telegram_id
+        const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('telegram_id', telegramId)
+            .single();
         
-        if (walletSnap.exists) {
-            const walletData = walletSnap.data();
-            
-            if (currency === 'USDT') {
-                await walletRef.update({
-                    usdtBalance: firebase.firestore.FieldValue.increment(parseFloat(amount)),
-                    lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                console.log(`💰 Added ${amount} USDT to user wallet`);
-            } 
-            else if (currency === 'BNB') {
-                await walletRef.update({
-                    bnbBalance: firebase.firestore.FieldValue.increment(parseFloat(amount)),
-                    lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                console.log(`💰 Added ${amount} BNB to user wallet`);
-            }
-            else if (currency === 'MWH') {
-                await walletRef.update({
-                    mwhBalance: firebase.firestore.FieldValue.increment(parseFloat(amount)),
-                    lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                console.log(`💰 Added ${amount} MWH to user wallet`);
-                
-                const userRef = db.collection('users').doc(userId);
-                await userRef.update({
-                    balance: firebase.firestore.FieldValue.increment(parseFloat(amount)),
-                    totalEarned: firebase.firestore.FieldValue.increment(parseFloat(amount)),
-                    lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            }
-        } else {
-            const newWalletData = {
-                userId: userId,
-                mwhBalance: 0,
-                usdtBalance: 0,
-                bnbBalance: 0,
-                tonBalance: 0,
-                ethBalance: 0,
-                totalWithdrawn: 0,
-                lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-            };
-            
-            if (currency === 'USDT') newWalletData.usdtBalance = parseFloat(amount);
-            else if (currency === 'BNB') newWalletData.bnbBalance = parseFloat(amount);
-            else if (currency === 'MWH') newWalletData.mwhBalance = parseFloat(amount);
-            
-            await walletRef.set(newWalletData);
-            console.log(`💼 Created new wallet and added ${amount} ${currency}`);
-            
+        if (userError) throw userError;
+        
+        if (userData) {
+            // Update user balance
             if (currency === 'MWH') {
-                const userRef = db.collection('users').doc(userId);
-                await userRef.update({
-                    balance: firebase.firestore.FieldValue.increment(parseFloat(amount)),
-                    totalEarned: firebase.firestore.FieldValue.increment(parseFloat(amount)),
-                    lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                const newBalance = (parseFloat(userData.balance) || 0) + parseFloat(amount);
+                const newTotalEarned = (parseFloat(userData.total_earned) || 0) + parseFloat(amount);
+                
+                const { error: userUpdateError } = await supabase
+                    .from('users')
+                    .update({
+                        balance: newBalance,
+                        total_earned: newTotalEarned,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', userData.id);
+                
+                if (userUpdateError) throw userUpdateError;
+                
+                // Update wallet
+                const { data: wallet, error: walletError } = await supabase
+                    .from('wallets')
+                    .select('*')
+                    .eq('telegram_id', telegramId)
+                    .single();
+                
+                if (!walletError && wallet) {
+                    const newMwhBalance = (parseFloat(wallet.mwh_balance) || 0) + parseFloat(amount);
+                    
+                    await supabase
+                        .from('wallets')
+                        .update({
+                            mwh_balance: newMwhBalance,
+                            last_update: new Date().toISOString()
+                        })
+                        .eq('id', wallet.id);
+                }
+                
+                console.log(`💰 Added ${amount} MWH to user balance`);
             }
         }
         
@@ -738,30 +709,25 @@ async function approveDepositRequest(firebaseId, userId, amount, currency) {
     }
 }
 
-async function rejectDepositRequest(firebaseId) {
-    if (!adminAccess || !db) return;
+async function rejectDepositRequest(depositId) {
+    if (!adminAccess || !supabase) return;
     
     const reason = prompt("Enter rejection reason:", "Invalid transaction hash");
     if (reason === null) return;
     
     try {
-        const depositRef = db.collection('deposit_requests').doc(firebaseId);
-        const depositSnap = await depositRef.get();
+        const { error } = await supabase
+            .from('deposit_requests')
+            .update({
+                status: 'rejected',
+                admin_note: reason,
+                reviewed_by: 'admin',
+                rejected_at: new Date().toISOString(),
+                rejection_reason: reason
+            })
+            .eq('id', depositId);
         
-        if (!depositSnap.exists) {
-            showMessage('❌ Deposit request not found', 'error');
-            return;
-        }
-        
-        const depositData = depositSnap.data();
-        const userId = depositData.userId;
-        
-        await depositRef.update({
-            status: 'rejected',
-            rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            rejectedBy: 'admin',
-            rejectionReason: reason
-        });
+        if (error) throw error;
         
         showMessage(`❌ Deposit request rejected. Reason: ${reason}`, 'warning');
         
@@ -773,33 +739,37 @@ async function rejectDepositRequest(firebaseId) {
     }
 }
 
-async function approveWithdrawalRequest(firebaseId) {
-    if (!adminAccess || !db) return;
+async function approveWithdrawalRequest(withdrawalId) {
+    if (!adminAccess || !supabase) return;
     
     try {
-        const requestRef = db.collection('withdrawals').doc(firebaseId);
-        const requestSnap = await requestRef.get();
+        // Get withdrawal details
+        const { data: request, error: requestError } = await supabase
+            .from('withdrawal_requests')
+            .select('*')
+            .eq('id', withdrawalId)
+            .single();
         
-        if (!requestSnap.exists) {
-            showMessage('❌ Withdrawal request not found', 'error');
-            return;
-        }
+        if (requestError) throw requestError;
         
-        const requestData = requestSnap.data();
-        const userId = requestData.userId;
-        const amount = requestData.amount;
+        if (!confirm(`Approve withdrawal of ${request.amount} USDT for user ${request.telegram_id}?`)) return;
         
-        if (!confirm(`Approve withdrawal of ${amount} USDT for user ${userId}?`)) return;
+        // Update withdrawal status
+        const { error: updateError } = await supabase
+            .from('withdrawal_requests')
+            .update({
+                status: 'completed',
+                admin_note: 'Manually processed by admin',
+                reviewed_by: 'admin',
+                completed_at: new Date().toISOString()
+            })
+            .eq('id', withdrawalId);
         
-        await requestRef.update({
-            status: 'completed',
-            completedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            completedBy: 'admin'
-        });
+        if (updateError) throw updateError;
         
-        console.log(`✅ Withdrawal approved ${amount} USDT for user ${userId}`);
+        console.log(`✅ Withdrawal approved ${request.amount} USDT for user ${request.telegram_id}`);
         
-        showMessage(`✅ Withdrawal approved! ${amount} USDT sent to user`, 'success');
+        showMessage(`✅ Withdrawal approved! ${request.amount} USDT sent to user`, 'success');
         
         setTimeout(loadAdminPendingRequests, 1000);
         
@@ -809,30 +779,54 @@ async function approveWithdrawalRequest(firebaseId) {
     }
 }
 
-async function rejectWithdrawalRequest(firebaseId) {
-    if (!adminAccess || !db) return;
+async function rejectWithdrawalRequest(withdrawalId) {
+    if (!adminAccess || !supabase) return;
     
     try {
-        const requestRef = db.collection('withdrawals').doc(firebaseId);
-        const requestSnap = await requestRef.get();
+        // Get withdrawal details
+        const { data: request, error: requestError } = await supabase
+            .from('withdrawal_requests')
+            .select('*')
+            .eq('id', withdrawalId)
+            .single();
         
-        if (!requestSnap.exists) {
-            showMessage('❌ Withdrawal request not found', 'error');
-            return;
-        }
-        
-        const requestData = requestSnap.data();
-        const userId = requestData.userId;
+        if (requestError) throw requestError;
         
         const reason = prompt("Enter rejection reason:", "Insufficient balance");
         if (reason === null) return;
         
-        await requestRef.update({
-            status: 'rejected',
-            rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            rejectedBy: 'admin',
-            rejectionReason: reason
-        });
+        // Update withdrawal status
+        const { error: updateError } = await supabase
+            .from('withdrawal_requests')
+            .update({
+                status: 'rejected',
+                admin_note: reason,
+                reviewed_by: 'admin',
+                rejected_at: new Date().toISOString(),
+                rejection_reason: reason
+            })
+            .eq('id', withdrawalId);
+        
+        if (updateError) throw updateError;
+        
+        // Return USDT balance to user's wallet
+        const { data: wallet, error: walletError } = await supabase
+            .from('wallets')
+            .select('*')
+            .eq('telegram_id', request.telegram_id)
+            .single();
+        
+        if (!walletError && wallet) {
+            const newUsdtBalance = (parseFloat(wallet.usdt_balance) || 0) + parseFloat(request.amount);
+            
+            await supabase
+                .from('wallets')
+                .update({
+                    usdt_balance: newUsdtBalance,
+                    last_update: new Date().toISOString()
+                })
+                .eq('id', wallet.id);
+        }
         
         showMessage(`❌ Withdrawal request rejected. Reason: ${reason}`, 'warning');
         
@@ -845,7 +839,7 @@ async function rejectWithdrawalRequest(firebaseId) {
 }
 
 async function addBalanceToAllUsers() {
-    if (!adminAccess || !db) return;
+    if (!adminAccess || !supabase) return;
     
     const amountInput = document.getElementById('adminAddAmount');
     if (!amountInput) return;
@@ -861,21 +855,50 @@ async function addBalanceToAllUsers() {
     try {
         showMessage('⏳ Adding balance to all users...', 'info');
         
-        const usersSnapshot = await db.collection('users').get();
+        // Get all users
+        const { data: users, error: usersError } = await supabase
+            .from('users')
+            .select('*');
+        
+        if (usersError) throw usersError;
+        
         let processed = 0;
         
-        const batch = db.batch();
-        usersSnapshot.forEach(doc => {
-            const userRef = db.collection('users').doc(doc.id);
-            batch.update(userRef, {
-                balance: firebase.firestore.FieldValue.increment(amount),
-                totalEarned: firebase.firestore.FieldValue.increment(amount),
-                lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-            });
+        // Update each user
+        for (const user of users) {
+            const newBalance = (parseFloat(user.balance) || 0) + amount;
+            const newTotalEarned = (parseFloat(user.total_earned) || 0) + amount;
+            
+            await supabase
+                .from('users')
+                .update({
+                    balance: newBalance,
+                    total_earned: newTotalEarned,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', user.id);
+            
+            // Update wallet
+            const { data: wallet, error: walletError } = await supabase
+                .from('wallets')
+                .select('*')
+                .eq('telegram_id', user.telegram_id)
+                .single();
+            
+            if (!walletError && wallet) {
+                const newMwhBalance = (parseFloat(wallet.mwh_balance) || 0) + amount;
+                
+                await supabase
+                    .from('wallets')
+                    .update({
+                        mwh_balance: newMwhBalance,
+                        last_update: new Date().toISOString()
+                    })
+                    .eq('id', wallet.id);
+            }
+            
             processed++;
-        });
-        
-        await batch.commit();
+        }
         
         showMessage(`✅ Added ${amount} MWH to ${processed} users`, 'success');
         amountInput.value = '';
@@ -887,7 +910,7 @@ async function addBalanceToAllUsers() {
 }
 
 async function addBalanceToSpecificUser() {
-    if (!adminAccess || !db) return;
+    if (!adminAccess || !supabase) return;
     
     const userIdInput = document.getElementById('adminUserId');
     const amountInput = document.getElementById('adminUserAmount');
@@ -912,81 +935,94 @@ async function addBalanceToSpecificUser() {
     try {
         showMessage('⏳ Adding balance to user...', 'info');
         
-        let userDoc;
+        let user = null;
         
-        const userRefById = db.collection('users').doc(searchTerm);
-        let userSnap = await userRefById.get();
-        
-        if (!userSnap.exists) {
-            const usersSnapshot = await db.collection('users')
-                .where('username', '==', searchTerm)
-                .limit(1)
-                .get();
+        // Try to find user by telegram_id (if searchTerm is a number)
+        if (!isNaN(searchTerm)) {
+            const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('telegram_id', parseInt(searchTerm))
+                .single();
             
-            if (!usersSnapshot.empty) {
-                userDoc = usersSnapshot.docs[0];
+            if (!error && data) {
+                user = data;
             }
-        } else {
-            userDoc = { id: searchTerm, data: () => userSnap.data(), ref: userRefById };
         }
         
-        if (!userDoc) {
+        // If not found by telegram_id, try by username
+        if (!user) {
+            const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                .ilike('username', `%${searchTerm}%`)
+                .limit(1)
+                .single();
+            
+            if (!error && data) {
+                user = data;
+            }
+        }
+        
+        if (!user) {
             showMessage(`❌ User ${searchTerm} not found`, 'error');
             return;
         }
         
-        const adminTransaction = {
-            id: 'admin_bonus_' + Date.now(),
-            userId: userDoc.id,
-            amount: amount,
-            currency: 'MWH',
-            type: 'admin_bonus',
-            status: 'completed',
-            timestamp: Date.now(),
-            note: 'Added by admin'
-        };
+        // Update user balance
+        const newBalance = (parseFloat(user.balance) || 0) + amount;
+        const newTotalEarned = (parseFloat(user.total_earned) || 0) + amount;
         
-        await userDoc.ref.update({
-            balance: firebase.firestore.FieldValue.increment(amount),
-            totalEarned: firebase.firestore.FieldValue.increment(amount),
-            lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        const { error: userUpdateError } = await supabase
+            .from('users')
+            .update({
+                balance: newBalance,
+                total_earned: newTotalEarned,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', user.id);
         
-        const walletRef = db.collection('wallets').doc(userDoc.id);
-        const walletSnap = await walletRef.get();
+        if (userUpdateError) throw userUpdateError;
         
-        if (walletSnap.exists) {
-            const walletData = walletSnap.data();
-            const updatedDepositHistory = walletData.depositHistory || [];
-            updatedDepositHistory.unshift(adminTransaction);
+        // Update wallet
+        const { data: wallet, error: walletError } = await supabase
+            .from('wallets')
+            .select('*')
+            .eq('telegram_id', user.telegram_id)
+            .single();
+        
+        if (!walletError && wallet) {
+            const newMwhBalance = (parseFloat(wallet.mwh_balance) || 0) + amount;
             
-            await walletRef.update({
-                mwhBalance: firebase.firestore.FieldValue.increment(amount),
-                depositHistory: updatedDepositHistory,
-                lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            await supabase
+                .from('wallets')
+                .update({
+                    mwh_balance: newMwhBalance,
+                    last_update: new Date().toISOString()
+                })
+                .eq('id', wallet.id);
         } else {
-            await walletRef.set({
-                userId: userDoc.id,
-                mwhBalance: amount,
-                usdtBalance: 0,
-                bnbBalance: 0,
-                tonBalance: 0,
-                ethBalance: 0,
-                totalWithdrawn: 0,
-                pendingWithdrawals: [],
-                pendingDeposits: [],
-                depositHistory: [adminTransaction],
-                withdrawalHistory: [],
-                usedTransactions: [],
-                lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            // Create wallet if doesn't exist
+            await supabase
+                .from('wallets')
+                .insert({
+                    user_id: user.id,
+                    telegram_id: user.telegram_id,
+                    mwh_balance: amount,
+                    usdt_balance: 0,
+                    bnb_balance: 0,
+                    ton_balance: 0,
+                    eth_balance: 0,
+                    total_withdrawn: 0,
+                    last_update: new Date().toISOString()
+                });
         }
         
-        showMessage(`✅ Added ${amount} MWH to user ${userDoc.data().username || searchTerm}`, 'success');
+        showMessage(`✅ Added ${amount} MWH to user ${user.username || searchTerm}`, 'success');
         userIdInput.value = '';
         amountInput.value = '';
         
+        // Update UI if user info is displayed
         const userInfoDiv = document.getElementById('adminUserInfo');
         if (userInfoDiv && userInfoDiv.style.display !== 'none') {
             const foundBalance = document.getElementById('adminFoundBalance');
@@ -1003,7 +1039,7 @@ async function addBalanceToSpecificUser() {
 }
 
 async function searchUserById() {
-    if (!adminAccess || !db) return;
+    if (!adminAccess || !supabase) return;
     
     const searchInput = document.getElementById('adminSearchUserId');
     if (!searchInput) return;
@@ -1017,53 +1053,63 @@ async function searchUserById() {
     try {
         showMessage('🔍 Searching for user...', 'info');
         
-        let userDoc;
-        let foundById = false;
+        let user = null;
         
-        const userRefById = db.collection('users').doc(searchTerm);
-        let userSnap = await userRefById.get();
-        
-        if (userSnap.exists) {
-            userDoc = { id: searchTerm, data: () => userSnap.data(), ref: userRefById };
-            foundById = true;
-        } else {
-            const usersSnapshot = await db.collection('users')
-                .where('username', '==', searchTerm)
-                .limit(1)
-                .get();
+        // Try to find user by telegram_id (if searchTerm is a number)
+        if (!isNaN(searchTerm)) {
+            const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('telegram_id', parseInt(searchTerm))
+                .single();
             
-            if (!usersSnapshot.empty) {
-                userDoc = usersSnapshot.docs[0];
+            if (!error && data) {
+                user = data;
             }
         }
         
-        if (!userDoc) {
+        // If not found by telegram_id, try by username
+        if (!user) {
+            const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                .ilike('username', `%${searchTerm}%`)
+                .limit(1)
+                .single();
+            
+            if (!error && data) {
+                user = data;
+            }
+        }
+        
+        if (!user) {
             showMessage(`❌ User ${searchTerm} not found`, 'error');
             document.getElementById('adminUserInfo').style.display = 'none';
             return;
         }
         
-        const userData = userDoc.data();
+        // Get wallet info
+        const { data: wallet, error: walletError } = await supabase
+            .from('wallets')
+            .select('*')
+            .eq('telegram_id', user.telegram_id)
+            .single();
         
-        document.getElementById('adminFoundUsername').textContent = userData.username || 'Unknown';
-        document.getElementById('adminFoundBalance').textContent = `${userData.balance || 0} MWH`;
-        document.getElementById('adminFoundTotalEarned').textContent = `${userData.totalEarned || 0} MWH`;
-        document.getElementById('adminFoundReferrals').textContent = userData.referrals || 0;
-        document.getElementById('adminFoundRank').textContent = userData.rank || 'Beginner';
-        document.getElementById('adminFoundUserId').textContent = userDoc.id;
+        document.getElementById('adminFoundUsername').textContent = user.username || 'Unknown';
+        document.getElementById('adminFoundBalance').textContent = `${user.balance || 0} MWH`;
+        document.getElementById('adminFoundTotalEarned').textContent = `${user.total_earned || 0} MWH`;
+        document.getElementById('adminFoundReferrals').textContent = user.referrals || 0;
+        document.getElementById('adminFoundRank').textContent = user.rank || 'Beginner';
+        document.getElementById('adminFoundUserId').textContent = user.id;
         
         const addUserIdInput = document.getElementById('adminUserId');
         if (addUserIdInput) {
-            if (foundById) {
-                addUserIdInput.value = searchTerm;
-            } else {
-                addUserIdInput.value = userDoc.id;
-            }
+            addUserIdInput.value = user.telegram_id;
         }
         
         document.getElementById('adminUserInfo').style.display = 'block';
         
-        showMessage(`✅ User found: ${userData.username}`, 'success');
+        showMessage(`✅ User found: ${user.username}`, 'success');
         
     } catch (error) {
         console.error("❌ Error searching for user:", error);
@@ -1388,46 +1434,60 @@ function loadDailyStats() {
 // ============================================
 
 function setupRealTimeListeners() {
-    if (!db || !userData.userId) return;
+    if (!supabase || !userData.userId) return;
     
     console.log("👂 Setting up real-time listeners...");
     
-    db.collection('deposit_requests')
-        .where('userId', '==', userData.userId)
-        .onSnapshot((snapshot) => {
-            snapshot.docChanges().forEach((change) => {
-                const data = change.doc.data();
-                console.log('🔄 Deposit update:', data.status);
-                
-                if (change.type === 'modified') {
-                    updateUserLocalDeposit(change.doc.id, data);
-                }
-            });
-        });
+    // Subscribe to deposit requests
+    const depositChannel = supabase
+        .channel('deposit-requests')
+        .on('postgres_changes', 
+            { 
+                event: '*', 
+                schema: 'public', 
+                table: 'deposit_requests',
+                filter: `telegram_id=eq.${userData.userId}`
+            }, 
+            (payload) => {
+                console.log('🔄 Deposit update:', payload.new.status);
+                updateUserLocalDeposit(payload.new);
+            }
+        )
+        .subscribe();
     
-    db.collection('withdrawals')
-        .where('userId', '==', userData.userId)
-        .onSnapshot((snapshot) => {
-            snapshot.docChanges().forEach((change) => {
-                const data = change.doc.data();
-                console.log('🔄 Withdrawal update:', data.status);
-                
-                if (change.type === 'modified') {
-                    updateUserLocalWithdrawal(change.doc.id, data);
-                }
-            });
-        });
+    // Subscribe to withdrawal requests
+    const withdrawalChannel = supabase
+        .channel('withdrawal-requests')
+        .on('postgres_changes', 
+            { 
+                event: '*', 
+                schema: 'public', 
+                table: 'withdrawal_requests',
+                filter: `telegram_id=eq.${userData.userId}`
+            }, 
+            (payload) => {
+                console.log('🔄 Withdrawal update:', payload.new.status);
+                updateUserLocalWithdrawal(payload.new);
+            }
+        )
+        .subscribe();
+    
+    // Store channels for cleanup
+    window.supabaseChannels = {
+        deposit: depositChannel,
+        withdrawal: withdrawalChannel
+    };
 }
 
-function updateUserLocalDeposit(firebaseId, depositData) {
+function updateUserLocalDeposit(depositData) {
     const pendingIndex = walletData.pendingDeposits.findIndex(d => {
-        return d.transactionHash === depositData.transactionHash || 
-               (d.id && d.id.includes(depositData.transactionHash?.substring(0, 10)));
+        return d.transactionHash === depositData.transaction_hash || 
+               (d.id && d.id.includes(depositData.transaction_hash?.substring(0, 10)));
     });
     
     const historyIndex = walletData.depositHistory.findIndex(d => {
-        return d.transactionHash === depositData.transactionHash || 
-               (d.id && d.id.includes(depositData.transactionHash?.substring(0, 10)));
+        return d.transactionHash === depositData.transaction_hash || 
+               (d.id && d.id.includes(depositData.transaction_hash?.substring(0, 10)));
     });
     
     const status = depositData.status ? depositData.status.toLowerCase() : '';
@@ -1437,8 +1497,8 @@ function updateUserLocalDeposit(firebaseId, depositData) {
             const approvedDeposit = {
                 ...walletData.pendingDeposits[pendingIndex],
                 status: 'approved',
-                approvedAt: depositData.approvedAt || Date.now(),
-                adminNote: depositData.adminNote || 'Approved'
+                approvedAt: depositData.approved_at || Date.now(),
+                adminNote: depositData.admin_note || 'Approved'
             };
             
             walletData.depositHistory.unshift(approvedDeposit);
@@ -1462,8 +1522,8 @@ function updateUserLocalDeposit(firebaseId, depositData) {
             walletData.depositHistory[historyIndex] = {
                 ...walletData.depositHistory[historyIndex],
                 status: 'approved',
-                approvedAt: depositData.approvedAt || Date.now(),
-                adminNote: depositData.adminNote || 'Approved'
+                approvedAt: depositData.approved_at || Date.now(),
+                adminNote: depositData.admin_note || 'Approved'
             };
         }
         
@@ -1472,24 +1532,24 @@ function updateUserLocalDeposit(firebaseId, depositData) {
             const rejectedDeposit = {
                 ...walletData.pendingDeposits[pendingIndex],
                 status: 'rejected',
-                rejectedAt: depositData.rejectedAt || Date.now(),
-                rejectionReason: depositData.rejectionReason || 'Rejected',
-                rejectedBy: depositData.rejectedBy || 'admin'
+                rejectedAt: depositData.rejected_at || Date.now(),
+                rejectionReason: depositData.rejection_reason || 'Rejected',
+                rejectedBy: depositData.reviewed_by || 'admin'
             };
             
             walletData.depositHistory.unshift(rejectedDeposit);
             walletData.pendingDeposits.splice(pendingIndex, 1);
             
-            showMessage(`❌ Deposit rejected. Reason: ${depositData.rejectionReason || 'Not specified'}`, 'warning');
+            showMessage(`❌ Deposit rejected. Reason: ${depositData.rejection_reason || 'Not specified'}`, 'warning');
             console.log('❌ Deposit rejected locally');
             
         } else if (historyIndex !== -1) {
             walletData.depositHistory[historyIndex] = {
                 ...walletData.depositHistory[historyIndex],
                 status: 'rejected',
-                rejectedAt: depositData.rejectedAt || Date.now(),
-                rejectionReason: depositData.rejectionReason || 'Rejected',
-                rejectedBy: depositData.rejectedBy || 'admin'
+                rejectedAt: depositData.rejected_at || Date.now(),
+                rejectionReason: depositData.rejection_reason || 'Rejected',
+                rejectedBy: depositData.reviewed_by || 'admin'
             };
         }
     }
@@ -1500,7 +1560,7 @@ function updateUserLocalDeposit(firebaseId, depositData) {
     updateWalletUI();
 }
 
-function updateUserLocalWithdrawal(firebaseId, withdrawalData) {
+function updateUserLocalWithdrawal(withdrawalData) {
     const pendingIndex = walletData.pendingWithdrawals.findIndex(w => {
         return w.address === withdrawalData.address && 
                Math.abs(w.amount - withdrawalData.amount) < 0.01;
@@ -1518,8 +1578,8 @@ function updateUserLocalWithdrawal(firebaseId, withdrawalData) {
             const completedWithdrawal = {
                 ...walletData.pendingWithdrawals[pendingIndex],
                 status: 'completed',
-                completedAt: withdrawalData.completedAt || Date.now(),
-                completedBy: withdrawalData.completedBy || 'admin'
+                completedAt: withdrawalData.completed_at || Date.now(),
+                completedBy: withdrawalData.reviewed_by || 'admin'
             };
             
             walletData.withdrawalHistory.unshift(completedWithdrawal);
@@ -1532,8 +1592,8 @@ function updateUserLocalWithdrawal(firebaseId, withdrawalData) {
             walletData.withdrawalHistory[historyIndex] = {
                 ...walletData.withdrawalHistory[historyIndex],
                 status: 'completed',
-                completedAt: withdrawalData.completedAt || Date.now(),
-                completedBy: withdrawalData.completedBy || 'admin'
+                completedAt: withdrawalData.completed_at || Date.now(),
+                completedBy: withdrawalData.reviewed_by || 'admin'
             };
         }
         
@@ -1542,9 +1602,9 @@ function updateUserLocalWithdrawal(firebaseId, withdrawalData) {
             const rejectedWithdrawal = {
                 ...walletData.pendingWithdrawals[pendingIndex],
                 status: 'rejected',
-                rejectedAt: withdrawalData.rejectedAt || Date.now(),
-                rejectionReason: withdrawalData.rejectionReason || 'Rejected',
-                rejectedBy: withdrawalData.rejectedBy || 'admin'
+                rejectedAt: withdrawalData.rejected_at || Date.now(),
+                rejectionReason: withdrawalData.rejection_reason || 'Rejected',
+                rejectedBy: withdrawalData.reviewed_by || 'admin'
             };
             
             walletData.withdrawalHistory.unshift(rejectedWithdrawal);
@@ -1553,16 +1613,16 @@ function updateUserLocalWithdrawal(firebaseId, withdrawalData) {
             walletData.usdtBalance += withdrawalData.amount;
             walletData.bnbBalance += withdrawalData.fee || 0;
             
-            showMessage(`❌ Withdrawal rejected. Reason: ${withdrawalData.rejectionReason || 'Not specified'}`, 'warning');
+            showMessage(`❌ Withdrawal rejected. Reason: ${withdrawalData.rejection_reason || 'Not specified'}`, 'warning');
             console.log('❌ Withdrawal rejected and balance returned');
             
         } else if (historyIndex !== -1) {
             walletData.withdrawalHistory[historyIndex] = {
                 ...walletData.withdrawalHistory[historyIndex],
                 status: 'rejected',
-                rejectedAt: withdrawalData.rejectedAt || Date.now(),
-                rejectionReason: withdrawalData.rejectionReason || 'Rejected',
-                rejectedBy: withdrawalData.rejectedBy || 'admin'
+                rejectedAt: withdrawalData.rejected_at || Date.now(),
+                rejectionReason: withdrawalData.rejection_reason || 'Rejected',
+                rejectedBy: withdrawalData.reviewed_by || 'admin'
             };
         }
     }
@@ -1576,7 +1636,7 @@ function updateUserLocalWithdrawal(firebaseId, withdrawalData) {
 // ============================================
 
 async function checkAndUpdateTransactionsOnStart() {
-    if (!db || !userData.userId) {
+    if (!supabase || !userData.userId) {
         console.log("❌ No connection or user ID");
         return;
     }
@@ -1586,26 +1646,28 @@ async function checkAndUpdateTransactionsOnStart() {
     let updated = false;
     
     try {
-        const depositsQuery = await db.collection('deposit_requests')
-            .where('userId', '==', userData.userId)
-            .get();
+        // Check deposits
+        const { data: deposits, error: depositsError } = await supabase
+            .from('deposit_requests')
+            .select('*')
+            .eq('telegram_id', userData.userId)
+            .in('status', ['approved', 'rejected']);
         
-        depositsQuery.forEach(doc => {
-            const depositData = doc.data();
-            const status = depositData.status ? depositData.status.toLowerCase() : '';
-            
-            if (status === 'approved' || status === 'rejected') {
+        if (!depositsError && deposits) {
+            deposits.forEach(depositData => {
+                const status = depositData.status.toLowerCase();
+                
                 const foundIndex = walletData.pendingDeposits.findIndex(d => 
-                    d.transactionHash === depositData.transactionHash
+                    d.transactionHash === depositData.transaction_hash
                 );
                 
                 if (foundIndex !== -1) {
                     const processedDeposit = walletData.pendingDeposits.splice(foundIndex, 1)[0];
                     processedDeposit.status = status;
-                    processedDeposit.approvedAt = depositData.approvedAt;
-                    processedDeposit.rejectedAt = depositData.rejectedAt;
-                    processedDeposit.adminNote = depositData.adminNote;
-                    processedDeposit.rejectionReason = depositData.rejectionReason;
+                    processedDeposit.approvedAt = depositData.approved_at;
+                    processedDeposit.rejectedAt = depositData.rejected_at;
+                    processedDeposit.adminNote = depositData.admin_note;
+                    processedDeposit.rejectionReason = depositData.rejection_reason;
                     
                     walletData.depositHistory.unshift(processedDeposit);
                     
@@ -1623,18 +1685,20 @@ async function checkAndUpdateTransactionsOnStart() {
                     updated = true;
                     console.log(`✅ Updated deposit ${depositData.amount} ${depositData.currency}: ${status}`);
                 }
-            }
-        });
+            });
+        }
         
-        const withdrawalsQuery = await db.collection('withdrawals')
-            .where('userId', '==', userData.userId)
-            .get();
+        // Check withdrawals
+        const { data: withdrawals, error: withdrawalsError } = await supabase
+            .from('withdrawal_requests')
+            .select('*')
+            .eq('telegram_id', userData.userId)
+            .in('status', ['completed', 'rejected']);
         
-        withdrawalsQuery.forEach(doc => {
-            const withdrawalData = doc.data();
-            const status = withdrawalData.status ? withdrawalData.status.toLowerCase() : '';
-            
-            if (status === 'completed' || status === 'rejected') {
+        if (!withdrawalsError && withdrawals) {
+            withdrawals.forEach(withdrawalData => {
+                const status = withdrawalData.status.toLowerCase();
+                
                 const foundIndex = walletData.pendingWithdrawals.findIndex(w => 
                     w.address === withdrawalData.address && 
                     Math.abs(w.amount - withdrawalData.amount) < 0.01
@@ -1643,9 +1707,9 @@ async function checkAndUpdateTransactionsOnStart() {
                 if (foundIndex !== -1) {
                     const processedWithdrawal = walletData.pendingWithdrawals.splice(foundIndex, 1)[0];
                     processedWithdrawal.status = status;
-                    processedWithdrawal.completedAt = withdrawalData.completedAt;
-                    processedWithdrawal.rejectedAt = withdrawalData.rejectedAt;
-                    processedWithdrawal.rejectionReason = withdrawalData.rejectionReason;
+                    processedWithdrawal.completedAt = withdrawalData.completed_at;
+                    processedWithdrawal.rejectedAt = withdrawalData.rejected_at;
+                    processedWithdrawal.rejectionReason = withdrawalData.rejection_reason;
                     
                     walletData.withdrawalHistory.unshift(processedWithdrawal);
                     
@@ -1657,8 +1721,8 @@ async function checkAndUpdateTransactionsOnStart() {
                     updated = true;
                     console.log(`✅ Updated withdrawal ${withdrawalData.amount} USDT: ${status}`);
                 }
-            }
-        });
+            });
+        }
         
         if (updated) {
             saveWalletData();
@@ -2634,26 +2698,34 @@ async function submitDepositRequest(currency) {
         
         const pendingDeposit = {
             id: 'deposit_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-            userId: userData.userId,
+            telegram_id: userData.userId,
             username: userData.username,
-            transactionHash: hash.toLowerCase(),
+            transaction_hash: hash.toLowerCase(),
             currency: currency,
             amount: formattedAmount,
             status: 'pending',
-            timestamp: Date.now(),
-            reviewNote: 'Awaiting manual review'
+            timestamp: new Date().toISOString(),
+            admin_note: 'Awaiting manual review'
         };
         
-        walletData.pendingDeposits.push(pendingDeposit);
+        walletData.pendingDeposits.push({
+            transactionHash: hash.toLowerCase(),
+            amount: formattedAmount,
+            currency: currency,
+            timestamp: Date.now(),
+            status: 'pending'
+        });
+        
         walletData.usedTransactions.push(hash.toLowerCase());
         
         saveWalletData();
         
-        if (db) {
-            await db.collection('deposit_requests').add({
-                ...pendingDeposit,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
+        if (supabase) {
+            const { error } = await supabase
+                .from('deposit_requests')
+                .insert([pendingDeposit]);
+            
+            if (error) throw error;
         }
         
         verifyBtn.innerHTML = '<i class="fas fa-check"></i> Submitted!';
@@ -2732,8 +2804,8 @@ async function setupUser() {
     
     updateUserUI();
     
-    if (db) {
-        await syncUserWithFirebase();
+    if (supabase) {
+        await syncUserWithSupabase();
     }
 }
 
@@ -2826,25 +2898,55 @@ async function processReferral(referralCode) {
     console.log("🎯 Processing referral:", referralCode);
     
     try {
-        if (db) {
-            const usersRef = db.collection('users');
-            const querySnapshot = await usersRef.where('referralCode', '==', referralCode).get();
+        if (supabase) {
+            // Find referrer by referral code
+            const { data: referrer, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('referral_code', referralCode)
+                .single();
             
-            if (!querySnapshot.empty) {
-                const referrerDoc = querySnapshot.docs[0];
-                const referrerData = referrerDoc.data();
-                
-                if (referrerData.userId === userData.userId) {
+            if (!error && referrer) {
+                if (referrer.telegram_id === userData.userId) {
                     console.log("⚠️ Cannot refer yourself");
                     return;
                 }
                 
-                await referrerDoc.ref.update({
-                    referrals: firebase.firestore.FieldValue.increment(1),
-                    referralEarnings: firebase.firestore.FieldValue.increment(CONFIG.REFERRER_REWARD),
-                    balance: firebase.firestore.FieldValue.increment(CONFIG.REFERRER_REWARD),
-                    totalEarned: firebase.firestore.FieldValue.increment(CONFIG.REFERRER_REWARD)
-                });
+                // Update referrer's data
+                const newReferrals = (referrer.referrals || 0) + 1;
+                const newReferralEarnings = (referrer.referral_earnings || 0) + CONFIG.REFERRER_REWARD;
+                const newBalance = (referrer.balance || 0) + CONFIG.REFERRER_REWARD;
+                const newTotalEarned = (referrer.total_earned || 0) + CONFIG.REFERRER_REWARD;
+                
+                await supabase
+                    .from('users')
+                    .update({
+                        referrals: newReferrals,
+                        referral_earnings: newReferralEarnings,
+                        balance: newBalance,
+                        total_earned: newTotalEarned,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', referrer.id);
+                
+                // Update referrer's wallet
+                const { data: wallet, error: walletError } = await supabase
+                    .from('wallets')
+                    .select('*')
+                    .eq('telegram_id', referrer.telegram_id)
+                    .single();
+                
+                if (!walletError && wallet) {
+                    const newMwhBalance = (wallet.mwh_balance || 0) + CONFIG.REFERRER_REWARD;
+                    
+                    await supabase
+                        .from('wallets')
+                        .update({
+                            mwh_balance: newMwhBalance,
+                            last_update: new Date().toISOString()
+                        })
+                        .eq('id', wallet.id);
+                }
                 
                 userData.referredBy = referralCode;
                 
@@ -2854,8 +2956,6 @@ async function processReferral(referralCode) {
                 updateUI();
                 
                 showMessage(`🎉 Referral recorded! Referrer got +${CONFIG.REFERRER_REWARD} MWH`, 'success');
-                
-                await logReferralEvent(referrerData.userId, userData.userId, referralCode);
                 
                 console.log("✅ Referral processed successfully");
                 return true;
@@ -2876,26 +2976,6 @@ async function processReferral(referralCode) {
         console.error("❌ Referral processing error:", error);
         showMessage('Error processing referral', 'error');
         return false;
-    }
-}
-
-async function logReferralEvent(referrerId, referredId, referralCode) {
-    if (!db) return;
-    
-    try {
-        await db.collection('referrals').add({
-            referrerId: referrerId,
-            referredId: referredId,
-            referralCode: referralCode,
-            newUserReward: CONFIG.REFERRAL_REWARD,
-            referrerReward: CONFIG.REFERRER_REWARD,
-            totalReward: CONFIG.REFERRAL_REWARD + CONFIG.REFERRER_REWARD,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            status: 'completed'
-        });
-        console.log("📝 Referral logged in Firebase");
-    } catch (error) {
-        console.error("❌ Referral logging error:", error);
     }
 }
 
@@ -3776,7 +3856,7 @@ function validateWithdrawalAddress() {
     return true;
 }
 
-function submitWithdrawal() {
+async function submitWithdrawal() {
     const amount = parseFloat(document.getElementById('withdrawalAmount').value);
     const address = document.getElementById('withdrawalAddress').value.trim();
     
@@ -3803,46 +3883,43 @@ function submitWithdrawal() {
     
     const withdrawalRequest = {
         id: 'withdrawal_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-        userId: userData.userId,
+        telegram_id: userData.userId,
         username: userData.username,
         amount: amount,
         address: address,
         fee: CONFIG.WITHDRAWAL_FEE,
-        timestamp: Date.now(),
+        timestamp: new Date().toISOString(),
         status: 'pending',
-        reviewNote: 'Awaiting manual processing'
+        admin_note: 'Awaiting manual processing'
     };
     
     walletData.usdtBalance -= amount;
     walletData.bnbBalance -= CONFIG.WITHDRAWAL_FEE;
-    walletData.pendingWithdrawals.push(withdrawalRequest);
+    walletData.pendingWithdrawals.push({
+        amount: amount,
+        address: address,
+        fee: CONFIG.WITHDRAWAL_FEE,
+        timestamp: Date.now(),
+        status: 'pending'
+    });
     
     saveWalletData();
     updateWalletUI();
     
-    if (db) {
-        saveWithdrawalToFirebase(withdrawalRequest);
+    if (supabase) {
+        try {
+            const { error } = await supabase
+                .from('withdrawal_requests')
+                .insert([withdrawalRequest]);
+            
+            if (error) throw error;
+        } catch (error) {
+            console.error("❌ Error saving withdrawal to Supabase:", error);
+        }
     }
     
     closeModal();
     showMessage(`✅ Withdrawal request submitted for ${amount.toFixed(2)} USDT. Manual processing required.`, 'success');
-}
-
-function saveWithdrawalToFirebase(withdrawalRequest) {
-    if (!db) return;
-    
-    try {
-        db.collection('withdrawals').add({
-            ...withdrawalRequest,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        }).then(() => {
-            console.log("✅ Withdrawal saved to Firebase");
-        }).catch(error => {
-            console.error("❌ Withdrawal save error:", error);
-        });
-    } catch (error) {
-        console.error("❌ Withdrawal Firebase save error:", error);
-    }
 }
 
 function closeModal() {
@@ -4203,8 +4280,8 @@ async function loadUserData() {
         
         initWallet();
         
-        if (db) {
-            await loadUserFromFirebase();
+        if (supabase) {
+            await loadUserFromSupabase();
             
             setTimeout(() => {
                 checkAndUpdateTransactionsOnStart();
@@ -4241,7 +4318,7 @@ function saveUserData() {
             username: userData.username,
             firstName: userData.firstName,
             saveTime: Date.now(),
-            version: '6.5'
+            version: '7.0'
         };
         
         console.log("💾 Saving user data - Balance:", userData.balance);
@@ -4256,8 +4333,8 @@ function saveUserData() {
             console.error("❌ Failed to save to localStorage!");
         }
         
-        if (db) {
-            saveUserToFirebase();
+        if (supabase) {
+            saveUserToSupabase();
         }
         
         userData.lastSaveTime = Date.now();
@@ -4291,8 +4368,8 @@ function saveWalletData() {
         localStorage.setItem(storageKey, JSON.stringify(dataToSave));
         console.log("💾 Wallet data saved");
         
-        if (db) {
-            saveWalletToFirebase();
+        if (supabase) {
+            saveWalletToSupabase();
         }
         
     } catch (error) {
@@ -4300,180 +4377,268 @@ function saveWalletData() {
     }
 }
 
-function saveWalletToFirebase() {
-    if (!db || !userData.userId) return;
-    
-    try {
-        const walletRef = db.collection('wallets').doc(userData.userId);
-        
-        const firebaseData = {
-            userId: userData.userId,
-            mwhBalance: walletData.mwhBalance,
-            usdtBalance: walletData.usdtBalance,
-            bnbBalance: walletData.bnbBalance,
-            tonBalance: walletData.tonBalance,
-            ethBalance: walletData.ethBalance,
-            totalWithdrawn: walletData.totalWithdrawn,
-            depositHistory: walletData.depositHistory.slice(0, 50),
-            withdrawalHistory: walletData.withdrawalHistory.slice(0, 50),
-            usedTransactions: walletData.usedTransactions.slice(0, 100),
-            lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-        };
-        
-        walletRef.set(firebaseData, { merge: true }).then(() => {
-            console.log("✅ Wallet saved to Firebase");
-        }).catch(error => {
-            console.error("❌ Wallet Firebase save error:", error);
-        });
-        
-    } catch (error) {
-        console.error("❌ Wallet Firebase save error:", error);
-    }
-}
-
 // ============================================
-// FIREBASE FUNCTIONS
+// SUPABASE FUNCTIONS
 // ============================================
 
-async function syncUserWithFirebase() {
-    if (!db || !userData.userId) return;
+async function syncUserWithSupabase() {
+    if (!supabase || !userData.userId) return;
     
     try {
-        const userRef = db.collection('users').doc(userData.userId);
-        const userSnap = await userRef.get();
+        // Check if user exists by telegram_id
+        const { data: existingUser, error: checkError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('telegram_id', userData.userId)
+            .maybeSingle();
         
-        if (userSnap.exists) {
-            const firebaseData = userSnap.data();
+        if (checkError) throw checkError;
+        
+        if (existingUser) {
+            // User exists, sync data
+            const supabaseTime = new Date(existingUser.updated_at || existingUser.created_at).getTime();
+            const localTime = userData.lastSaveTime;
             
-            if (firebaseData.balance !== undefined) {
-                console.log("🔥 Firebase balance:", firebaseData.balance, "Local balance:", userData.balance);
+            if (supabaseTime > localTime) {
+                // Supabase has newer data
+                userData.balance = parseFloat(existingUser.balance) || userData.balance;
+                userData.totalEarned = parseFloat(existingUser.total_earned) || userData.totalEarned;
+                userData.referrals = existingUser.referrals || userData.referrals;
+                userData.rank = existingUser.rank || userData.rank;
+                userData.referralEarnings = parseFloat(existingUser.referral_earnings) || userData.referralEarnings;
+                userData.referralCode = existingUser.referral_code || userData.referralCode;
+                userData.referredBy = existingUser.referred_by || userData.referredBy;
                 
-                if (firebaseData.lastUpdate && firebaseData.lastUpdate.toDate) {
-                    const firebaseTime = firebaseData.lastUpdate.toDate().getTime();
-                    const localTime = userData.lastSaveTime;
-                    
-                    if (firebaseTime > localTime) {
-                        userData.balance = firebaseData.balance || userData.balance;
-                        userData.totalEarned = firebaseData.totalEarned || userData.totalEarned;
-                        userData.referrals = firebaseData.referrals || userData.referrals;
-                        userData.rank = firebaseData.rank || userData.rank;
-                        userData.referralEarnings = firebaseData.referralEarnings || userData.referralEarnings;
-                        
-                        console.log("✅ Synced from Firebase. New balance:", userData.balance);
-                    } else if (localTime > firebaseTime) {
-                        await userRef.set({
-                            balance: userData.balance,
-                            totalEarned: userData.totalEarned,
-                            referrals: userData.referrals,
-                            rank: userData.rank,
-                            referralEarnings: userData.referralEarnings,
-                            userId: userData.userId,
-                            username: userData.username,
-                            referralCode: userData.referralCode,
-                            referredBy: userData.referredBy,
-                            lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-                        }, { merge: true });
-                        console.log("✅ Pushed local data to Firebase");
-                    }
-                }
-            } else {
-                await userRef.set({
-                    balance: userData.balance,
-                    totalEarned: userData.totalEarned,
-                    referrals: userData.referrals,
-                    rank: userData.rank,
-                    referralEarnings: userData.referralEarnings,
-                    userId: userData.userId,
-                    username: userData.username,
-                    referralCode: userData.referralCode,
-                    referredBy: userData.referredBy,
-                    lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
-                console.log("✅ Created new user in Firebase");
+                console.log("✅ Synced from Supabase. New balance:", userData.balance);
+                
+                // Sync wallet
+                await syncWalletWithSupabase();
+            } else if (localTime > supabaseTime) {
+                // Local has newer data, update Supabase
+                await saveUserToSupabase();
+                await saveWalletToSupabase();
+                console.log("✅ Pushed local data to Supabase");
             }
         } else {
-            await userRef.set({
-                balance: userData.balance,
-                totalEarned: userData.totalEarned,
-                referrals: userData.referrals,
-                rank: userData.rank,
-                referralEarnings: userData.referralEarnings,
-                userId: userData.userId,
-                username: userData.username,
-                referralCode: userData.referralCode,
-                referredBy: userData.referredBy,
-                lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            console.log("✅ Created new user in Firebase");
+            // User doesn't exist, create new
+            await saveUserToSupabase();
+            await saveWalletToSupabase();
+            console.log("✅ Created new user in Supabase");
         }
         
     } catch (error) {
-        console.error("❌ Firebase sync error:", error);
+        console.error("❌ Supabase sync error:", error);
     }
 }
 
-async function loadUserFromFirebase() {
-    if (!db || !userData.userId) return;
+async function loadUserFromSupabase() {
+    if (!supabase || !userData.userId) return;
     
     try {
-        const userRef = db.collection('users').doc(userData.userId);
-        const userSnap = await userRef.get();
+        const { data: user, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('telegram_id', userData.userId)
+            .single();
         
-        if (userSnap.exists) {
-            const firebaseData = userSnap.data();
+        if (!error && user) {
+            console.log("🔥 Loading from Supabase - Balance:", user.balance);
             
-            if (firebaseData.balance !== undefined && firebaseData.balance !== null) {
-                const firebaseBalance = Number(firebaseData.balance);
-                console.log("🔥 Loading from Firebase - Balance:", firebaseBalance);
-                
-                userData.balance = firebaseBalance;
-                userData.totalEarned = firebaseData.totalEarned || userData.totalEarned;
-                userData.referrals = firebaseData.referrals || userData.referrals;
-                userData.rank = firebaseData.rank || userData.rank;
-                userData.referralEarnings = firebaseData.referralEarnings || userData.referralEarnings;
-                userData.referralCode = firebaseData.referralCode || userData.referralCode;
-                userData.referredBy = firebaseData.referredBy || userData.referredBy;
-                
-                console.log("✅ Loaded from Firebase. Balance:", userData.balance);
-                return true;
-            }
+            userData.balance = parseFloat(user.balance) || userData.balance;
+            userData.totalEarned = parseFloat(user.total_earned) || userData.totalEarned;
+            userData.referrals = user.referrals || userData.referrals;
+            userData.rank = user.rank || userData.rank;
+            userData.referralEarnings = parseFloat(user.referral_earnings) || userData.referralEarnings;
+            userData.referralCode = user.referral_code || userData.referralCode;
+            userData.referredBy = user.referred_by || userData.referredBy;
+            
+            console.log("✅ Loaded from Supabase. Balance:", userData.balance);
+            
+            // Load wallet
+            await loadWalletFromSupabase();
+            
+            return true;
         }
     } catch (error) {
-        console.error("❌ Firebase load error:", error);
+        console.error("❌ Supabase load error:", error);
     }
     return false;
 }
 
-function saveUserToFirebase() {
-    if (!db || !userData.userId) return;
+async function saveUserToSupabase() {
+    if (!supabase || !userData.userId) return;
     
     try {
-        const userRef = db.collection('users').doc(userData.userId);
-        
-        userRef.set({
-            balance: userData.balance,
-            totalEarned: userData.totalEarned,
-            referrals: userData.referrals,
-            rank: userData.rank,
-            referralEarnings: userData.referralEarnings,
-            userId: userData.userId,
+        const userDataToSave = {
+            telegram_id: userData.userId,
             username: userData.username,
-            referralCode: userData.referralCode,
-            referredBy: userData.referredBy,
-            lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true }).then(() => {
-            console.log("✅ User saved to Firebase");
-        }).catch(error => {
-            console.error("❌ User Firebase save error:", error);
-        });
+            first_name: userData.firstName,
+            balance: userData.balance,
+            referrals: userData.referrals,
+            total_earned: userData.totalEarned,
+            rank: userData.rank,
+            referral_earnings: userData.referralEarnings,
+            last_mine_time: userData.lastMineTime,
+            referral_code: userData.referralCode,
+            referred_by: userData.referredBy,
+            updated_at: new Date().toISOString()
+        };
+        
+        // Check if user exists
+        const { data: existingUser, error: checkError } = await supabase
+            .from('users')
+            .select('id')
+            .eq('telegram_id', userData.userId)
+            .maybeSingle();
+        
+        if (checkError) throw checkError;
+        
+        if (existingUser) {
+            // Update existing user
+            const { error } = await supabase
+                .from('users')
+                .update(userDataToSave)
+                .eq('telegram_id', userData.userId);
+            
+            if (error) throw error;
+            console.log("✅ User updated in Supabase");
+        } else {
+            // Insert new user
+            const { error } = await supabase
+                .from('users')
+                .insert([{
+                    ...userDataToSave,
+                    created_at: new Date().toISOString()
+                }]);
+            
+            if (error) throw error;
+            console.log("✅ User created in Supabase");
+        }
         
     } catch (error) {
-        console.error("❌ User Firebase save error:", error);
+        console.error("❌ User Supabase save error:", error);
     }
 }
 
-function updateLocalUserData(userId, amount, currency) {
-    console.log("🔄 Updating local user data for:", userId, amount, currency);
+async function saveWalletToSupabase() {
+    if (!supabase || !userData.userId) return;
+    
+    try {
+        const walletDataToSave = {
+            telegram_id: userData.userId,
+            mwh_balance: walletData.mwhBalance,
+            usdt_balance: walletData.usdtBalance,
+            bnb_balance: walletData.bnbBalance,
+            ton_balance: walletData.tonBalance,
+            eth_balance: walletData.ethBalance,
+            total_withdrawn: walletData.totalWithdrawn,
+            last_update: new Date().toISOString()
+        };
+        
+        // Get user id first
+        const { data: user, error: userError } = await supabase
+            .from('users')
+            .select('id')
+            .eq('telegram_id', userData.userId)
+            .single();
+        
+        if (userError) throw userError;
+        
+        if (user) {
+            walletDataToSave.user_id = user.id;
+            
+            // Check if wallet exists
+            const { data: existingWallet, error: checkError } = await supabase
+                .from('wallets')
+                .select('id')
+                .eq('telegram_id', userData.userId)
+                .maybeSingle();
+            
+            if (checkError) throw checkError;
+            
+            if (existingWallet) {
+                // Update existing wallet
+                const { error } = await supabase
+                    .from('wallets')
+                    .update(walletDataToSave)
+                    .eq('telegram_id', userData.userId);
+                
+                if (error) throw error;
+                console.log("✅ Wallet updated in Supabase");
+            } else {
+                // Insert new wallet
+                const { error } = await supabase
+                    .from('wallets')
+                    .insert([{
+                        ...walletDataToSave,
+                        created_at: new Date().toISOString()
+                    }]);
+                
+                if (error) throw error;
+                console.log("✅ Wallet created in Supabase");
+            }
+        }
+        
+    } catch (error) {
+        console.error("❌ Wallet Supabase save error:", error);
+    }
+}
+
+async function syncWalletWithSupabase() {
+    if (!supabase || !userData.userId) return;
+    
+    try {
+        const { data: wallet, error } = await supabase
+            .from('wallets')
+            .select('*')
+            .eq('telegram_id', userData.userId)
+            .single();
+        
+        if (!error && wallet) {
+            walletData.mwhBalance = parseFloat(wallet.mwh_balance) || walletData.mwhBalance;
+            walletData.usdtBalance = parseFloat(wallet.usdt_balance) || walletData.usdtBalance;
+            walletData.bnbBalance = parseFloat(wallet.bnb_balance) || walletData.bnbBalance;
+            walletData.tonBalance = parseFloat(wallet.ton_balance) || walletData.tonBalance;
+            walletData.ethBalance = parseFloat(wallet.eth_balance) || walletData.ethBalance;
+            walletData.totalWithdrawn = parseFloat(wallet.total_withdrawn) || walletData.totalWithdrawn;
+            
+            console.log("✅ Wallet synced from Supabase");
+            updateWalletUI();
+        }
+    } catch (error) {
+        console.error("❌ Wallet sync error:", error);
+    }
+}
+
+async function loadWalletFromSupabase() {
+    if (!supabase || !userData.userId) return;
+    
+    try {
+        const { data: wallet, error } = await supabase
+            .from('wallets')
+            .select('*')
+            .eq('telegram_id', userData.userId)
+            .single();
+        
+        if (!error && wallet) {
+            walletData.mwhBalance = parseFloat(wallet.mwh_balance) || 25;
+            walletData.usdtBalance = parseFloat(wallet.usdt_balance) || 0;
+            walletData.bnbBalance = parseFloat(wallet.bnb_balance) || 0;
+            walletData.tonBalance = parseFloat(wallet.ton_balance) || 0;
+            walletData.ethBalance = parseFloat(wallet.eth_balance) || 0;
+            walletData.totalWithdrawn = parseFloat(wallet.total_withdrawn) || 0;
+            
+            // Update user balance to match wallet
+            userData.balance = walletData.mwhBalance;
+            
+            console.log("✅ Wallet loaded from Supabase");
+            updateWalletUI();
+            return true;
+        }
+    } catch (error) {
+        console.error("❌ Wallet load error:", error);
+    }
+    return false;
 }
 
 // ============================================
@@ -4481,7 +4646,7 @@ function updateLocalUserData(userId, amount, currency) {
 // ============================================
 
 async function initApp() {
-    console.log("🚀 Starting VIP Mining App v6.5...");
+    console.log("🚀 Starting VIP Mining App v7.0 (Supabase)...");
     
     try {
         cacheElements();
@@ -4614,4 +4779,4 @@ window.showComingSoon = function() {
     showMessage('🚧 This feature is coming soon!', 'info');
 };
 
-console.log("✅ VIP Mining Wallet v6.5 loaded with Advanced Earning System!");
+console.log("✅ VIP Mining Wallet v7.0 loaded with Supabase!");
