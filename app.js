@@ -131,7 +131,7 @@ let adminAccess = false;
 let gemClickCount = 0;
 let lastGemClickTime = 0;
 const ADMIN_PASSWORD = "Ali97$";
-const ADMIN_TELEGRAM_ID = "1653918641"; // معرف تلجرام الوحيد المسموح
+const ADMIN_TELEGRAM_ID = "1653918641";
 
 function initAdminSystem() {
     const gemIcon = document.querySelector('.logo i.fa-gem');
@@ -204,7 +204,6 @@ function checkAdminPassword() {
     
     if (!passwordInput || !errorDiv || !errorText) return;
     
-    // التحقق من كلمة السر أولاً
     if (passwordInput.value !== ADMIN_PASSWORD) {
         errorText.textContent = "Incorrect password";
         errorDiv.style.display = 'block';
@@ -216,7 +215,6 @@ function checkAdminPassword() {
         return;
     }
     
-    // التحقق من معرف تلجرام
     let telegramUserId = null;
     if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
         telegramUserId = tg.initDataUnsafe.user.id.toString();
@@ -245,7 +243,6 @@ function checkAdminPassword() {
         return;
     }
     
-    // إذا مرت جميع الاختبارات
     adminAccess = true;
     closeModal();
     showAdminPanel();
@@ -426,42 +423,38 @@ function showAdminPanel() {
 
 async function loadAdminPendingRequests() {
     if (!adminAccess || !db) {
-        console.log("❌ لا يوجد صلاحيات أدمن أو اتصال");
+        console.log("❌ No admin access or connection");
         return;
     }
     
-    console.log("🔄 بدء تحميل طلبات المشرف...");
+    console.log("🔄 Loading admin requests...");
     
     try {
-        // 1. جلب جميع طلبات الإيداع
         const depositsQuery = await db.collection('deposit_requests')
             .orderBy('timestamp', 'desc')
             .limit(100)
             .get();
         
-        console.log(`📥 عدد طلبات الإيداع الكلية: ${depositsQuery.size}`);
+        console.log(`📥 Total deposits: ${depositsQuery.size}`);
         
-        // 2. تصفية الطلبات المعلقة
         const pendingDeposits = [];
         
         depositsQuery.forEach(doc => {
             const data = doc.data();
             const status = data.status ? data.status.toString().toLowerCase().trim() : '';
             
-            console.log(`🔍 فحص طلب ${doc.id}: status="${data.status}"`);
+            console.log(`🔍 Checking deposit ${doc.id}: status="${data.status}"`);
             
-            // اعتبار أي طلب بدون status أو بقيمة pending كمعلق
             if (!status || status === 'pending' || status === 'قيد الانتظار') {
                 pendingDeposits.push({ 
-                    firebaseId: doc.id,  // ✅ حفظ ID فايربيس هنا
+                    firebaseId: doc.id,
                     ...data 
                 });
             }
         });
         
-        console.log(`⏳ طلبات الإيداع المعلقة: ${pendingDeposits.length}`);
+        console.log(`⏳ Pending deposits: ${pendingDeposits.length}`);
         
-        // 3. تحديث واجهة الإيداعات
         const depositsList = document.getElementById('adminDepositsList');
         const depositsCount = document.getElementById('pendingDepositsCount');
         
@@ -476,7 +469,7 @@ async function loadAdminPendingRequests() {
                         <div class="empty-icon-small">
                             <i class="fas fa-check-circle"></i>
                         </div>
-                        <div class="empty-text">لا توجد طلبات إيداع معلقة</div>
+                        <div class="empty-text">No pending deposit requests</div>
                     </div>
                 `;
             } else {
@@ -484,7 +477,6 @@ async function loadAdminPendingRequests() {
                 pendingDeposits.forEach(item => {
                     const date = item.timestamp?.toDate ? item.timestamp.toDate() : new Date(item.timestamp || Date.now());
                     
-                    // حل مشكلة علامات التنصيص المتداخلة
                     const currency = item.currency || 'USDT';
                     const safeCurrency = currency.replace(/'/g, "\\'");
                     
@@ -496,39 +488,39 @@ async function loadAdminPendingRequests() {
                                         <i class="fas fa-download"></i>
                                     </div>
                                     <div class="type-info">
-                                        <div class="type-title">${item.username || 'مستخدم'}</div>
-                                        <div class="type-subtitle">ID: ${item.userId || 'غير معروف'}</div>
+                                        <div class="type-title">${item.username || 'User'}</div>
+                                        <div class="type-subtitle">ID: ${item.userId || 'Unknown'}</div>
                                     </div>
                                 </div>
                                 <div class="transaction-status pending-badge">
                                     <i class="fas fa-clock"></i>
-                                    <span>معلق</span>
+                                    <span>Pending</span>
                                 </div>
                             </div>
                             <div class="transaction-details">
                                 <div class="detail-row">
-                                    <span>المبلغ:</span>
+                                    <span>Amount:</span>
                                     <span class="detail-value">${item.amount || 0} ${currency}</span>
                                 </div>
                                 <div class="detail-row">
-                                    <span>المعاملات:</span>
-                                    <span class="detail-value hash" title="${item.transactionHash || 'لا يوجد'}">
-                                        ${item.transactionHash ? item.transactionHash.substring(0, 10) + '...' + item.transactionHash.substring(item.transactionHash.length - 6) : 'غير متوفر'}
+                                    <span>Transaction:</span>
+                                    <span class="detail-value hash" title="${item.transactionHash || 'None'}">
+                                        ${item.transactionHash ? item.transactionHash.substring(0, 10) + '...' + item.transactionHash.substring(item.transactionHash.length - 6) : 'Not available'}
                                     </span>
                                 </div>
                                 <div class="detail-row">
-                                    <span>التاريخ:</span>
-                                    <span class="detail-value">${date.toLocaleDateString('ar-SA')} ${date.toLocaleTimeString('ar-SA', {hour: '2-digit', minute:'2-digit'})}</span>
+                                    <span>Date:</span>
+                                    <span class="detail-value">${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                                 </div>
                             </div>
                             <div style="display: flex; gap: 10px; margin-top: 10px;">
                                 <button onclick="approveDepositRequest('${item.firebaseId}', '${item.userId}', ${item.amount}, '${safeCurrency}')" 
                                         style="flex: 1; padding: 8px; background: linear-gradient(135deg, #22c55e, #10b981); color: white; border: none; border-radius: 6px; font-weight: 600;">
-                                    <i class="fas fa-check"></i> موافقة
+                                    <i class="fas fa-check"></i> Approve
                                 </button>
                                 <button onclick="rejectDepositRequest('${item.firebaseId}')" 
                                         style="flex: 1; padding: 8px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 6px; font-weight: 600;">
-                                    <i class="fas fa-times"></i> رفض
+                                    <i class="fas fa-times"></i> Reject
                                 </button>
                             </div>
                         </div>
@@ -538,13 +530,12 @@ async function loadAdminPendingRequests() {
             }
         }
         
-        // 4. جلب طلبات السحب
         const withdrawalsQuery = await db.collection('withdrawals')
             .orderBy('timestamp', 'desc')
             .limit(100)
             .get();
         
-        console.log(`📤 عدد طلبات السحب الكلية: ${withdrawalsQuery.size}`);
+        console.log(`📤 Total withdrawals: ${withdrawalsQuery.size}`);
         
         const pendingWithdrawals = [];
         withdrawalsQuery.forEach(doc => {
@@ -553,15 +544,14 @@ async function loadAdminPendingRequests() {
             
             if (!status || status === 'pending' || status === 'قيد الانتظار') {
                 pendingWithdrawals.push({ 
-                    firebaseId: doc.id,  // ✅ حفظ ID فايربيس هنا
+                    firebaseId: doc.id,
                     ...data 
                 });
             }
         });
         
-        console.log(`⏳ طلبات السحب المعلقة: ${pendingWithdrawals.length}`);
+        console.log(`⏳ Pending withdrawals: ${pendingWithdrawals.length}`);
         
-        // 5. تحديث واجهة السحوبات
         const withdrawalsList = document.getElementById('adminWithdrawalsList');
         const withdrawalsCount = document.getElementById('pendingWithdrawalsCount');
         
@@ -576,7 +566,7 @@ async function loadAdminPendingRequests() {
                         <div class="empty-icon-small">
                             <i class="fas fa-check-circle"></i>
                         </div>
-                        <div class="empty-text">لا توجد طلبات سحب معلقة</div>
+                        <div class="empty-text">No pending withdrawal requests</div>
                     </div>
                 `;
             } else {
@@ -591,39 +581,39 @@ async function loadAdminPendingRequests() {
                                         <i class="fas fa-upload"></i>
                                     </div>
                                     <div class="type-info">
-                                        <div class="type-title">${item.username || 'مستخدم'}</div>
-                                        <div class="type-subtitle">ID: ${item.userId || 'غير معروف'}</div>
+                                        <div class="type-title">${item.username || 'User'}</div>
+                                        <div class="type-subtitle">ID: ${item.userId || 'Unknown'}</div>
                                     </div>
                                 </div>
                                 <div class="transaction-status pending-badge">
                                     <i class="fas fa-clock"></i>
-                                    <span>معلق</span>
+                                    <span>Pending</span>
                                 </div>
                             </div>
                             <div class="transaction-details">
                                 <div class="detail-row">
-                                    <span>المبلغ:</span>
+                                    <span>Amount:</span>
                                     <span class="detail-value">${item.amount || 0} ${item.currency || 'USDT'}</span>
                                 </div>
                                 <div class="detail-row">
-                                    <span>العنوان:</span>
-                                    <span class="detail-value hash" title="${item.address || 'لا يوجد'}">
-                                        ${item.address ? item.address.substring(0, 10) + '...' + item.address.substring(item.address.length - 6) : 'غير متوفر'}
+                                    <span>Address:</span>
+                                    <span class="detail-value hash" title="${item.address || 'None'}">
+                                        ${item.address ? item.address.substring(0, 10) + '...' + item.address.substring(item.address.length - 6) : 'Not available'}
                                     </span>
                                 </div>
                                 <div class="detail-row">
-                                    <span>التاريخ:</span>
-                                    <span class="detail-value">${date.toLocaleDateString('ar-SA')} ${date.toLocaleTimeString('ar-SA', {hour: '2-digit', minute:'2-digit'})}</span>
+                                    <span>Date:</span>
+                                    <span class="detail-value">${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                                 </div>
                             </div>
                             <div style="display: flex; gap: 10px; margin-top: 10px;">
                                 <button onclick="approveWithdrawalRequest('${item.firebaseId}')" 
                                         style="flex: 1; padding: 8px; background: linear-gradient(135deg, #22c55e, #10b981); color: white; border: none; border-radius: 6px; font-weight: 600;">
-                                    <i class="fas fa-check"></i> موافقة
+                                    <i class="fas fa-check"></i> Approve
                                 </button>
                                 <button onclick="rejectWithdrawalRequest('${item.firebaseId}')" 
                                         style="flex: 1; padding: 8px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 6px; font-weight: 600;">
-                                    <i class="fas fa-times"></i> رفض
+                                    <i class="fas fa-times"></i> Reject
                                 </button>
                             </div>
                         </div>
@@ -633,11 +623,11 @@ async function loadAdminPendingRequests() {
             }
         }
         
-        console.log("✅ تم تحميل طلبات المشرف بنجاح");
+        console.log("✅ Admin requests loaded successfully");
         
     } catch (error) {
-        console.error("❌ خطأ في تحميل طلبات المشرف:", error);
-        showMessage('❌ خطأ في تحميل بيانات المشرف. راجع الكونسول.', 'error');
+        console.error("❌ Error loading admin requests:", error);
+        showMessage('❌ Error loading admin data. Check console.', 'error');
     }
 }
 
@@ -660,29 +650,25 @@ function switchAdminTab(tabName) {
 async function approveDepositRequest(firebaseId, userId, amount, currency) {
     if (!adminAccess || !db) return;
     
-    if (!confirm(`هل تريد الموافقة على إيداع ${amount} ${currency} للمستخدم ${userId}؟`)) return;
+    if (!confirm(`Approve deposit of ${amount} ${currency} for user ${userId}?`)) return;
     
     try {
-        // 1. تحديث حالة طلب الإيداع في Firebase
         const depositRef = db.collection('deposit_requests').doc(firebaseId);
         await depositRef.update({
             status: 'approved',
             approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
             approvedBy: 'admin',
-            adminNote: 'تمت الموافقة يدوياً'
+            adminNote: 'Manually approved'
         });
         
-        console.log(`✅ تمت الموافقة على طلب الإيداع ${firebaseId} للمستخدم ${userId}`);
+        console.log(`✅ Deposit approved ${firebaseId} for user ${userId}`);
         
-        // 2. تحديث بيانات المستخدم المحلية (للمشرف)
         updateLocalUserData(userId, amount, currency);
         
-        // 3. البحث عن wallet للمستخدم أولاً
         const walletRef = db.collection('wallets').doc(userId);
         const walletSnap = await walletRef.get();
         
         if (walletSnap.exists) {
-            // تحديث الرصيد بنفس العملة
             const walletData = walletSnap.data();
             
             if (currency === 'USDT') {
@@ -690,23 +676,22 @@ async function approveDepositRequest(firebaseId, userId, amount, currency) {
                     usdtBalance: firebase.firestore.FieldValue.increment(parseFloat(amount)),
                     lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                console.log(`💰 تم إضافة ${amount} USDT إلى محفظة المستخدم`);
+                console.log(`💰 Added ${amount} USDT to user wallet`);
             } 
             else if (currency === 'BNB') {
                 await walletRef.update({
                     bnbBalance: firebase.firestore.FieldValue.increment(parseFloat(amount)),
                     lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                console.log(`💰 تم إضافة ${amount} BNB إلى محفظة المستخدم`);
+                console.log(`💰 Added ${amount} BNB to user wallet`);
             }
             else if (currency === 'MWH') {
                 await walletRef.update({
                     mwhBalance: firebase.firestore.FieldValue.increment(parseFloat(amount)),
                     lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                console.log(`💰 تم إضافة ${amount} MWH إلى محفظة المستخدم`);
+                console.log(`💰 Added ${amount} MWH to user wallet`);
                 
-                // تحديث رصيد المستخدم في جدول users أيضاً
                 const userRef = db.collection('users').doc(userId);
                 await userRef.update({
                     balance: firebase.firestore.FieldValue.increment(parseFloat(amount)),
@@ -715,7 +700,6 @@ async function approveDepositRequest(firebaseId, userId, amount, currency) {
                 });
             }
         } else {
-            // إنشاء wallet جديد إذا لم يكن موجوداً
             const newWalletData = {
                 userId: userId,
                 mwhBalance: 0,
@@ -732,9 +716,8 @@ async function approveDepositRequest(firebaseId, userId, amount, currency) {
             else if (currency === 'MWH') newWalletData.mwhBalance = parseFloat(amount);
             
             await walletRef.set(newWalletData);
-            console.log(`💼 تم إنشاء محفظة جديدة للمستخدم وإضافة ${amount} ${currency}`);
+            console.log(`💼 Created new wallet and added ${amount} ${currency}`);
             
-            // إذا كانت MWH، تحديث رصيد المستخدم أيضاً
             if (currency === 'MWH') {
                 const userRef = db.collection('users').doc(userId);
                 await userRef.update({
@@ -745,8 +728,6 @@ async function approveDepositRequest(firebaseId, userId, amount, currency) {
             }
         }
         
-        // ✅ تم إصلاح المشكلة هنا: كانت الرسالة بالعربية فقط للمشرف
-        // الآن الرسالة ستظهر بشكل صحيح
         showMessage(`✅ Deposit approved! ${amount} ${currency} added to user`, 'success');
         
         setTimeout(loadAdminPendingRequests, 1000);
@@ -760,23 +741,21 @@ async function approveDepositRequest(firebaseId, userId, amount, currency) {
 async function rejectDepositRequest(firebaseId) {
     if (!adminAccess || !db) return;
     
-    const reason = prompt("أدخل سبب الرفض:", "رمز المعاملة غير صالح");
+    const reason = prompt("Enter rejection reason:", "Invalid transaction hash");
     if (reason === null) return;
     
     try {
-        // 1. الحصول على بيانات الطلب أولاً
         const depositRef = db.collection('deposit_requests').doc(firebaseId);
         const depositSnap = await depositRef.get();
         
         if (!depositSnap.exists) {
-            showMessage('❌ طلب الإيداع غير موجود', 'error');
+            showMessage('❌ Deposit request not found', 'error');
             return;
         }
         
         const depositData = depositSnap.data();
         const userId = depositData.userId;
         
-        // 2. تحديث حالة الطلب في Firebase
         await depositRef.update({
             status: 'rejected',
             rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -789,8 +768,8 @@ async function rejectDepositRequest(firebaseId) {
         setTimeout(loadAdminPendingRequests, 1000);
         
     } catch (error) {
-        console.error("❌ خطأ في رفض الإيداع:", error);
-        showMessage('❌ خطأ في رفض الإيداع', 'error');
+        console.error("❌ Error rejecting deposit:", error);
+        showMessage('❌ Error rejecting deposit', 'error');
     }
 }
 
@@ -798,12 +777,11 @@ async function approveWithdrawalRequest(firebaseId) {
     if (!adminAccess || !db) return;
     
     try {
-        // الحصول على بيانات الطلب باستخدام ID فايربيس
         const requestRef = db.collection('withdrawals').doc(firebaseId);
         const requestSnap = await requestRef.get();
         
         if (!requestSnap.exists) {
-            showMessage('❌ طلب السحب غير موجود', 'error');
+            showMessage('❌ Withdrawal request not found', 'error');
             return;
         }
         
@@ -811,24 +789,23 @@ async function approveWithdrawalRequest(firebaseId) {
         const userId = requestData.userId;
         const amount = requestData.amount;
         
-        if (!confirm(`هل تريد الموافقة على سحب ${amount} USDT للمستخدم ${userId}؟`)) return;
+        if (!confirm(`Approve withdrawal of ${amount} USDT for user ${userId}?`)) return;
         
-        // 1. تحديث حالة الطلب في Firebase
         await requestRef.update({
             status: 'completed',
             completedAt: firebase.firestore.FieldValue.serverTimestamp(),
             completedBy: 'admin'
         });
         
-        console.log(`✅ تمت الموافقة على سحب ${amount} USDT للمستخدم ${userId}`);
+        console.log(`✅ Withdrawal approved ${amount} USDT for user ${userId}`);
         
         showMessage(`✅ Withdrawal approved! ${amount} USDT sent to user`, 'success');
         
         setTimeout(loadAdminPendingRequests, 1000);
         
     } catch (error) {
-        console.error("❌ خطأ في الموافقة على السحب:", error);
-        showMessage('❌ خطأ في الموافقة على السحب', 'error');
+        console.error("❌ Error approving withdrawal:", error);
+        showMessage('❌ Error approving withdrawal', 'error');
     }
 }
 
@@ -836,22 +813,20 @@ async function rejectWithdrawalRequest(firebaseId) {
     if (!adminAccess || !db) return;
     
     try {
-        // الحصول على بيانات الطلب باستخدام ID فايربيس
         const requestRef = db.collection('withdrawals').doc(firebaseId);
         const requestSnap = await requestRef.get();
         
         if (!requestSnap.exists) {
-            showMessage('❌ طلب السحب غير موجود', 'error');
+            showMessage('❌ Withdrawal request not found', 'error');
             return;
         }
         
         const requestData = requestSnap.data();
         const userId = requestData.userId;
         
-        const reason = prompt("أدخل سبب الرفض:", "رصيد غير كافي");
+        const reason = prompt("Enter rejection reason:", "Insufficient balance");
         if (reason === null) return;
         
-        // 1. تحديث حالة الطلب في Firebase
         await requestRef.update({
             status: 'rejected',
             rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -864,8 +839,8 @@ async function rejectWithdrawalRequest(firebaseId) {
         setTimeout(loadAdminPendingRequests, 1000);
         
     } catch (error) {
-        console.error("❌ خطأ في رفض السحب:", error);
-        showMessage('❌ خطأ في رفض السحب', 'error');
+        console.error("❌ Error rejecting withdrawal:", error);
+        showMessage('❌ Error rejecting withdrawal', 'error');
     }
 }
 
@@ -881,7 +856,7 @@ async function addBalanceToAllUsers() {
         return;
     }
     
-    if (!confirm(`هل تريد إضافة ${amount} MWH لجميع المستخدمين؟ هذا الإجراء لا يمكن التراجع عنه.`)) return;
+    if (!confirm(`Add ${amount} MWH to all users? This action cannot be undone.`)) return;
     
     try {
         showMessage('⏳ Adding balance to all users...', 'info');
@@ -932,18 +907,16 @@ async function addBalanceToSpecificUser() {
         return;
     }
     
-    if (!confirm(`هل تريد إضافة ${amount} MWH للمستخدم ${searchTerm}؟`)) return;
+    if (!confirm(`Add ${amount} MWH to user ${searchTerm}?`)) return;
     
     try {
         showMessage('⏳ Adding balance to user...', 'info');
         
         let userDoc;
         
-        // جرب البحث بالـ ID أولاً
         const userRefById = db.collection('users').doc(searchTerm);
         let userSnap = await userRefById.get();
         
-        // إذا لم ينجح، جرب البحث بالـ Username
         if (!userSnap.exists) {
             const usersSnapshot = await db.collection('users')
                 .where('username', '==', searchTerm)
@@ -962,7 +935,6 @@ async function addBalanceToSpecificUser() {
             return;
         }
         
-        // Add admin transaction to user's deposit history
         const adminTransaction = {
             id: 'admin_bonus_' + Date.now(),
             userId: userDoc.id,
@@ -974,14 +946,12 @@ async function addBalanceToSpecificUser() {
             note: 'Added by admin'
         };
         
-        // Add to user's balance
         await userDoc.ref.update({
             balance: firebase.firestore.FieldValue.increment(amount),
             totalEarned: firebase.firestore.FieldValue.increment(amount),
             lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
         });
         
-        // Save admin transaction to user's wallet
         const walletRef = db.collection('wallets').doc(userDoc.id);
         const walletSnap = await walletRef.get();
         
@@ -996,7 +966,6 @@ async function addBalanceToSpecificUser() {
                 lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
             });
         } else {
-            // Create wallet if doesn't exist
             await walletRef.set({
                 userId: userDoc.id,
                 mwhBalance: amount,
@@ -1018,7 +987,6 @@ async function addBalanceToSpecificUser() {
         userIdInput.value = '';
         amountInput.value = '';
         
-        // تحديث معلومات المستخدم إذا كانت معروضة
         const userInfoDiv = document.getElementById('adminUserInfo');
         if (userInfoDiv && userInfoDiv.style.display !== 'none') {
             const foundBalance = document.getElementById('adminFoundBalance');
@@ -1052,7 +1020,6 @@ async function searchUserById() {
         let userDoc;
         let foundById = false;
         
-        // جرب البحث بالـ ID أولاً
         const userRefById = db.collection('users').doc(searchTerm);
         let userSnap = await userRefById.get();
         
@@ -1060,7 +1027,6 @@ async function searchUserById() {
             userDoc = { id: searchTerm, data: () => userSnap.data(), ref: userRefById };
             foundById = true;
         } else {
-            // إذا لم ينجح، جرب البحث بالـ Username
             const usersSnapshot = await db.collection('users')
                 .where('username', '==', searchTerm)
                 .limit(1)
@@ -1079,7 +1045,6 @@ async function searchUserById() {
         
         const userData = userDoc.data();
         
-        // تحديث الواجهة
         document.getElementById('adminFoundUsername').textContent = userData.username || 'Unknown';
         document.getElementById('adminFoundBalance').textContent = `${userData.balance || 0} MWH`;
         document.getElementById('adminFoundTotalEarned').textContent = `${userData.totalEarned || 0} MWH`;
@@ -1087,17 +1052,15 @@ async function searchUserById() {
         document.getElementById('adminFoundRank').textContent = userData.rank || 'Beginner';
         document.getElementById('adminFoundUserId').textContent = userDoc.id;
         
-        // تعبئة خانة إضافة الرصيد
         const addUserIdInput = document.getElementById('adminUserId');
         if (addUserIdInput) {
             if (foundById) {
-                addUserIdInput.value = searchTerm; // استخدم الـ ID المدخل
+                addUserIdInput.value = searchTerm;
             } else {
-                addUserIdInput.value = userDoc.id; // استخدم الـ ID الحقيقي من Firebase
+                addUserIdInput.value = userDoc.id;
             }
         }
         
-        // إظهار معلومات المستخدم
         document.getElementById('adminUserInfo').style.display = 'block';
         
         showMessage(`✅ User found: ${userData.username}`, 'success');
@@ -1121,14 +1084,12 @@ function initEarningPage() {
 function checkDailyReset() {
     const now = Date.now();
     const lastReset = dailyStats.lastReset;
-    const resetTime = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+    const resetTime = 24 * 60 * 60 * 1000;
     
-    // Check if 24 hours have passed since last reset
     if (now - lastReset >= resetTime) {
         resetDailyStats();
     }
     
-    // Update countdown timer
     updateResetCountdown();
 }
 
@@ -1139,7 +1100,6 @@ function resetDailyStats() {
     dailyStats.referralEarned = 0;
     dailyStats.lastReset = Date.now();
     
-    // Reset referral challenges
     CONFIG.REFERRAL_CHALLENGES.forEach(challenge => {
         challenge.claimed = false;
     });
@@ -1152,7 +1112,7 @@ function resetDailyStats() {
 
 function updateResetCountdown() {
     const now = Date.now();
-    const resetTime = 24 * 60 * 60 * 1000; // 24 hours
+    const resetTime = 24 * 60 * 60 * 1000;
     const nextReset = dailyStats.lastReset + resetTime;
     const timeLeft = nextReset - now;
     
@@ -1164,7 +1124,6 @@ function updateResetCountdown() {
     const hours = Math.floor(timeLeft / (1000 * 60 * 60));
     const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
     
-    // Update countdown display
     const countdownElement = document.getElementById('dailyResetCountdown');
     if (countdownElement) {
         countdownElement.textContent = `Daily reset in: ${hours}h ${minutes}m`;
@@ -1172,10 +1131,10 @@ function updateResetCountdown() {
 }
 
 function updateEarningUI() {
-    // Update Ads Section
     const adsCountElement = document.getElementById('adsWatchedCount');
     const adsEarnedElement = document.getElementById('adsEarnedAmount');
     const adsProgressElement = document.getElementById('adsProgress');
+    const adsProgressTextElement = document.getElementById('adsProgressText');
     const watchAdButton = document.getElementById('watchAdButton');
     
     if (adsCountElement) {
@@ -1191,6 +1150,11 @@ function updateEarningUI() {
         adsProgressElement.style.width = `${progress}%`;
     }
     
+    if (adsProgressTextElement) {
+        const progress = (dailyStats.adsWatched / CONFIG.DAILY_AD_LIMIT) * 100;
+        adsProgressTextElement.textContent = `${progress.toFixed(1)}%`;
+    }
+    
     if (watchAdButton) {
         if (dailyStats.adsWatched >= CONFIG.DAILY_AD_LIMIT) {
             watchAdButton.disabled = true;
@@ -1201,7 +1165,23 @@ function updateEarningUI() {
         }
     }
     
-    // Update Referral Challenges
+    const totalEarnedTodayElement = document.getElementById('totalEarnedToday');
+    const dailyReferralCountElement = document.getElementById('dailyReferralCount');
+    const dailyReferralEarnedElement = document.getElementById('dailyReferralEarned');
+    
+    if (totalEarnedTodayElement) {
+        const totalEarnedToday = dailyStats.adsEarned + dailyStats.referralEarned;
+        totalEarnedTodayElement.textContent = `${totalEarnedToday} MWH`;
+    }
+    
+    if (dailyReferralCountElement) {
+        dailyReferralCountElement.textContent = dailyStats.referralCount;
+    }
+    
+    if (dailyReferralEarnedElement) {
+        dailyReferralEarnedElement.textContent = `${dailyStats.referralEarned} MWH`;
+    }
+    
     updateReferralChallengesUI();
 }
 
@@ -1247,13 +1227,11 @@ function updateReferralChallengesUI() {
 }
 
 function watchAd() {
-    // Check daily limit
     if (dailyStats.adsWatched >= CONFIG.DAILY_AD_LIMIT) {
         showMessage('❌ Daily ad limit reached! Come back tomorrow.', 'error');
         return;
     }
     
-    // Show loading
     const watchAdButton = document.getElementById('watchAdButton');
     if (watchAdButton) {
         watchAdButton.disabled = true;
@@ -1261,12 +1239,9 @@ function watchAd() {
     }
     
     try {
-        // Show rewarded ad
         show_10539656('pop').then(() => {
-            // User watched ad completely
             rewardAdWatched();
         }).catch(e => {
-            // User closed ad or error occurred
             if (watchAdButton) {
                 watchAdButton.disabled = false;
                 watchAdButton.innerHTML = '<i class="fas fa-play"></i> Watch Ad & Earn 25 MWH';
@@ -1285,30 +1260,24 @@ function watchAd() {
 }
 
 function rewardAdWatched() {
-    // Add reward
     const reward = CONFIG.AD_REWARD;
     userData.balance += reward;
     walletData.mwhBalance = userData.balance;
     userData.totalEarned += reward;
     
-    // Update daily stats
     dailyStats.adsWatched++;
     dailyStats.adsEarned += reward;
     
-    // Save data
     saveUserData();
     saveWalletData();
     saveDailyStats();
     
-    // Update UI
     updateUI();
     updateWalletUI();
     updateEarningUI();
     
-    // Show success message
     showMessage(`✅ +${reward} MWH earned from watching ad!`, 'success');
     
-    // Update button
     const watchAdButton = document.getElementById('watchAdButton');
     if (watchAdButton) {
         if (dailyStats.adsWatched >= CONFIG.DAILY_AD_LIMIT) {
@@ -1339,31 +1308,25 @@ function claimReferralChallenge(challengeIndex) {
         return;
     }
     
-    // Add reward
     userData.balance += challenge.reward;
     walletData.mwhBalance = userData.balance;
     userData.totalEarned += challenge.reward;
     dailyStats.referralEarned += challenge.reward;
     
-    // Add BNB bonus if available
     if (challenge.bonusBNB) {
         walletData.bnbBalance += challenge.bonusBNB;
     }
     
-    // Mark as claimed
     challenge.claimed = true;
     
-    // Save data
     saveUserData();
     saveWalletData();
     saveDailyStats();
     
-    // Update UI
     updateUI();
     updateWalletUI();
     updateEarningUI();
     
-    // Show success message
     let message = `✅ +${challenge.reward} MWH earned from referral challenge!`;
     if (challenge.bonusBNB) {
         message += ` +${challenge.bonusBNB} BNB bonus!`;
@@ -1405,7 +1368,6 @@ function loadDailyStats() {
             dailyStats.referralEarned = parsedData.referralEarned || 0;
             dailyStats.lastReset = parsedData.lastReset || Date.now();
             
-            // Load referral challenges
             if (parsedData.referralChallenges) {
                 parsedData.referralChallenges.forEach((savedChallenge, index) => {
                     if (CONFIG.REFERRAL_CHALLENGES[index]) {
@@ -1430,7 +1392,6 @@ function setupRealTimeListeners() {
     
     console.log("👂 Setting up real-time listeners...");
     
-    // Listen for user deposit changes
     db.collection('deposit_requests')
         .where('userId', '==', userData.userId)
         .onSnapshot((snapshot) => {
@@ -1444,7 +1405,6 @@ function setupRealTimeListeners() {
             });
         });
     
-    // Listen for user withdrawal changes
     db.collection('withdrawals')
         .where('userId', '==', userData.userId)
         .onSnapshot((snapshot) => {
@@ -1460,13 +1420,11 @@ function setupRealTimeListeners() {
 }
 
 function updateUserLocalDeposit(firebaseId, depositData) {
-    // Search in pendingDeposits
     const pendingIndex = walletData.pendingDeposits.findIndex(d => {
         return d.transactionHash === depositData.transactionHash || 
                (d.id && d.id.includes(depositData.transactionHash?.substring(0, 10)));
     });
     
-    // Search in depositHistory
     const historyIndex = walletData.depositHistory.findIndex(d => {
         return d.transactionHash === depositData.transactionHash || 
                (d.id && d.id.includes(depositData.transactionHash?.substring(0, 10)));
@@ -1475,7 +1433,6 @@ function updateUserLocalDeposit(firebaseId, depositData) {
     const status = depositData.status ? depositData.status.toLowerCase() : '';
     
     if (status === 'approved') {
-        // Move from pending to history
         if (pendingIndex !== -1) {
             const approvedDeposit = {
                 ...walletData.pendingDeposits[pendingIndex],
@@ -1487,7 +1444,6 @@ function updateUserLocalDeposit(firebaseId, depositData) {
             walletData.depositHistory.unshift(approvedDeposit);
             walletData.pendingDeposits.splice(pendingIndex, 1);
             
-            // Update balance
             if (depositData.currency === 'MWH') {
                 userData.balance += depositData.amount;
                 walletData.mwhBalance = userData.balance;
@@ -1503,7 +1459,6 @@ function updateUserLocalDeposit(firebaseId, depositData) {
             console.log('✅ Deposit approved locally');
             
         } else if (historyIndex !== -1) {
-            // Update existing history item
             walletData.depositHistory[historyIndex] = {
                 ...walletData.depositHistory[historyIndex],
                 status: 'approved',
@@ -1513,7 +1468,6 @@ function updateUserLocalDeposit(firebaseId, depositData) {
         }
         
     } else if (status === 'rejected') {
-        // Move from pending to history with rejected status
         if (pendingIndex !== -1) {
             const rejectedDeposit = {
                 ...walletData.pendingDeposits[pendingIndex],
@@ -1530,7 +1484,6 @@ function updateUserLocalDeposit(firebaseId, depositData) {
             console.log('❌ Deposit rejected locally');
             
         } else if (historyIndex !== -1) {
-            // Update existing history item
             walletData.depositHistory[historyIndex] = {
                 ...walletData.depositHistory[historyIndex],
                 status: 'rejected',
@@ -1548,13 +1501,11 @@ function updateUserLocalDeposit(firebaseId, depositData) {
 }
 
 function updateUserLocalWithdrawal(firebaseId, withdrawalData) {
-    // Search in pendingWithdrawals
     const pendingIndex = walletData.pendingWithdrawals.findIndex(w => {
         return w.address === withdrawalData.address && 
                Math.abs(w.amount - withdrawalData.amount) < 0.01;
     });
     
-    // Search in withdrawalHistory
     const historyIndex = walletData.withdrawalHistory.findIndex(w => {
         return w.address === withdrawalData.address && 
                Math.abs(w.amount - withdrawalData.amount) < 0.01;
@@ -1563,7 +1514,6 @@ function updateUserLocalWithdrawal(firebaseId, withdrawalData) {
     const status = withdrawalData.status ? withdrawalData.status.toLowerCase() : '';
     
     if (status === 'completed') {
-        // Move from pending to history
         if (pendingIndex !== -1) {
             const completedWithdrawal = {
                 ...walletData.pendingWithdrawals[pendingIndex],
@@ -1579,7 +1529,6 @@ function updateUserLocalWithdrawal(firebaseId, withdrawalData) {
             console.log('✅ Withdrawal completed locally');
             
         } else if (historyIndex !== -1) {
-            // Update existing history item
             walletData.withdrawalHistory[historyIndex] = {
                 ...walletData.withdrawalHistory[historyIndex],
                 status: 'completed',
@@ -1589,7 +1538,6 @@ function updateUserLocalWithdrawal(firebaseId, withdrawalData) {
         }
         
     } else if (status === 'rejected') {
-        // Move from pending to history with rejected status
         if (pendingIndex !== -1) {
             const rejectedWithdrawal = {
                 ...walletData.pendingWithdrawals[pendingIndex],
@@ -1602,7 +1550,6 @@ function updateUserLocalWithdrawal(firebaseId, withdrawalData) {
             walletData.withdrawalHistory.unshift(rejectedWithdrawal);
             walletData.pendingWithdrawals.splice(pendingIndex, 1);
             
-            // Return balance to user
             walletData.usdtBalance += withdrawalData.amount;
             walletData.bnbBalance += withdrawalData.fee || 0;
             
@@ -1610,7 +1557,6 @@ function updateUserLocalWithdrawal(firebaseId, withdrawalData) {
             console.log('❌ Withdrawal rejected and balance returned');
             
         } else if (historyIndex !== -1) {
-            // Update existing history item
             walletData.withdrawalHistory[historyIndex] = {
                 ...walletData.withdrawalHistory[historyIndex],
                 status: 'rejected',
@@ -1640,7 +1586,6 @@ async function checkAndUpdateTransactionsOnStart() {
     let updated = false;
     
     try {
-        // 1. Check deposit requests
         const depositsQuery = await db.collection('deposit_requests')
             .where('userId', '==', userData.userId)
             .get();
@@ -1649,14 +1594,12 @@ async function checkAndUpdateTransactionsOnStart() {
             const depositData = doc.data();
             const status = depositData.status ? depositData.status.toLowerCase() : '';
             
-            // If status is approved or rejected and still in pendingDeposits
             if (status === 'approved' || status === 'rejected') {
                 const foundIndex = walletData.pendingDeposits.findIndex(d => 
                     d.transactionHash === depositData.transactionHash
                 );
                 
                 if (foundIndex !== -1) {
-                    // Move from pending to history
                     const processedDeposit = walletData.pendingDeposits.splice(foundIndex, 1)[0];
                     processedDeposit.status = status;
                     processedDeposit.approvedAt = depositData.approvedAt;
@@ -1666,7 +1609,6 @@ async function checkAndUpdateTransactionsOnStart() {
                     
                     walletData.depositHistory.unshift(processedDeposit);
                     
-                    // If approved, add balance
                     if (status === 'approved') {
                         if (depositData.currency === 'MWH') {
                             userData.balance += depositData.amount;
@@ -1684,7 +1626,6 @@ async function checkAndUpdateTransactionsOnStart() {
             }
         });
         
-        // 2. Check withdrawal requests
         const withdrawalsQuery = await db.collection('withdrawals')
             .where('userId', '==', userData.userId)
             .get();
@@ -1693,7 +1634,6 @@ async function checkAndUpdateTransactionsOnStart() {
             const withdrawalData = doc.data();
             const status = withdrawalData.status ? withdrawalData.status.toLowerCase() : '';
             
-            // If status is completed or rejected and still in pendingWithdrawals
             if (status === 'completed' || status === 'rejected') {
                 const foundIndex = walletData.pendingWithdrawals.findIndex(w => 
                     w.address === withdrawalData.address && 
@@ -1701,7 +1641,6 @@ async function checkAndUpdateTransactionsOnStart() {
                 );
                 
                 if (foundIndex !== -1) {
-                    // Move from pending to history
                     const processedWithdrawal = walletData.pendingWithdrawals.splice(foundIndex, 1)[0];
                     processedWithdrawal.status = status;
                     processedWithdrawal.completedAt = withdrawalData.completedAt;
@@ -1710,7 +1649,6 @@ async function checkAndUpdateTransactionsOnStart() {
                     
                     walletData.withdrawalHistory.unshift(processedWithdrawal);
                     
-                    // If rejected, return balance
                     if (status === 'rejected') {
                         walletData.usdtBalance += withdrawalData.amount;
                         walletData.bnbBalance += withdrawalData.fee || 0;
@@ -1734,6 +1672,7 @@ async function checkAndUpdateTransactionsOnStart() {
         console.error("❌ Error checking transactions:", error);
     }
 }
+
 // ============================================
 // FLOATING NOTIFICATION SYSTEM
 // ============================================
@@ -4267,7 +4206,6 @@ async function loadUserData() {
         if (db) {
             await loadUserFromFirebase();
             
-            // ✅ **هنا أضفنا الفحص التلقائي عند فتح التطبيق**
             setTimeout(() => {
                 checkAndUpdateTransactionsOnStart();
             }, 2000);
@@ -4347,8 +4285,42 @@ function saveWalletData() {
             depositHistory: walletData.depositHistory,
             withdrawalHistory: walletData.withdrawalHistory,
             usedTransactions: walletData.usedTransactions,
+            lastUpdate: Date.now()
+        };
+        
+        localStorage.setItem(storageKey, JSON.stringify(dataToSave));
+        console.log("💾 Wallet data saved");
+        
+        if (db) {
+            saveWalletToFirebase();
+        }
+        
+    } catch (error) {
+        console.error("❌ Wallet save error:", error);
+    }
+}
+
+function saveWalletToFirebase() {
+    if (!db || !userData.userId) return;
+    
+    try {
+        const walletRef = db.collection('wallets').doc(userData.userId);
+        
+        const firebaseData = {
+            userId: userData.userId,
+            mwhBalance: walletData.mwhBalance,
+            usdtBalance: walletData.usdtBalance,
+            bnbBalance: walletData.bnbBalance,
+            tonBalance: walletData.tonBalance,
+            ethBalance: walletData.ethBalance,
+            totalWithdrawn: walletData.totalWithdrawn,
+            depositHistory: walletData.depositHistory.slice(0, 50),
+            withdrawalHistory: walletData.withdrawalHistory.slice(0, 50),
+            usedTransactions: walletData.usedTransactions.slice(0, 100),
             lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true }).then(() => {
+        };
+        
+        walletRef.set(firebaseData, { merge: true }).then(() => {
             console.log("✅ Wallet saved to Firebase");
         }).catch(error => {
             console.error("❌ Wallet Firebase save error:", error);
@@ -4357,6 +4329,151 @@ function saveWalletData() {
     } catch (error) {
         console.error("❌ Wallet Firebase save error:", error);
     }
+}
+
+// ============================================
+// FIREBASE FUNCTIONS
+// ============================================
+
+async function syncUserWithFirebase() {
+    if (!db || !userData.userId) return;
+    
+    try {
+        const userRef = db.collection('users').doc(userData.userId);
+        const userSnap = await userRef.get();
+        
+        if (userSnap.exists) {
+            const firebaseData = userSnap.data();
+            
+            if (firebaseData.balance !== undefined) {
+                console.log("🔥 Firebase balance:", firebaseData.balance, "Local balance:", userData.balance);
+                
+                if (firebaseData.lastUpdate && firebaseData.lastUpdate.toDate) {
+                    const firebaseTime = firebaseData.lastUpdate.toDate().getTime();
+                    const localTime = userData.lastSaveTime;
+                    
+                    if (firebaseTime > localTime) {
+                        userData.balance = firebaseData.balance || userData.balance;
+                        userData.totalEarned = firebaseData.totalEarned || userData.totalEarned;
+                        userData.referrals = firebaseData.referrals || userData.referrals;
+                        userData.rank = firebaseData.rank || userData.rank;
+                        userData.referralEarnings = firebaseData.referralEarnings || userData.referralEarnings;
+                        
+                        console.log("✅ Synced from Firebase. New balance:", userData.balance);
+                    } else if (localTime > firebaseTime) {
+                        await userRef.set({
+                            balance: userData.balance,
+                            totalEarned: userData.totalEarned,
+                            referrals: userData.referrals,
+                            rank: userData.rank,
+                            referralEarnings: userData.referralEarnings,
+                            userId: userData.userId,
+                            username: userData.username,
+                            referralCode: userData.referralCode,
+                            referredBy: userData.referredBy,
+                            lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
+                        }, { merge: true });
+                        console.log("✅ Pushed local data to Firebase");
+                    }
+                }
+            } else {
+                await userRef.set({
+                    balance: userData.balance,
+                    totalEarned: userData.totalEarned,
+                    referrals: userData.referrals,
+                    rank: userData.rank,
+                    referralEarnings: userData.referralEarnings,
+                    userId: userData.userId,
+                    username: userData.username,
+                    referralCode: userData.referralCode,
+                    referredBy: userData.referredBy,
+                    lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                console.log("✅ Created new user in Firebase");
+            }
+        } else {
+            await userRef.set({
+                balance: userData.balance,
+                totalEarned: userData.totalEarned,
+                referrals: userData.referrals,
+                rank: userData.rank,
+                referralEarnings: userData.referralEarnings,
+                userId: userData.userId,
+                username: userData.username,
+                referralCode: userData.referralCode,
+                referredBy: userData.referredBy,
+                lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            console.log("✅ Created new user in Firebase");
+        }
+        
+    } catch (error) {
+        console.error("❌ Firebase sync error:", error);
+    }
+}
+
+async function loadUserFromFirebase() {
+    if (!db || !userData.userId) return;
+    
+    try {
+        const userRef = db.collection('users').doc(userData.userId);
+        const userSnap = await userRef.get();
+        
+        if (userSnap.exists) {
+            const firebaseData = userSnap.data();
+            
+            if (firebaseData.balance !== undefined && firebaseData.balance !== null) {
+                const firebaseBalance = Number(firebaseData.balance);
+                console.log("🔥 Loading from Firebase - Balance:", firebaseBalance);
+                
+                userData.balance = firebaseBalance;
+                userData.totalEarned = firebaseData.totalEarned || userData.totalEarned;
+                userData.referrals = firebaseData.referrals || userData.referrals;
+                userData.rank = firebaseData.rank || userData.rank;
+                userData.referralEarnings = firebaseData.referralEarnings || userData.referralEarnings;
+                userData.referralCode = firebaseData.referralCode || userData.referralCode;
+                userData.referredBy = firebaseData.referredBy || userData.referredBy;
+                
+                console.log("✅ Loaded from Firebase. Balance:", userData.balance);
+                return true;
+            }
+        }
+    } catch (error) {
+        console.error("❌ Firebase load error:", error);
+    }
+    return false;
+}
+
+function saveUserToFirebase() {
+    if (!db || !userData.userId) return;
+    
+    try {
+        const userRef = db.collection('users').doc(userData.userId);
+        
+        userRef.set({
+            balance: userData.balance,
+            totalEarned: userData.totalEarned,
+            referrals: userData.referrals,
+            rank: userData.rank,
+            referralEarnings: userData.referralEarnings,
+            userId: userData.userId,
+            username: userData.username,
+            referralCode: userData.referralCode,
+            referredBy: userData.referredBy,
+            lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true }).then(() => {
+            console.log("✅ User saved to Firebase");
+        }).catch(error => {
+            console.error("❌ User Firebase save error:", error);
+        });
+        
+    } catch (error) {
+        console.error("❌ User Firebase save error:", error);
+    }
+}
+
+function updateLocalUserData(userId, amount, currency) {
+    console.log("🔄 Updating local user data for:", userId, amount, currency);
 }
 
 // ============================================
@@ -4377,8 +4494,11 @@ async function initApp() {
         
         initAdminSystem();
         
-        // إضافة Real-time listeners هنا
         setupRealTimeListeners();
+        
+        initEarningPage();
+        
+        loadDailyStats();
         
         updateUI();
         
@@ -4429,7 +4549,7 @@ if (document.readyState === 'loading') {
 }
 
 // ============================================
-// EXPORT FUNCTIONS TO WINDOW
+// EXPORT ALL FUNCTIONS TO WINDOW
 // ============================================
 
 window.showTransactionHistory = showTransactionHistory;
@@ -4438,7 +4558,6 @@ window.openWithdrawalModal = openWithdrawalModal;
 window.openDepositModal = openDepositModal;
 window.updateWalletUI = updateWalletUI;
 window.showMessage = showMessage;
-window.switchToPage = window.switchToPage || function(page) {};
 window.closeModal = closeModal;
 window.copyToClipboard = copyToClipboard;
 window.calculateSwap = calculateSwap;
@@ -4467,12 +4586,32 @@ window.addBalanceToSpecificUser = addBalanceToSpecificUser;
 window.searchUserById = searchUserById;
 window.checkAndUpdateTransactionsOnStart = checkAndUpdateTransactionsOnStart;
 
-// New Earning Functions
-
 window.initEarningPage = initEarningPage;
-
 window.watchAd = watchAd;
+window.claimReferralChallenge = claimReferralChallenge;
+window.saveDailyStats = saveDailyStats;
+window.loadDailyStats = loadDailyStats;
+window.updateEarningUI = updateEarningUI;
 
-window.claimReferral Challenge = claimReferral Challenge;
+window.initNotificationSystem = initNotificationSystem;
+window.startNotificationTimer = startNotificationTimer;
+window.stopNotificationTimer = stopNotificationTimer;
+window.showNextNotification = showNextNotification;
+window.checkAndShowNotification = checkAndShowNotification;
 
-console.log(" VIP Mining Wallet v6.6 loaded with Advanced Earning System!");
+window.setupRealTimeListeners = setupRealTimeListeners;
+window.updateUserLocalDeposit = updateUserLocalDeposit;
+window.updateUserLocalWithdrawal = updateUserLocalWithdrawal;
+
+window.copyReferralLink = copyReferralLink;
+window.shareOnTelegram = shareOnTelegram;
+window.minePoints = minePoints;
+
+window.loadAdminPendingRequests = loadAdminPendingRequests;
+
+window.switchToPage = switchToPage || function(page) {};
+window.showComingSoon = function() {
+    showMessage('🚧 This feature is coming soon!', 'info');
+};
+
+console.log("✅ VIP Mining Wallet v6.5 loaded with Advanced Earning System!");
