@@ -803,7 +803,6 @@
                     }
                 });
                 
-                // Start notifications when opening home page
                 setTimeout(() => {
                     if (window.initNotificationSystem) {
                         window.initNotificationSystem();
@@ -826,12 +825,10 @@
                     }
                 });
                 
-                // Update wallet UI when opened
                 if (window.updateWalletUI) {
                     window.updateWalletUI();
                 }
                 
-                // Stop notifications when opening wallet
                 if (window.stopNotificationTimer) {
                     window.stopNotificationTimer();
                 }
@@ -849,12 +846,10 @@
                     }
                 });
                 
-                // Initialize earning page when opened
                 if (window.initEarningPage) {
                     window.initEarningPage();
                 }
                 
-                // Stop notifications when opening earning page
                 if (window.stopNotificationTimer) {
                     window.stopNotificationTimer();
                 }
@@ -875,7 +870,6 @@
                 if (window.initNotificationSystem) {
                     window.initNotificationSystem();
                 }
-                // Hide loading screen after 2 seconds
                 const loadingScreen = document.getElementById('loadingScreen');
                 if (loadingScreen) {
                     setTimeout(() => {
@@ -888,7 +882,6 @@
             }, 1500);
         }
         
-        // Function to update loading status
         function updateLoadingStatus(text) {
             const statusEl = document.getElementById('loadingStatus');
             if (statusEl) {
@@ -897,7 +890,6 @@
             console.log("📱 Loading:", text);
         }
         
-        // Initialize loading status
         updateLoadingStatus("Data is being updated...");
         
         window.switchToPage = switchToPage;
@@ -907,7 +899,6 @@
         
         console.log("✅ Navigation system ready");
         
-        // Animation for spinner
         const style = document.createElement('style');
         style.textContent = `
             @keyframes spin {
