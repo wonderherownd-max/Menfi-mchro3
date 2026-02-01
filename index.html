@@ -8,14 +8,15 @@
     <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
-    <!-- Supabase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <!-- Ad SDK - Added for rewarded ads -->
     <script src='//libtl.com/sdk.js' data-zone='10539656' data-sdk='show_10539656'></script>
     
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
@@ -49,7 +50,7 @@
             margin-bottom: 20px;
         "></div>
         <p style="color: white; font-size: 18px; font-weight: 600; margin-bottom: 10px;">VIP Mining Wealth PRO</p>
-        <p id="loadingStatus" style="color: #94a3b8; font-size: 14px; margin-top: 10px;">Connecting to Supabase...</p>
+        <p id="loadingStatus" style="color: #94a3b8; font-size: 14px; margin-top: 10px;">Initializing...</p>
     </div>
 
     <!-- Main Home Page -->
