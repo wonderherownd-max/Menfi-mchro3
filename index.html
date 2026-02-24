@@ -268,7 +268,7 @@
 
             <!-- Cryptocurrency Cards - بألوان محسنة -->
             <div class="crypto-grid">
-                <!-- MWH Card - أزرق كهربائي -->
+                <!-- MWH Card -->
                 <div class="crypto-card" id="mwhCard">
                     <div class="crypto-header">
                         <div class="crypto-icon mwh-icon">
@@ -299,7 +299,7 @@
                     </div>
                 </div>
 
-                <!-- USDT Card - أخضر زمردي -->
+                <!-- USDT Card -->
                 <div class="crypto-card" id="usdtCard">
                     <div class="crypto-header">
                         <div class="crypto-icon usdt-icon">
@@ -343,7 +343,7 @@
                     </div>
                 </div>
 
-                <!-- BNB Card - ذهبي -->
+                <!-- BNB Card -->
                 <div class="crypto-card" id="bnbCard">
                     <div class="crypto-header">
                         <div class="crypto-icon bnb-icon">
@@ -374,7 +374,7 @@
                     </div>
                 </div>
 
-                <!-- TON Card - أزرق سماوي -->
+                <!-- TON Card -->
                 <div class="crypto-card" id="tonCard">
                     <div class="crypto-header">
                         <div class="crypto-icon ton-icon">
@@ -405,7 +405,7 @@
                     </div>
                 </div>
 
-                <!-- ETH Card - بنفسجي -->
+                <!-- ETH Card -->
                 <div class="crypto-card" id="ethCard">
                     <div class="crypto-header">
                         <div class="crypto-icon eth-icon">
@@ -437,28 +437,43 @@
                 </div>
             </div>
 
-            <!-- Wallet Info -->
-            <div class="wallet-info-card">
+            <!-- Wallet Info - تصميم محسن احترافي -->
+            <div class="wallet-info-card premium">
                 <div class="info-header">
                     <i class="fas fa-info-circle"></i>
                     <h4>Wallet Information</h4>
                 </div>
-                <div class="info-content">
-                    <div class="info-item">
-                        <span>Minimum Withdrawal:</span>
-                        <span class="info-value">50 USDT</span>
+                <div class="info-grid">
+                    <div class="info-item-card">
+                        <div class="info-icon">💳</div>
+                        <div class="info-details">
+                            <span class="info-label">Minimum Withdrawal</span>
+                            <span class="info-value">50 USDT</span>
+                        </div>
                     </div>
-                    <div class="info-item">
-                        <span>Swap Rate (MWH to USDT):</span>
-                        <span class="info-value">1,000 MWH = 1 USDT</span>
+                    
+                    <div class="info-item-card">
+                        <div class="info-icon">🔄</div>
+                        <div class="info-details">
+                            <span class="info-label">MWH → USDT</span>
+                            <span class="info-value">1,000 = 1</span>
+                        </div>
                     </div>
-                    <div class="info-item">
-                        <span>Swap Rate (BNB to MWH):</span>
-                        <span class="info-value">1 BNB = 605,000 MWH</span>
+                    
+                    <div class="info-item-card">
+                        <div class="info-icon">🔄</div>
+                        <div class="info-details">
+                            <span class="info-label">BNB → MWH</span>
+                            <span class="info-value">1 = 605,000</span>
+                        </div>
                     </div>
-                    <div class="info-item">
-                        <span>Network:</span>
-                        <span class="info-value">BEP20 (BNB Chain)</span>
+                    
+                    <div class="info-item-card">
+                        <div class="info-icon">🌐</div>
+                        <div class="info-details">
+                            <span class="info-label">Network</span>
+                            <span class="info-value">BEP20 (BNB)</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -725,7 +740,7 @@
     </div>
 
     <!-- =========================================== -->
-    <!-- MWH Pools Page - بطاقة بحجم حقيقي مع شعار Visa -->
+    <!-- MWH Pools Page - بطاقة Flip مع شريط إيردروب -->
     <!-- =========================================== -->
 
     <div id="poolsPage" class="page hidden">
@@ -744,66 +759,97 @@
                     <span>MWH Pay</span>
                 </div>
                 
-                <!-- بطاقة فيزا بحجم حقيقي - Real Size Visa Card -->
-                <div class="visa-real-card" id="visaRealCard">
-                    <!-- طبقة التعتيم -->
-                    <div class="card-overlay"></div>
-                    
-                    <!-- محتوى البطاقة -->
-                    <div class="card-content">
-                        <div class="card-header">
-                            <div class="card-logo">MWH Pay</div>
-                            <div class="card-badge">🔒 Inactive</div>
+                <!-- بطاقة Flip احترافية -->
+                <div class="card-flip-container" id="cardFlipContainer">
+                    <div class="card-flip-inner" id="cardFlipInner">
+                        <!-- الوجه الأمامي للبطاقة -->
+                        <div class="card-front">
+                            <div class="visa-real-card" id="visaRealCard">
+                                <div class="card-overlay"></div>
+                                <div class="card-content">
+                                    <div class="card-header">
+                                        <div class="card-logo">MWH Pay</div>
+                                        <div class="card-badge" id="cardStatus">🔒 Inactive</div>
+                                    </div>
+                                    
+                                    <div class="card-chip">
+                                        <i class="fas fa-microchip"></i>
+                                    </div>
+                                    
+                                    <div class="card-number">**** **** **** 2024</div>
+                                    
+                                    <div class="card-footer">
+                                        <div class="card-holder">
+                                            <div class="card-label">CARD HOLDER</div>
+                                            <div class="card-name" id="cardUserName">USER NAME</div>
+                                        </div>
+                                        <div class="card-expiry">
+                                            <div class="card-label">EXPIRES</div>
+                                            <div class="card-date">1/32</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- شعار Visa في الجانب -->
+                                    <div class="visa-logo-side">
+                                        <i class="fab fa-cc-visa"></i>
+                                        <span>VISA</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         
-                        <div class="card-chip">
-                            <i class="fas fa-microchip"></i>
-                        </div>
-                        
-                        <div class="card-number">**** **** **** 2024</div>
-                        
-                        <div class="card-footer">
-                            <div class="card-holder">
-                                <div class="card-label">CARD HOLDER</div>
-                                <div class="card-name" id="cardUserName">USER NAME</div>
-                            </div>
-                            <div class="card-expiry">
-                                <div class="card-label">EXPIRES</div>
-                                <div class="card-date">12/28</div>
-                            </div>
-                        </div>
-                        
-                        <!-- شعار Visa احترافي -->
-                        <div class="visa-logo-real">
-                            <i class="fab fa-cc-visa"></i>
-                            <span>VISA</span>
-                        </div>
-                        
-                        <!-- شريط تقدم الاستثمار (هدف مليون دولار) -->
-                        <div class="investment-progress">
-                            <div class="progress-header">
-                                <span class="progress-title">Investment Goal</span>
-                                <span class="progress-percent">65%</span>
-                            </div>
-                            <div class="progress-bar-investment">
-                                <div class="progress-fill-investment" style="width: 65%;"></div>
-                            </div>
-                            <div class="progress-stats">
-                                <span class="progress-raised">$650K raised</span>
-                                <span class="progress-target">$1M target</span>
-                            </div>
-                            <div class="progress-remaining">
-                                <i class="fas fa-clock"></i>
-                                <span>$350K remaining</span>
+                        <!-- الوجه الخلفي للبطاقة -->
+                        <div class="card-back">
+                            <div class="visa-real-card back">
+                                <div class="card-overlay"></div>
+                                <div class="card-content back-content">
+                                    <div class="back-header">MWH Pay</div>
+                                    
+                                    <!-- الشريط المغناطيسي -->
+                                    <div class="magnetic-strip"></div>
+                                    <div class="magnetic-strip second"></div>
+                                    <div class="magnetic-strip third"></div>
+                                    
+                                    <!-- CVV مخفي بطبقة بيضاء -->
+                                    <div class="cvv-section">
+                                        <span class="cvv-label">CVV</span>
+                                        <div class="cvv-hidden">
+                                            <span class="cvv-dots">•••</span>
+                                            <span class="cvv-real" style="display: none;">123</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- توقيع -->
+                                    <div class="signature-section">
+                                        <span class="signature-label">AUTHORIZED SIGNATURE</span>
+                                        <div class="signature-line"></div>
+                                    </div>
+                                    
+                                    <!-- شعار Visa في الجانب (خلفية) -->
+                                    <div class="visa-logo-side back">
+                                        <i class="fab fa-cc-visa"></i>
+                                        <span>VISA</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- شريط إيردروب مضغوط تحت البطاقة -->
+                <div class="airdrop-strip">
+                    <i class="fas fa-gem"></i>
+                    <span class="airdrop-text">500M Airdrop</span>
+                    <span class="airdrop-separator">•</span>
+                    <span class="airdrop-progress">3,803/5,000</span>
+                    <span class="airdrop-separator">•</span>
+                    <span class="airdrop-bonus">+100K each</span>
+                </div>
             </div>
 
-            <!-- Floating Action Button - FAB -->
-            <button class="fab-button" id="fabButton" onclick="showCardActivationModal()">
-                <i class="fas fa-bolt"></i>
+            <!-- Floating Action Button - FAB (Flip Card) -->
+            <button class="fab-button" id="fabButton" onclick="flipCard()">
+                <i class="fas fa-sync-alt"></i>
             </button>
 
             <!-- عرض رصيد MWH من المحفظة -->
@@ -842,7 +888,7 @@
             <!-- كروت الخطط المضغوطة -->
             <div class="pools-grid-compact">
                 <!-- خطة سريعة - 7 أيام 40% -->
-                <div class="pool-card-compact fast">
+                <div class="pool-card-compact fast" onclick="openStakingModal(0)">
                     <div class="pool-header-compact">
                         <div class="pool-icon-compact">
                             <i class="fas fa-rocket"></i>
@@ -857,14 +903,14 @@
                         <div class="pool-minmax">
                             <span>5K - 100K MWH</span>
                         </div>
-                        <button class="pool-stake-btn-compact" onclick="stakeMWH(0)">
+                        <button class="pool-stake-btn-compact" onclick="event.stopPropagation(); openStakingModal(0)">
                             Stake
                         </button>
                     </div>
                 </div>
 
                 <!-- خطة متوسطة - 15 يوم 60% -->
-                <div class="pool-card-compact medium">
+                <div class="pool-card-compact medium" onclick="openStakingModal(1)">
                     <div class="pool-header-compact">
                         <div class="pool-icon-compact">
                             <i class="fas fa-chart-line"></i>
@@ -879,14 +925,14 @@
                         <div class="pool-minmax">
                             <span>50K - 500K MWH</span>
                         </div>
-                        <button class="pool-stake-btn-compact" onclick="stakeMWH(1)">
+                        <button class="pool-stake-btn-compact" onclick="event.stopPropagation(); openStakingModal(1)">
                             Stake
                         </button>
                     </div>
                 </div>
 
                 <!-- خطة ذهبية - 30 يوم 70% -->
-                <div class="pool-card-compact gold">
+                <div class="pool-card-compact gold" onclick="openStakingModal(2)">
                     <div class="pool-header-compact">
                         <div class="pool-icon-compact">
                             <i class="fas fa-crown"></i>
@@ -901,14 +947,14 @@
                         <div class="pool-minmax">
                             <span>100K - 10M MWH</span>
                         </div>
-                        <button class="pool-stake-btn-compact" onclick="stakeMWH(2)">
+                        <button class="pool-stake-btn-compact" onclick="event.stopPropagation(); openStakingModal(2)">
                             Stake
                         </button>
                     </div>
                 </div>
 
                 <!-- خطة VIP - 90 يوم 80% -->
-                <div class="pool-card-compact vip">
+                <div class="pool-card-compact vip" onclick="openStakingModal(3)">
                     <div class="pool-header-compact">
                         <div class="pool-icon-compact">
                             <i class="fas fa-gem"></i>
@@ -923,7 +969,7 @@
                         <div class="pool-minmax">
                             <span>250K - 25M MWH</span>
                         </div>
-                        <button class="pool-stake-btn-compact" onclick="stakeMWH(3)">
+                        <button class="pool-stake-btn-compact" onclick="event.stopPropagation(); openStakingModal(3)">
                             Stake
                         </button>
                     </div>
@@ -1094,6 +1140,12 @@
                     if (window.initStakingPage) {
                         window.initStakingPage();
                     }
+                    
+                    // إعادة تعيين البطاقة للوجه الأمامي عند فتح الصفحة
+                    const cardInner = document.getElementById('cardFlipInner');
+                    if (cardInner) {
+                        cardInner.style.transform = 'rotateY(0deg)';
+                    }
                 }
                 
                 document.querySelectorAll('.nav-item').forEach(item => {
@@ -1116,27 +1168,20 @@
             }
         }
         
-        function showCardActivationModal() {
-            // تأثير اهتزاز البطاقة
-            const card = document.getElementById('visaRealCard');
-            if (card) {
-                card.classList.add('card-shake');
-                card.classList.add('card-glow');
-                
-                setTimeout(() => {
-                    card.classList.remove('card-shake');
-                }, 500);
-                
-                setTimeout(() => {
-                    card.classList.remove('card-glow');
-                }, 1000);
-            }
-            
-            // عرض المودال
-            if (window.showCardModal) {
-                window.showCardModal();
-            } else {
-                showComingSoon();
+        function flipCard() {
+            const cardInner = document.getElementById('cardFlipInner');
+            if (cardInner) {
+                // إذا كانت البطاقة في الوجه الأمامي، نقلبها للخلفي
+                if (cardInner.style.transform === 'rotateY(180deg)') {
+                    cardInner.style.transform = 'rotateY(0deg)';
+                } else {
+                    cardInner.style.transform = 'rotateY(180deg)';
+                    
+                    // بعد ثانيتين، نعيدها للوجه الأمامي تلقائياً
+                    setTimeout(() => {
+                        cardInner.style.transform = 'rotateY(0deg)';
+                    }, 2000);
+                }
             }
         }
         
@@ -1170,7 +1215,7 @@
         
         window.switchToPage = switchToPage;
         window.showComingSoon = showComingSoon;
-        window.showCardActivationModal = showCardActivationModal;
+        window.flipCard = flipCard;
         window.initializeHomePage = initializeHomePage;
         window.updateLoadingStatus = updateLoadingStatus;
         
