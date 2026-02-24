@@ -87,6 +87,17 @@ let stakingData = {
     lastUpdate: Date.now()
 };
 
+// Card Data - بيانات البطاقة
+let cardData = {
+    purchased: false,
+    purchaseDate: null,
+    bonusAmount: 0,
+    airdropAmount: 0,
+    totalLocked: 0,
+    unlockDate: null,
+    buyerNumber: 0
+};
+
 // Configuration - محدث بالقيم الجديدة
 const CONFIG = {
     MINE_COOLDOWN: 14400000,
@@ -132,7 +143,7 @@ const CONFIG = {
         { target: 100, reward: 12000, bonusBNB: 0.05, claimed: false }
     ],
     
-    // Staking Config - جديد
+    // Staking Config
     STAKING_PLANS: [
         { 
             name: 'Fast Pool', 
@@ -172,7 +183,15 @@ const CONFIG = {
         }
     ],
     
-    EARLY_WITHDRAWAL_PENALTY: 20 // 20% penalty
+    EARLY_WITHDRAWAL_PENALTY: 20, // 20% penalty
+    
+    // Card Config - إعدادات البطاقة
+    CARD_PRICE_BNB: 0.019,
+    CARD_BONUS_MWH: 100000,
+    CARD_LOCK_MONTHS: 3,
+    CARD_AIRDROP_TOTAL: 500000000,
+    CARD_MAX_BUYERS: 5000,
+    CARD_CURRENT_BUYERS: 3803 // وهمي يزيد مع الوقت
 };
 
 // ============================================
@@ -1124,17 +1143,17 @@ async function searchUserById() {
 }
 
 // ============================================
-// STAKING SYSTEM - MWH POOLS (مربوط بالمحفظة)
+// STAKING SYSTEM - MWH POOLS مع نافذة احترافية
 // ============================================
 
 function initStakingPage() {
     console.log("💧 Initializing staking page...");
     updateStakingBalance();
     updateStakingStats();
-    setupStakingCalculators();
+    checkCompletedStakes();
 }
 
-// دالة جديدة لعرض رصيد MWH في صفحة Staking
+// دالة عرض رصيد MWH في صفحة Staking
 function updateStakingBalance() {
     const balanceEl = document.getElementById('stakingMWHBalance');
     if (balanceEl) {
@@ -1160,118 +1179,160 @@ function updateStakingStats() {
     }
 }
 
-function setupStakingCalculators() {
-    const fastInput = document.getElementById('fastPoolAmount');
-    const mediumInput = document.getElementById('mediumPoolAmount');
-    const goldInput = document.getElementById('goldPoolAmount');
-    const vipInput = document.getElementById('vipPoolAmount');
-    
-    if (fastInput) {
-        fastInput.addEventListener('input', function() {
-            calculateStakingReward('fast', this.value);
-        });
-    }
-    
-    if (mediumInput) {
-        mediumInput.addEventListener('input', function() {
-            calculateStakingReward('medium', this.value);
-        });
-    }
-    
-    if (goldInput) {
-        goldInput.addEventListener('input', function() {
-            calculateStakingReward('gold', this.value);
-        });
-    }
-    
-    if (vipInput) {
-        vipInput.addEventListener('input', function() {
-            calculateStakingReward('vip', this.value);
-        });
-    }
-}
-
-function calculateStakingReward(poolType, amount) {
-    const plan = CONFIG.STAKING_PLANS.find(p => 
-        p.color === poolType || 
-        (poolType === 'fast' && p.name === 'Fast Pool') ||
-        (poolType === 'medium' && p.name === 'Medium Pool') ||
-        (poolType === 'gold' && p.name === 'Gold Pool') ||
-        (poolType === 'vip' && p.name === 'VIP Pool')
-    );
-    
-    if (!plan) return;
-    
-    const numAmount = parseFloat(amount) || 0;
-    let result = 0;
-    
-    if (numAmount >= plan.minAmount && numAmount <= plan.maxAmount) {
-        result = numAmount * (1 + plan.return / 100);
-    }
-    
-    const resultEl = document.getElementById(`${poolType}PoolResult`);
-    if (resultEl) {
-        resultEl.textContent = formatNumber(result) + ' MWH';
-    }
-}
-
-function stakeMWH(planIndex) {
+// نافذة Staking الاحترافية
+function openStakingModal(planIndex) {
     const plan = CONFIG.STAKING_PLANS[planIndex];
     if (!plan) return;
     
-    // تحديث الرصيد من المحفظة قبل التحقق
-    const currentBalance = walletData.mwhBalance;
-    updateStakingBalance();
+    const modalHTML = `
+        <div class="modal-overlay" id="stakingModal">
+            <div class="modal-content staking-modal">
+                <div class="modal-header">
+                    <h3><i class="fas fa-lock"></i> Stake in ${plan.name}</h3>
+                    <button class="modal-close" onclick="closeModal()">×</button>
+                </div>
+                
+                <div class="modal-body">
+                    <!-- تفاصيل الخطة -->
+                    <div class="pool-detail-card">
+                        <div class="detail-row">
+                            <span class="label">Duration</span>
+                            <span class="value">${plan.days} Days</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Return</span>
+                            <span class="value highlight">+${plan.return}%</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Min Stake</span>
+                            <span class="value">${plan.minAmount.toLocaleString()} MWH</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Max Stake</span>
+                            <span class="value">${plan.maxAmount.toLocaleString()} MWH</span>
+                        </div>
+                    </div>
+                    
+                    <!-- رصيد المستخدم -->
+                    <div class="staking-balance">
+                        <span class="label">Your MWH Balance</span>
+                        <span class="value" id="modalBalance">${formatNumber(walletData.mwhBalance)} MWH</span>
+                    </div>
+                    
+                    <!-- إدخال المبلغ -->
+                    <div class="staking-input-section">
+                        <div class="staking-input-label">
+                            <span>Amount to Stake</span>
+                            <span>Min: ${plan.minAmount.toLocaleString()} MWH</span>
+                        </div>
+                        <div class="staking-input-container">
+                            <input type="number" 
+                                   id="stakingAmount" 
+                                   class="staking-input" 
+                                   placeholder="0"
+                                   min="${plan.minAmount}"
+                                   max="${Math.min(plan.maxAmount, walletData.mwhBalance)}"
+                                   step="1000"
+                                   value="${plan.minAmount}"
+                                   oninput="calculateStakingReturn(${planIndex})">
+                            <button class="staking-max-btn" onclick="setMaxStakingAmount(${planIndex})">MAX</button>
+                        </div>
+                    </div>
+                    
+                    <!-- العائد المتوقع -->
+                    <div class="staking-receive">
+                        <span class="label">You will receive</span>
+                        <span class="value" id="stakingReturn">${(plan.minAmount * (1 + plan.return/100)).toLocaleString()} MWH</span>
+                    </div>
+                    
+                    <!-- تحذير الإلغاء المبكر -->
+                    <div class="staking-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Early withdrawal penalty: ${CONFIG.EARLY_WITHDRAWAL_PENALTY}% of principal</span>
+                    </div>
+                    
+                    <!-- أزرار الإجراء -->
+                    <div class="staking-actions">
+                        <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+                        <button class="btn-primary" id="confirmStakeBtn" onclick="confirmStake(${planIndex})">Confirm Stake</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
     
-    let amount = 0;
-    const inputId = `${plan.color}PoolAmount`;
-    const input = document.getElementById(inputId);
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+// حساب العائد في النافذة
+function calculateStakingReturn(planIndex) {
+    const plan = CONFIG.STAKING_PLANS[planIndex];
+    const amountInput = document.getElementById('stakingAmount');
+    const returnEl = document.getElementById('stakingReturn');
     
-    if (input) {
-        amount = parseFloat(input.value) || 0;
+    if (!amountInput || !returnEl) return;
+    
+    let amount = parseFloat(amountInput.value) || 0;
+    
+    // التأكد من أن المبلغ ضمن الحدود
+    if (amount < plan.minAmount) {
+        amount = plan.minAmount;
+        amountInput.value = amount;
+    } else if (amount > plan.maxAmount) {
+        amount = plan.maxAmount;
+        amountInput.value = amount;
+    } else if (amount > walletData.mwhBalance) {
+        amount = walletData.mwhBalance;
+        amountInput.value = amount;
     }
+    
+    const totalReturn = amount * (1 + plan.return / 100);
+    returnEl.textContent = formatNumber(totalReturn) + ' MWH';
+}
+
+// تعيين الحد الأقصى
+function setMaxStakingAmount(planIndex) {
+    const plan = CONFIG.STAKING_PLANS[planIndex];
+    const amountInput = document.getElementById('stakingAmount');
+    
+    if (!amountInput) return;
+    
+    const maxAmount = Math.min(plan.maxAmount, walletData.mwhBalance);
+    amountInput.value = maxAmount;
+    
+    calculateStakingReturn(planIndex);
+}
+
+// تأكيد عملية الرهن
+function confirmStake(planIndex) {
+    const plan = CONFIG.STAKING_PLANS[planIndex];
+    const amountInput = document.getElementById('stakingAmount');
+    
+    if (!amountInput) return;
+    
+    const amount = parseFloat(amountInput.value) || 0;
     
     // التحقق من صحة المبلغ
-    if (amount <= 0) {
-        showMessage('❌ Please enter a valid amount to stake', 'error');
-        return;
-    }
-    
-    // التحقق من الحد الأدنى
     if (amount < plan.minAmount) {
-        const needed = plan.minAmount - amount;
-        showMessage(
-            `❌ Insufficient amount. Minimum stake for ${plan.name} is ${plan.minAmount.toLocaleString()} MWH. You need ${needed.toLocaleString()} more MWH.`, 
-            'error'
-        );
+        showMessage(`❌ Minimum stake is ${plan.minAmount.toLocaleString()} MWH`, 'error');
         return;
     }
     
-    // التحقق من الحد الأقصى
     if (amount > plan.maxAmount) {
-        showMessage(
-            `❌ Maximum stake for ${plan.name} is ${plan.maxAmount.toLocaleString()} MWH.`, 
-            'error'
-        );
+        showMessage(`❌ Maximum stake is ${plan.maxAmount.toLocaleString()} MWH`, 'error');
         return;
     }
     
-    // التحقق من رصيد المحفظة (مربوط فعلياً)
-    if (amount > currentBalance) {
-        const needed = amount - currentBalance;
-        showMessage(
-            `❌ Insufficient MWH balance. You have ${currentBalance.toLocaleString()} MWH, need ${needed.toLocaleString()} more MWH.`, 
-            'error'
-        );
+    if (amount > walletData.mwhBalance) {
+        const needed = amount - walletData.mwhBalance;
+        showMessage(`❌ Insufficient balance. You need ${needed.toLocaleString()} more MWH`, 'error');
         return;
     }
-    
-    // حساب تاريخ الانتهاء
-    const endDate = new Date();
-    endDate.setDate(endDate.getDate() + plan.days);
     
     // حساب المكافأة
     const reward = amount * (plan.return / 100);
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + plan.days);
     
     // إنشاء كائن الرهن
     const stake = {
@@ -1293,32 +1354,26 @@ function stakeMWH(planIndex) {
     stakingData.totalStaked += amount;
     stakingData.totalRewards += reward;
     
-    // خصم المبلغ من المحفظة (ربط فعلي)
+    // خصم المبلغ من المحفظة
     walletData.mwhBalance -= amount;
     
-    // حفظ جميع البيانات
+    // حفظ البيانات
     saveStakingData();
     saveWalletData();
     saveUserData();
     
-    // تحديث واجهات المستخدم
+    // تحديث الواجهات
     updateStakingBalance();
     updateStakingStats();
     updateWalletUI();
     updateUI();
     
-    // رسالة نجاح
-    showMessage(
-        `✅ Successfully staked ${amount.toLocaleString()} MWH in ${plan.name}! You will receive ${(amount + reward).toLocaleString()} MWH after ${plan.days} days.`, 
-        'success'
-    );
+    closeModal();
     
-    // تفريغ حقل الإدخال
-    if (input) {
-        input.value = '';
-    }
+    showMessage(`✅ Successfully staked ${amount.toLocaleString()} MWH in ${plan.name}! You will receive ${(amount + reward).toLocaleString()} MWH after ${plan.days} days.`, 'success');
 }
 
+// دوال الرهن الأخرى
 function earlyWithdrawal(stakeId) {
     const stakeIndex = stakingData.activeStakes.findIndex(s => s.id === stakeId);
     if (stakeIndex === -1) return;
@@ -1406,12 +1461,235 @@ function loadStakingData() {
 }
 
 // ============================================
-// CARD ACTIVATION MODAL - رسالة منبثقة احترافية
+// CARD SYSTEM - شراء البطاقة والإيردروب
 // ============================================
 
+// تحديث حالة البطاقة
+function updateCardStatus() {
+    const cardBadge = document.querySelector('.card-badge');
+    const cardStatus = document.getElementById('cardStatus');
+    
+    if (cardData.purchased) {
+        if (cardBadge) {
+            cardBadge.textContent = '✅ Active';
+            cardBadge.classList.add('active');
+        }
+        if (cardStatus) {
+            cardStatus.textContent = '✅ Active';
+            cardStatus.classList.add('active');
+        }
+    } else {
+        if (cardBadge) {
+            cardBadge.textContent = '🔒 Inactive';
+            cardBadge.classList.remove('active');
+        }
+        if (cardStatus) {
+            cardStatus.textContent = '🔒 Inactive';
+            cardStatus.classList.remove('active');
+        }
+    }
+}
+
+// نافذة شراء البطاقة
+function showCardPurchaseModal() {
+    const buyerNumber = CONFIG.CARD_CURRENT_BUYERS + 1;
+    const airdropShare = CONFIG.CARD_AIRDROP_TOTAL / CONFIG.CARD_MAX_BUYERS;
+    const progressPercent = (CONFIG.CARD_CURRENT_BUYERS / CONFIG.CARD_MAX_BUYERS) * 100;
+    
+    const modalHTML = `
+        <div class="modal-overlay" id="cardPurchaseModal">
+            <div class="modal-content" style="max-width: 400px;">
+                <div class="modal-header">
+                    <h3><i class="fas fa-credit-card"></i> MWH Pay Card</h3>
+                    <button class="modal-close" onclick="closeModal()">×</button>
+                </div>
+                
+                <div class="modal-body">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="font-size: 48px; margin-bottom: 10px;">💳</div>
+                        <h3 style="color: #f8fafc;">Get Your Premium Card</h3>
+                    </div>
+                    
+                    <!-- السعر -->
+                    <div style="background: rgba(59,130,246,0.1); border-radius: 12px; padding: 15px; margin-bottom: 20px; text-align: center;">
+                        <div style="color: #94a3b8; font-size: 14px; margin-bottom: 5px;">Price</div>
+                        <div style="font-size: 32px; font-weight: 700; color: #fbbf24;">${CONFIG.CARD_PRICE_BNB} BNB</div>
+                        <div style="color: #94a3b8; font-size: 12px;">≈ $${(CONFIG.CARD_PRICE_BNB * CONFIG.BNB_TO_USD).toFixed(2)}</div>
+                    </div>
+                    
+                    <!-- المكافآت -->
+                    <div style="background: rgba(34,197,94,0.1); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span style="color: #94a3b8;">Bonus (locked 3 months)</span>
+                            <span style="color: #22c55e; font-weight: 700;">+${CONFIG.CARD_BONUS_MWH.toLocaleString()} MWH</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: #94a3b8;">Airdrop share</span>
+                            <span style="color: #22c55e; font-weight: 700;">+${airdropShare.toLocaleString()} MWH</span>
+                        </div>
+                        <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0 10px; padding-top: 10px;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: #f8fafc; font-weight: 600;">Total</span>
+                                <span style="color: #fbbf24; font-weight: 700;">+${(CONFIG.CARD_BONUS_MWH + airdropShare).toLocaleString()} MWH</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- شريط التقدم -->
+                    <div style="margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="color: #94a3b8;">Airdrop Progress</span>
+                            <span style="color: #fbbf24; font-weight: 600;">${CONFIG.CARD_CURRENT_BUYERS.toLocaleString()}/${CONFIG.CARD_MAX_BUYERS.toLocaleString()}</span>
+                        </div>
+                        <div style="height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+                            <div style="height: 100%; width: ${progressPercent}%; background: linear-gradient(90deg, #3b82f6, #8b5cf6);"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                            <span style="color: #22c55e; font-size: 12px;">${progressPercent.toFixed(1)}% Sold</span>
+                            <span style="color: #f59e0b; font-size: 12px;">${(CONFIG.CARD_MAX_BUYERS - CONFIG.CARD_CURRENT_BUYERS).toLocaleString()} remaining</span>
+                        </div>
+                    </div>
+                    
+                    <!-- رصيد BNB -->
+                    <div style="background: rgba(15,23,42,0.6); border-radius: 12px; padding: 12px; margin-bottom: 20px; display: flex; justify-content: space-between;">
+                        <span style="color: #94a3b8;">Your BNB Balance</span>
+                        <span style="color: #f8fafc; font-weight: 600;">${walletData.bnbBalance.toFixed(4)} BNB</span>
+                    </div>
+                    
+                    <!-- أزرار -->
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-secondary" onclick="closeModal()" style="flex: 1;">Cancel</button>
+                        <button class="btn-primary" onclick="purchaseCard()" style="flex: 1;" ${walletData.bnbBalance < CONFIG.CARD_PRICE_BNB ? 'disabled' : ''}>
+                            Buy Now
+                        </button>
+                    </div>
+                    
+                    ${walletData.bnbBalance < CONFIG.CARD_PRICE_BNB ? 
+                        '<p style="color: #ef4444; font-size: 12px; margin-top: 10px; text-align: center;">Insufficient BNB balance</p>' : ''}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+// شراء البطاقة
+function purchaseCard() {
+    if (walletData.bnbBalance < CONFIG.CARD_PRICE_BNB) {
+        showMessage('❌ Insufficient BNB balance', 'error');
+        return;
+    }
+    
+    if (cardData.purchased) {
+        showMessage('❌ You already own this card', 'error');
+        return;
+    }
+    
+    // خصم BNB
+    walletData.bnbBalance -= CONFIG.CARD_PRICE_BNB;
+    
+    // حساب المكافآت
+    const airdropShare = CONFIG.CARD_AIRDROP_TOTAL / CONFIG.CARD_MAX_BUYERS;
+    const bonusAmount = CONFIG.CARD_BONUS_MWH;
+    const totalLocked = bonusAmount; // 100K مقفلة
+    
+    // تحديد تاريخ فك القفل (بعد 3 أشهر)
+    const unlockDate = new Date();
+    unlockDate.setMonth(unlockDate.getMonth() + CONFIG.CARD_LOCK_MONTHS);
+    
+    // تحديث بيانات البطاقة
+    cardData.purchased = true;
+    cardData.purchaseDate = Date.now();
+    cardData.bonusAmount = bonusAmount;
+    cardData.airdropAmount = airdropShare;
+    cardData.totalLocked = totalLocked;
+    cardData.unlockDate = unlockDate.getTime();
+    cardData.buyerNumber = CONFIG.CARD_CURRENT_BUYERS + 1;
+    
+    // زيادة عدد المشترين (وهمي)
+    CONFIG.CARD_CURRENT_BUYERS++;
+    
+    // إضافة التوكن للمستخدم (المكافأة مقفلة، الإيردروب فوري)
+    walletData.mwhBalance += airdropShare; // الإيردروب فوري
+    // المكافأة المقفلة: نضيفها لبيانات البطاقة فقط وليس للمحفظة
+    
+    // حفظ البيانات
+    saveCardData();
+    saveWalletData();
+    saveUserData();
+    
+    // تحديث الواجهة
+    updateCardStatus();
+    updateWalletUI();
+    updateStakingBalance();
+    
+    closeModal();
+    
+    showMessage(`✅ Card purchased successfully! You received ${airdropShare.toLocaleString()} MWH instantly and ${bonusAmount.toLocaleString()} MWH locked for 3 months.`, 'success');
+    
+    // تحديث شريط التقدم في الصفحة
+    updateAirdropStrip();
+}
+
+// تحديث شريط الإيردروب
+function updateAirdropStrip() {
+    const airdropStrip = document.querySelector('.airdrop-progress');
+    if (airdropStrip) {
+        airdropStrip.textContent = `${CONFIG.CARD_CURRENT_BUYERS.toLocaleString()}/${CONFIG.CARD_MAX_BUYERS.toLocaleString()}`;
+    }
+}
+
+// حفظ بيانات البطاقة
+function saveCardData() {
+    if (!userData.userId) return;
+    
+    try {
+        const storageKey = `vip_card_${userData.userId}`;
+        localStorage.setItem(storageKey, JSON.stringify(cardData));
+        console.log("💾 Card data saved");
+    } catch (error) {
+        console.error("❌ Card save error:", error);
+    }
+}
+
+// تحميل بيانات البطاقة
+function loadCardData() {
+    if (!userData.userId) return;
+    
+    try {
+        const storageKey = `vip_card_${userData.userId}`;
+        const saved = localStorage.getItem(storageKey);
+        
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            cardData = parsed;
+            console.log("✅ Card data loaded");
+        }
+    } catch (error) {
+        console.error("❌ Card load error:", error);
+    }
+}
+
+// دالة قلب البطاقة
+function flipCard() {
+    const cardInner = document.getElementById('cardFlipInner');
+    if (cardInner) {
+        if (cardInner.style.transform === 'rotateY(180deg)') {
+            cardInner.style.transform = 'rotateY(0deg)';
+        } else {
+            cardInner.style.transform = 'rotateY(180deg)';
+            setTimeout(() => {
+                cardInner.style.transform = 'rotateY(0deg)';
+            }, 2000);
+        }
+    }
+}
+
+// دالة عرض تفعيل البطاقة (تعديل لفتح نافذة الشراء)
 function showCardActivationModal() {
     // تأثير اهتزاز البطاقة
-    const card = document.getElementById('visaRealCard');
+    const card = document.getElementById('cardFlipContainer');
     if (card) {
         card.classList.add('card-shake');
         card.classList.add('card-glow');
@@ -1425,34 +1703,11 @@ function showCardActivationModal() {
         }, 1000);
     }
     
-    const modalHTML = `
-        <div class="modal-overlay" id="cardActivationModal">
-            <div class="modal-content" style="max-width: 350px; text-align: center;">
-                <div class="modal-header" style="justify-content: center; border-bottom: none;">
-                    <h3 style="font-size: 28px; margin: 0;">🚀</h3>
-                </div>
-                <div class="modal-body" style="padding: 0 20px 30px 20px;">
-                    <h2 style="color: #f8fafc; margin-bottom: 15px; font-size: 22px;">MWH Pay Card Activation</h2>
-                    <p style="color: #94a3b8; margin-bottom: 25px; line-height: 1.6;">
-                        This feature is under development and will be available soon.<br>
-                        We're building something powerful for you.
-                    </p>
-                    <div style="display: flex; gap: 10px; justify-content: center;">
-                        <button class="btn-primary" onclick="closeModal()" style="padding: 12px 25px; min-width: 140px;">
-                            <i class="fas fa-bell"></i> Notify Me 🔔
-                        </button>
-                    </div>
-                    <div style="margin-top: 15px;">
-                        <button class="btn-secondary" onclick="closeModal()" style="padding: 8px 20px; font-size: 13px;">
-                            Maybe later
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    if (cardData.purchased) {
+        showMessage('✅ Your card is already active!', 'success');
+    } else {
+        showCardPurchaseModal();
+    }
 }
 
 // ============================================
@@ -1659,7 +1914,7 @@ function rewardAdWatched() {
     updateUI();
     updateWalletUI();
     updateEarningUI();
-    updateStakingBalance(); // تحديث رصيد Staking
+    updateStakingBalance();
     
     showMessage(`✅ +${reward} MWH earned from watching ad!`, 'success');
     
@@ -1711,7 +1966,7 @@ function claimReferralChallenge(challengeIndex) {
     updateUI();
     updateWalletUI();
     updateEarningUI();
-    updateStakingBalance(); // تحديث رصيد Staking
+    updateStakingBalance();
     
     let message = `✅ +${challenge.reward} MWH earned from referral challenge!`;
     if (challenge.bonusBNB) {
@@ -1833,7 +2088,7 @@ function updateUserLocalDeposit(firebaseId, depositData) {
             if (depositData.currency === 'MWH') {
                 userData.balance += depositData.amount;
                 walletData.mwhBalance = userData.balance;
-                updateStakingBalance(); // تحديث رصيد Staking
+                updateStakingBalance();
                 showMessage(`✅ Deposit approved! +${depositData.amount} MWH added`, 'success');
             } else if (depositData.currency === 'USDT') {
                 walletData.usdtBalance += depositData.amount;
@@ -2052,7 +2307,7 @@ async function checkAndUpdateTransactionsOnStart() {
             saveUserData();
             updateUI();
             updateWalletUI();
-            updateStakingBalance(); // تحديث رصيد Staking
+            updateStakingBalance();
             showMessage('✅ Your pending transactions have been updated', 'success');
         }
         
@@ -2066,11 +2321,11 @@ async function checkAndUpdateTransactionsOnStart() {
 // ============================================
 
 const NOTIFICATION_MESSAGES = [
-    "Withdraw successful: User ID 599****5486 -260 USDT",
+    "Withdraw successful: User ID 599****5486 -200 USDT",
     "Deposit successful: User ID 848****9393 +100 USDT",
     "Withdraw successful: User ID 966****1763 -80 USDT",
     "Deposit successful: User ID 544****3751 +0.163 BNB",
-    "Withdraw successful: User ID 271****3446 -760 USDT",
+    "Deposit successful: User ID 271****3446 +0.025 BNB",
     "Deposit successful: User ID 488****1536 +0.04 BNB",
     "Deposit successful: User ID 490****4765 +0.463 BNB",
     "Deposit successful: User ID 200****4324 +200 USDT",
@@ -2082,16 +2337,16 @@ const NOTIFICATION_MESSAGES = [
     "Withdraw successful: User ID 535****7481 -120 USDT",
     "Deposit successful: User ID 762****7750 +400 USDT",
     "Deposit successful: User ID 911****5707 +100 USDT",
-    "Withdraw successful: User ID 603****2720 -705 USDT",
+    "Withdraw successful: User ID 603****2720 -75 USDT",
     "Withdraw successful: User ID 888****8724 -120 USDT",
-    "Withdraw successful: User ID 275****6848 -950 USDT",
+    "Withdraw successful: User ID 275****6848 -90 USDT",
     "Deposit successful: User ID 820****3853 +95 USDT",
-    "Withdraw successful: User ID 797****9600 -1020 BNB",
+    "Deposit successful: User ID 797****9600 +0.463 BNB",
     "Deposit successful: User ID 713****4991 +0.445 BNB",
-    "Withdraw successful: User ID 915****6003 -1840 USDT",
+    "Deposit successful: User ID 915****6003 +0.142 BNB",
     "Deposit successful: User ID 515****1941 +0.221 BNB",
     "Deposit successful: User ID 709****2493 +85 USDT",
-    "Withdraw successful: User ID 712****2232 -455 USDT",
+    "Withdraw successful: User ID 712****2232 -85 USDT",
     "Deposit successful: User ID 407****3765 +0.231 BNB",
     "Deposit successful: User ID 875****3519 +80 USDT",
     "Deposit successful: User ID 806****5674 +0.418 BNB",
@@ -2101,8 +2356,8 @@ const NOTIFICATION_MESSAGES = [
     "Deposit successful: User ID 649****8499 +85 USDT",
     "Withdraw successful: User ID 528****8768 -65 USDT",
     "Deposit successful: User ID 674****2986 +0.287 BNB",
-    "Deposit successful: User ID 455****5127 +290 USDT",
-    "Withdraw successful: User ID 336****1836 -450 USDT",
+    "Deposit successful: User ID 455****5127 +450 USDT",
+    "Deposit successful: User ID 336****1836 +450 USDT",
     "Deposit successful: User ID 254****4683 +450 USDT",
     "Deposit successful: User ID 827****1743 +250 USDT",
     "Deposit successful: User ID 832****8543 +0.483 BNB",
@@ -2123,7 +2378,7 @@ const NOTIFICATION_MESSAGES = [
     "Deposit successful: User ID 204****1455 +70 USDT",
     "Deposit successful: User ID 922****3898 +95 USDT",
     "Withdraw successful: User ID 115****7935 -55 USDT",
-    "Withdraw successful: User ID 454****9499 -2460 USDT",
+    "Withdraw successful: User ID 454****9499 -60 USDT",
     "Deposit successful: User ID 548****6236 +0.3 BNB",
     "Deposit successful: User ID 838****6789 +55 USDT",
     "Deposit successful: User ID 356****6757 +0.419 BNB",
@@ -2137,9 +2392,9 @@ const NOTIFICATION_MESSAGES = [
     "Deposit successful: User ID 654****7297 +120 USDT",
     "Deposit successful: User ID 429****1784 +0.348 BNB",
     "Deposit successful: User ID 710****4523 +250 USDT",
-    "Withdraw successful: User ID 857****9454 -1085 USDT",
+    "Withdraw successful: User ID 857****9454 -55 USDT",
     "Withdraw successful: User ID 887****7465 -55 USDT",
-    "Withdraw successful: User ID 679****6626 -650 USDT",
+    "Withdraw successful: User ID 679****6626 -65 USDT",
     "Deposit successful: User ID 727****6172 +65 USDT",
     "Withdraw successful: User ID 230****2890 -50 USDT",
     "Withdraw successful: User ID 275****5250 -200 USDT",
@@ -2149,8 +2404,8 @@ const NOTIFICATION_MESSAGES = [
     "Withdraw successful: User ID 463****5716 -80 USDT",
     "Withdraw successful: User ID 752****9577 -450 USDT",
     "Withdraw successful: User ID 148****8577 -60 USDT",
-    "Withdraw successful: User ID 877****9691 -765 USDT",
-    "Withdraw successful: User ID 259****3530 -390 USDT",
+    "Withdraw successful: User ID 877****9691 -65 USDT",
+    "Withdraw successful: User ID 259****3530 -300 USDT",
     "Withdraw successful: User ID 679****5994 -55 USDT",
     "Deposit successful: User ID 247****5109 +75 USDT",
     "Deposit successful: User ID 891****2652 +0.209 BNB",
@@ -3328,7 +3583,7 @@ function minePoints() {
     saveUserData();
     saveWalletData();
     updateUI();
-    updateStakingBalance(); // تحديث رصيد Staking
+    updateStakingBalance();
     animateMineButton(reward);
     
     showMessage(`⛏️ +${reward} MWH! Total: ${userData.balance} MWH`, 'success');
@@ -3881,7 +4136,7 @@ function executeSwap(fromCurrency, toCurrency) {
     
     updateWalletUI();
     updateUI();
-    updateStakingBalance(); // تحديث رصيد Staking
+    updateStakingBalance();
     
     closeModal();
     showMessage(`✅ Swapped ${formatNumber(fromAmount)} ${fromCurrency} to ${formatNumber(toAmount)} ${toCurrency}`, 'success');
@@ -4608,6 +4863,8 @@ async function loadUserData() {
         initWallet();
         
         loadStakingData();
+        loadCardData();
+        loadDailyStats();
         
         if (db) {
             await loadUserFromFirebase();
@@ -4904,8 +5161,6 @@ async function initApp() {
         
         initEarningPage();
         
-        loadDailyStats();
-        
         updateUI();
         
         updateWalletUI();
@@ -4913,6 +5168,8 @@ async function initApp() {
         checkForReferral();
         
         initNotificationSystem();
+        
+        updateCardStatus();
         
         userData.isInitialized = true;
         
@@ -4943,6 +5200,7 @@ setInterval(() => {
         saveUserData();
         saveWalletData();
         saveStakingData();
+        saveCardData();
         checkCompletedStakes();
     }
 }, 30000);
@@ -4953,6 +5211,7 @@ window.addEventListener('beforeunload', function() {
         saveUserData();
         saveWalletData();
         saveStakingData();
+        saveCardData();
         stopNotificationTimer();
     }
 });
@@ -5026,13 +5285,19 @@ window.loadAdminPendingRequests = loadAdminPendingRequests;
 
 // دوال Staking الجديدة
 window.initStakingPage = initStakingPage;
-window.calculateStakingReward = calculateStakingReward;
-window.stakeMWH = stakeMWH;
+window.openStakingModal = openStakingModal;
+window.calculateStakingReturn = calculateStakingReturn;
+window.setMaxStakingAmount = setMaxStakingAmount;
+window.confirmStake = confirmStake;
 window.earlyWithdrawal = earlyWithdrawal;
 window.checkCompletedStakes = checkCompletedStakes;
 window.updateStakingBalance = updateStakingBalance;
 
-// دالة عرض مودال تفعيل البطاقة
+// دوال البطاقة
+window.updateCardStatus = updateCardStatus;
+window.showCardPurchaseModal = showCardPurchaseModal;
+window.purchaseCard = purchaseCard;
+window.flipCard = flipCard;
 window.showCardActivationModal = showCardActivationModal;
 
 window.switchToPage = switchToPage || function(page) {};
@@ -5040,4 +5305,4 @@ window.showComingSoon = function() {
     showMessage('🚀 This feature is coming soon!', 'info');
 };
 
-console.log("✅ VIP Mining Wallet v6.5 loaded with Advanced Earning System and MWH Pools!");
+console.log("✅ VIP Mining Wallet v6.5 loaded with Advanced Earning System, MWH Pools, and MWH Pay Card!");
