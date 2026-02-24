@@ -1,6 +1,7 @@
 /* ============================================
    VIP MINING APP - PROFESSIONAL STYLESHEET
-   Version: 6.5
+   Version: 7.0 - Complete Edition
+   All features included: Flip Card, Purchase Modal, Airdrop Strip, Staking Modal
    ============================================ */
 
 /* --------------------------------------------
@@ -36,14 +37,8 @@ body {
 }
 
 @keyframes slideUp {
-    from { 
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to { 
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes spin {
@@ -80,6 +75,12 @@ body {
 @keyframes fabPulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.1); }
+}
+
+@keyframes progressPulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
 }
 
 /* --------------------------------------------
@@ -135,7 +136,6 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
-    z-index: 2;
 }
 
 .logo i {
@@ -399,7 +399,6 @@ body {
     gap: 5px;
 }
 
-/* Mine Button */
 .mine-btn {
     width: 100%;
     background: linear-gradient(135deg, #3b82f6, #6366f1);
@@ -488,7 +487,6 @@ body {
     border-radius: 10px;
 }
 
-/* Energy Belt */
 .energy-belt {
     position: absolute;
     bottom: 15px;
@@ -608,7 +606,6 @@ body {
     color: #94a3b8;
 }
 
-/* Referral Link */
 .referral-link-container {
     margin-bottom: 25px;
 }
@@ -1015,7 +1012,6 @@ body {
     min-height: 32px !important;
 }
 
-/* Crypto Header */
 .crypto-header {
     display: flex;
     align-items: center;
@@ -1125,7 +1121,7 @@ body {
     background: linear-gradient(135deg, #22c55e, #10b981);
 }
 
-/* Crypto Colors - Organized */
+/* Crypto Colors */
 .mwh-icon {
     background: rgba(59, 130, 246, 0.15) !important;
     color: #3b82f6 !important;
@@ -1187,7 +1183,7 @@ body {
 }
 
 /* --------------------------------------------
-   13. WALLET INFORMATION (DESIGN PREMIUM)
+   13. WALLET INFORMATION - PREMIUM CARDS
    -------------------------------------------- */
 .wallet-info-card {
     background: rgba(30, 41, 59, 0.8);
@@ -1406,7 +1402,6 @@ body {
     color: #ef4444;
 }
 
-/* Ads Section */
 .ad-stats-card {
     background: rgba(15, 23, 42, 0.8);
     border-radius: 12px;
@@ -1530,7 +1525,6 @@ body {
     border-radius: 8px;
 }
 
-/* Referral Stats Card */
 .referral-stats-card {
     background: rgba(15, 23, 42, 0.8);
     border-radius: 12px;
@@ -1577,7 +1571,6 @@ body {
     font-size: 14px;
 }
 
-/* Challenge Cards */
 .challenge-card {
     background: rgba(15, 23, 42, 0.8);
     border-radius: 12px;
@@ -1690,7 +1683,6 @@ body {
     margin-top: 10px;
 }
 
-/* Coming Soon Grid */
 .coming-soon-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -1796,7 +1788,7 @@ body {
 }
 
 /* --------------------------------------------
-   15. MWH POOLS PAGE
+   15. MWH POOLS PAGE - FLIP CARD & AIRDROP
    -------------------------------------------- */
 .pools-content {
     padding: 0 10px 20px;
@@ -1804,7 +1796,6 @@ body {
     margin: 0 auto;
 }
 
-/* MWH Pay Header */
 .mwh-pay-header {
     margin-bottom: 20px;
 }
@@ -2147,6 +2138,7 @@ body {
     margin-top: 5px;
     backdrop-filter: blur(10px);
     font-size: 13px;
+    animation: progressPulse 3s infinite;
 }
 
 .airdrop-strip i {
@@ -2465,7 +2457,7 @@ body {
 }
 
 /* --------------------------------------------
-   16. STAKING MODAL
+   16. STAKING MODAL - PROFESSIONAL
    -------------------------------------------- */
 .staking-modal .modal-content {
     max-width: 400px;
@@ -2617,7 +2609,151 @@ body {
 }
 
 /* --------------------------------------------
-   17. DEPOSIT MODAL (VERTICAL DESIGN)
+   17. CARD PURCHASE MODAL
+   -------------------------------------------- */
+.purchase-modal .modal-content {
+    max-width: 400px;
+}
+
+.purchase-price {
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.purchase-price-label {
+    color: #94a3b8;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.purchase-price-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #fbbf24;
+}
+
+.purchase-price-usd {
+    color: #94a3b8;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.purchase-rewards {
+    background: rgba(34, 197, 94, 0.1);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.purchase-reward-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.purchase-reward-item:last-child {
+    margin-bottom: 0;
+}
+
+.purchase-reward-label {
+    color: #94a3b8;
+}
+
+.purchase-reward-value {
+    color: #22c55e;
+    font-weight: 700;
+}
+
+.purchase-reward-total {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 10px;
+    padding-top: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.purchase-reward-total .label {
+    color: #f8fafc;
+    font-weight: 600;
+}
+
+.purchase-reward-total .value {
+    color: #fbbf24;
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.purchase-progress {
+    margin-bottom: 20px;
+}
+
+.purchase-progress-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.purchase-progress-header span:first-child {
+    color: #94a3b8;
+}
+
+.purchase-progress-header span:last-child {
+    color: #fbbf24;
+    font-weight: 600;
+}
+
+.purchase-progress-bar {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.purchase-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    border-radius: 4px;
+    transition: width 0.5s;
+}
+
+.purchase-progress-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+}
+
+.purchase-progress-sold {
+    color: #22c55e;
+}
+
+.purchase-progress-remaining {
+    color: #f59e0b;
+}
+
+.purchase-balance {
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.purchase-balance .label {
+    color: #94a3b8;
+}
+
+.purchase-balance .value {
+    color: #f8fafc;
+    font-weight: 600;
+}
+
+/* --------------------------------------------
+   18. DEPOSIT MODAL (VERTICAL DESIGN)
    -------------------------------------------- */
 .deposit-modal .modal-content {
     max-width: 500px;
@@ -2734,7 +2870,6 @@ body {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Transaction Sections */
 .transaction-hash-section {
     background: rgba(15, 23, 42, 0.8);
     border-radius: 16px;
@@ -2796,7 +2931,6 @@ body {
     margin-top: 10px;
 }
 
-/* Deposit Instructions */
 .deposit-instructions {
     background: rgba(15, 23, 42, 0.8);
     border-radius: 16px;
@@ -2923,7 +3057,7 @@ body {
 }
 
 /* --------------------------------------------
-   18. SWAP MODAL
+   19. SWAP MODAL
    -------------------------------------------- */
 .swap-modal-professional .modal-content {
     max-width: 450px;
@@ -3270,7 +3404,7 @@ body {
 }
 
 /* --------------------------------------------
-   19. WITHDRAWAL MODAL (ORIGINAL DESIGN)
+   20. WITHDRAWAL MODAL
    -------------------------------------------- */
 .withdrawal-modal .modal-content {
     max-width: 500px;
@@ -3443,7 +3577,6 @@ body {
     font-size: 12px;
 }
 
-/* Requirements Section */
 .requirements-section {
     background: rgba(15, 23, 42, 0.8);
     border-radius: 12px;
@@ -3654,7 +3787,7 @@ body {
 }
 
 /* --------------------------------------------
-   20. FLOATING NOTIFICATION SYSTEM
+   21. FLOATING NOTIFICATION SYSTEM
    -------------------------------------------- */
 .notification-bar {
     position: fixed;
@@ -3710,7 +3843,7 @@ body {
 }
 
 /* --------------------------------------------
-   21. BOTTOM NAVIGATION
+   22. BOTTOM NAVIGATION
    -------------------------------------------- */
 .bottom-nav {
     position: fixed;
@@ -3782,7 +3915,7 @@ body {
 }
 
 /* --------------------------------------------
-   22. HISTORY MODAL
+   23. HISTORY MODAL
    -------------------------------------------- */
 .history-modal .modal-content {
     max-width: 500px;
@@ -3849,7 +3982,6 @@ body {
     padding-right: 5px;
 }
 
-/* Transaction Cards */
 .transaction-card {
     background: rgba(15, 23, 42, 0.8);
     border-radius: 12px;
@@ -4034,7 +4166,7 @@ body {
 }
 
 /* --------------------------------------------
-   23. MESSAGE NOTIFICATIONS
+   24. MESSAGE NOTIFICATIONS
    -------------------------------------------- */
 .message {
     position: fixed;
@@ -4076,7 +4208,7 @@ body {
 }
 
 /* --------------------------------------------
-   24. MODAL STYLES
+   25. MODAL STYLES
    -------------------------------------------- */
 .modal-overlay {
     position: fixed;
@@ -4144,7 +4276,7 @@ body {
 }
 
 /* --------------------------------------------
-   25. SCROLLBAR
+   26. SCROLLBAR
    -------------------------------------------- */
 ::-webkit-scrollbar {
     width: 8px;
@@ -4165,7 +4297,7 @@ body {
 }
 
 /* --------------------------------------------
-   26. RESPONSIVE DESIGN
+   27. RESPONSIVE DESIGN
    -------------------------------------------- */
 @media (max-width: 480px) {
     body {
@@ -4255,7 +4387,6 @@ body {
         min-width: 50px !important;
     }
     
-    /* Crypto Cards Responsive */
     .crypto-card.compact {
         min-height: 130px !important;
         padding: 15px !important;
@@ -4288,7 +4419,6 @@ body {
         padding: 6px !important;
     }
     
-    /* Quick Actions Responsive */
     .wallet-quick-actions.compact {
         padding: 15px !important;
     }
@@ -4308,7 +4438,6 @@ body {
         font-size: 10px !important;
     }
     
-    /* Total Balance Responsive */
     .total-balance-card.compact {
         padding: 15px !important;
         height: 65px !important;
@@ -4326,7 +4455,6 @@ body {
         font-size: 10px !important;
     }
     
-    /* Card Responsive */
     .card-flip-container {
         max-width: 280px;
         height: 176px;
@@ -4337,12 +4465,10 @@ body {
         padding: 8px 12px;
     }
     
-    /* Info Grid Responsive */
     .info-grid {
         grid-template-columns: 1fr;
     }
     
-    /* FAB Responsive */
     .fab-button {
         bottom: 80px;
         width: 52px;
@@ -4350,7 +4476,6 @@ body {
         font-size: 22px;
     }
     
-    /* Staking Responsive */
     .wallet-balance-staking {
         padding: 12px 15px;
     }
@@ -4381,7 +4506,6 @@ body {
         align-items: flex-start;
     }
     
-    /* Bottom Nav Responsive */
     .bottom-nav {
         padding: 10px 0;
     }
@@ -4399,19 +4523,16 @@ body {
         font-size: 11px;
     }
     
-    /* Page Responsive */
     .page.active {
         padding: 15px;
         bottom: 70px;
     }
     
-    /* Modal Responsive */
     .modal-content {
         max-width: 95%;
         max-height: 85vh;
     }
     
-    /* Notification Bar Responsive */
     .notification-bar {
         height: 32px;
     }
@@ -4525,7 +4646,6 @@ body {
         padding: 5px !important;
     }
     
-    /* Card Ultra Small */
     .card-flip-container {
         max-width: 260px;
         height: 164px;
@@ -4541,7 +4661,6 @@ body {
         gap: 5px;
     }
     
-    /* FAB Ultra Small */
     .fab-button {
         bottom: 75px;
         width: 48px;
@@ -4549,7 +4668,6 @@ body {
         font-size: 20px;
     }
     
-    /* Staking Ultra Small */
     .wallet-balance-staking {
         flex-direction: column;
         text-align: center;
@@ -4570,7 +4688,6 @@ body {
         padding-bottom: 8px;
     }
     
-    /* Balance Card Ultra Small */
     .balance-amount-professional {
         font-size: 30px;
     }
@@ -4579,7 +4696,6 @@ body {
         font-size: 20px;
     }
     
-    /* Notification Bar Ultra Small */
     .notification-bar {
         height: 30px;
         bottom: 65px;
@@ -4590,7 +4706,6 @@ body {
         padding: 0 10px;
     }
     
-    /* Bottom Nav Ultra Small */
     .bottom-nav {
         padding: 8px 0;
     }
