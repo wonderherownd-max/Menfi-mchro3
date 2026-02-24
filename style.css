@@ -24,12 +24,14 @@ body {
 }
 
 /* =========================================== */
-/* MWH Pools Page - بطاقة فيزا بحجم حقيقي */
+/* MWH Pools Page - بطاقة Flip مع شريط إيردروب */
 /* =========================================== */
 
 .pools-content {
     padding: 0 10px;
     padding-bottom: 20px;
+    max-width: 450px;
+    margin: 0 auto;
 }
 
 /* MWH Pay Header */
@@ -58,30 +60,67 @@ body {
     border-radius: 12px;
 }
 
-/* ====== بطاقة فيزا بحجم حقيقي (Real Size Visa Card) ====== */
-.visa-real-card {
+/* ====== بطاقة Flip احترافية (3D Flip Card) ====== */
+.card-flip-container {
     width: 100%;
     max-width: 300px;
     height: 190px;
-    margin: 0 auto 20px auto;
-    background: #0a0c14;
+    margin: 0 auto 15px auto;
+    perspective: 1000px;
+    cursor: pointer;
+}
+
+.card-flip-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
     border-radius: 16px;
+}
+
+.card-flip-inner.flipped {
+    transform: rotateY(180deg);
+}
+
+.card-front, .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.card-front {
+    transform: rotateY(0deg);
+}
+
+.card-back {
+    transform: rotateY(180deg);
+}
+
+/* بطاقة فيزا - الوجه الأمامي */
+.visa-real-card {
+    width: 100%;
+    height: 100%;
+    background: #0a0c14;
     position: relative;
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
     background-image: radial-gradient(circle at 30% 40%, rgba(59, 130, 246, 0.1) 0%, transparent 30%),
                       radial-gradient(circle at 70% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 30%);
 }
 
-.visa-real-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7);
+.visa-real-card.back {
+    background: #0f1119;
 }
 
 /* طبقة التعتيم */
-.visa-real-card .card-overlay {
+.card-overlay {
     position: absolute;
     top: 0;
     left: 0;
@@ -96,7 +135,7 @@ body {
     pointer-events: none;
 }
 
-.visa-real-card .card-content {
+.card-content {
     position: relative;
     z-index: 2;
     padding: 15px;
@@ -105,14 +144,18 @@ body {
     flex-direction: column;
 }
 
-.visa-real-card .card-header {
+.back-content {
+    padding: 15px;
+}
+
+.card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
 }
 
-.visa-real-card .card-logo {
+.card-logo {
     font-size: 16px;
     font-weight: 700;
     background: linear-gradient(135deg, #f8fafc, #cbd5e0);
@@ -121,7 +164,7 @@ body {
     letter-spacing: 0.5px;
 }
 
-.visa-real-card .card-badge {
+.card-badge {
     font-size: 10px;
     color: #f59e0b;
     background: rgba(245, 158, 11, 0.15);
@@ -131,11 +174,17 @@ body {
     font-weight: 600;
 }
 
-.visa-real-card .card-chip {
+.card-badge.active {
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.15);
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.card-chip {
     margin-bottom: 10px;
 }
 
-.visa-real-card .card-chip i {
+.card-chip i {
     font-size: 30px;
     color: #fbbf24;
     transform: rotate(90deg);
@@ -143,7 +192,7 @@ body {
     opacity: 0.9;
 }
 
-.visa-real-card .card-number {
+.card-number {
     font-size: 16px;
     font-family: 'Courier New', monospace;
     letter-spacing: 2px;
@@ -152,43 +201,43 @@ body {
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-.visa-real-card .card-footer {
+.card-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
 }
 
-.visa-real-card .card-holder {
+.card-holder {
     flex: 1;
 }
 
-.visa-real-card .card-label {
+.card-label {
     font-size: 7px;
     color: rgba(148, 163, 184, 0.7);
     margin-bottom: 2px;
     letter-spacing: 0.5px;
 }
 
-.visa-real-card .card-name {
+.card-name {
     font-size: 11px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.9);
     letter-spacing: 0.5px;
 }
 
-.visa-real-card .card-expiry {
+.card-expiry {
     text-align: right;
 }
 
-.visa-real-card .card-date {
+.card-date {
     font-size: 11px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.9);
 }
 
-/* شعار Visa احترافي */
-.visa-real-card .visa-logo-real {
+/* شعار Visa في الجانب */
+.visa-logo-side {
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -196,16 +245,15 @@ body {
     margin-top: 5px;
 }
 
-.visa-real-card .visa-logo-real i {
+.visa-logo-side i {
     font-size: 24px;
-    color: #1a1f71;
     background: linear-gradient(135deg, #fbbf24, #f59e0b);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
-.visa-real-card .visa-logo-real span {
+.visa-logo-side span {
     font-size: 14px;
     font-weight: 800;
     background: linear-gradient(135deg, #fbbf24, #f59e0b);
@@ -214,74 +262,208 @@ body {
     letter-spacing: 1px;
 }
 
-/* شريط تقدم الاستثمار */
-.visa-real-card .investment-progress {
-    margin-top: 5px;
-    padding-top: 5px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+.visa-logo-side.back {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
 }
 
-.visa-real-card .progress-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 4px;
-}
-
-.visa-real-card .progress-title {
-    font-size: 8px;
-    color: #94a3b8;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.visa-real-card .progress-percent {
-    font-size: 8px;
+/* ====== الوجه الخلفي للبطاقة ====== */
+.back-header {
+    font-size: 16px;
     font-weight: 700;
-    color: #22c55e;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 15px;
+    text-align: left;
 }
 
-.visa-real-card .progress-bar-investment {
-    height: 3px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-bottom: 4px;
+.magnetic-strip {
+    height: 25px;
+    background: #2d3748;
+    margin-bottom: 8px;
+    border-radius: 4px;
 }
 
-.visa-real-card .progress-fill-investment {
-    height: 100%;
-    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-    border-radius: 2px;
+.magnetic-strip.second {
+    height: 8px;
+    background: #1e293b;
 }
 
-.visa-real-card .progress-stats {
+.magnetic-strip.third {
+    height: 8px;
+    background: #1e293b;
+    margin-bottom: 20px;
+}
+
+.cvv-section {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 3px;
-    font-size: 7px;
-    color: #94a3b8;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 0 10px;
 }
 
-.visa-real-card .progress-raised {
-    color: #22c55e;
+.cvv-label {
+    font-size: 12px;
+    color: #94a3b8;
     font-weight: 600;
 }
 
-.visa-real-card .progress-target {
-    color: #94a3b8;
+.cvv-hidden {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 5px 15px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 16px;
+    letter-spacing: 2px;
+    position: relative;
+    cursor: pointer;
 }
 
-.visa-real-card .progress-remaining {
+.cvv-dots {
+    color: #f8fafc;
+    font-weight: 700;
+}
+
+.cvv-real {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0a0c14;
+    color: white;
     display: flex;
     align-items: center;
-    gap: 3px;
-    font-size: 7px;
-    color: #f59e0b;
+    justify-content: center;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity 0.3s;
 }
 
-.visa-real-card .progress-remaining i {
-    font-size: 7px;
+.cvv-hidden:hover .cvv-real {
+    opacity: 1;
+}
+
+.signature-section {
+    margin-bottom: 30px;
+    padding: 0 10px;
+}
+
+.signature-label {
+    font-size: 10px;
+    color: #94a3b8;
+    margin-bottom: 5px;
+    display: block;
+    text-align: left;
+}
+
+.signature-line {
+    height: 30px;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 2px solid #fbbf24;
+    width: 80%;
+}
+
+/* ====== شريط إيردروب مضغوط تحت البطاقة ====== */
+.airdrop-strip {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 30px;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 5px;
+    backdrop-filter: blur(10px);
+    font-size: 13px;
+}
+
+.airdrop-strip i {
+    color: #fbbf24;
+    font-size: 16px;
+}
+
+.airdrop-text {
+    color: #fbbf24;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.airdrop-separator {
+    color: #3b82f6;
+    font-weight: 700;
+}
+
+.airdrop-progress {
+    color: #f8fafc;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.airdrop-bonus {
+    color: #22c55e;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* ====== Floating Action Button (FAB) - محدث ====== */
+.fab-button {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    border: none;
+    color: white;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(249, 115, 22, 0.4);
+    transition: all 0.3s ease;
+    z-index: 100;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    animation: fabPulse 2s infinite;
+}
+
+@keyframes fabPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.fab-button:hover {
+    transform: scale(1.1) rotate(180deg);
+    box-shadow: 0 12px 30px rgba(249, 115, 22, 0.6);
+}
+
+.fab-button i {
+    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.3));
+}
+
+/* ====== تأثيرات البطاقة ====== */
+@keyframes cardShake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.card-shake {
+    animation: cardShake 0.5s ease-in-out;
+}
+
+@keyframes cardGlow {
+    0% { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6); }
+    50% { box-shadow: 0 20px 50px rgba(249, 115, 22, 0.5); }
+    100% { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6); }
+}
+
+.card-glow {
+    animation: cardGlow 1s ease;
 }
 
 /* ====== عرض رصيد MWH في صفحة Staking ====== */
@@ -327,58 +509,6 @@ body {
     font-weight: 700;
     color: #fbbf24;
     line-height: 1.2;
-}
-
-/* ====== Floating Action Button (FAB) ====== */
-.fab-button {
-    position: fixed;
-    bottom: 90px;
-    right: 20px;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #f97316, #ea580c);
-    border: none;
-    color: white;
-    font-size: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 8px 20px rgba(249, 115, 22, 0.4);
-    transition: all 0.3s ease;
-    z-index: 100;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-}
-
-.fab-button:hover {
-    transform: scale(1.1) rotate(15deg);
-    box-shadow: 0 12px 30px rgba(249, 115, 22, 0.6);
-}
-
-.fab-button i {
-    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.3));
-}
-
-/* ====== تأثيرات البطاقة ====== */
-@keyframes cardShake {
-    0%, 100% { transform: translateX(0); }
-    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-    20%, 40%, 60%, 80% { transform: translateX(5px); }
-}
-
-.card-shake {
-    animation: cardShake 0.5s ease-in-out;
-}
-
-@keyframes cardGlow {
-    0% { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6); }
-    50% { box-shadow: 0 20px 50px rgba(249, 115, 22, 0.5); }
-    100% { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6); }
-}
-
-.card-glow {
-    animation: cardGlow 1s ease;
 }
 
 /* ====== إحصائيات الرهن المضغوطة ====== */
@@ -432,7 +562,7 @@ body {
     font-size: 20px;
 }
 
-/* ====== كروت الخطط المضغوطة (Compact Pools) ====== */
+/* ====== كروت الخطط المضغوطة (مع تأثير النقر) ====== */
 .pools-grid-compact {
     display: grid;
     grid-template-columns: 1fr;
@@ -447,11 +577,13 @@ body {
     padding: 15px;
     border: 1px solid rgba(255, 255, 255, 0.05);
     transition: all 0.3s ease;
+    cursor: pointer;
 }
 
 .pool-card-compact:hover {
     transform: translateY(-2px);
     border-color: rgba(59, 130, 246, 0.3);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
 .pool-card-compact.fast {
@@ -560,12 +692,6 @@ body {
     box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
 }
 
-.pool-stake-btn-compact:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background: rgba(255, 255, 255, 0.1);
-}
-
 /* شروط الرهن المضغوطة */
 .staking-terms-compact {
     background: rgba(30, 41, 59, 0.5);
@@ -592,7 +718,247 @@ body {
 }
 
 /* =========================================== */
-/* نافذة الإيداع المحسنة (تصميم عمودي احترافي) */
+/* نافذة Staking الاحترافية */
+/* =========================================== */
+
+.staking-modal .modal-content {
+    max-width: 400px;
+}
+
+.pool-detail-card {
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 16px;
+    padding: 15px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+}
+
+.detail-row .label {
+    color: #94a3b8;
+}
+
+.detail-row .value {
+    color: #fbbf24;
+    font-weight: 600;
+}
+
+.detail-row .value.highlight {
+    color: #22c55e;
+    font-size: 16px;
+}
+
+.staking-balance {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 12px;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.staking-balance .label {
+    color: #22c55e;
+    font-weight: 600;
+}
+
+.staking-balance .value {
+    color: #f8fafc;
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.staking-input-section {
+    margin-bottom: 20px;
+}
+
+.staking-input-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    color: #cbd5e0;
+    font-size: 14px;
+}
+
+.staking-input-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.staking-input {
+    flex: 1;
+    padding: 12px 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 12px;
+    color: #f8fafc;
+    font-size: 16px;
+    font-weight: 600;
+    outline: none;
+}
+
+.staking-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.staking-max-btn {
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #60a5fa;
+    padding: 0 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.3s;
+}
+
+.staking-max-btn:hover {
+    background: rgba(59, 130, 246, 0.25);
+    transform: scale(1.05);
+}
+
+.staking-receive {
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.staking-receive .label {
+    color: #94a3b8;
+}
+
+.staking-receive .value {
+    color: #22c55e;
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.staking-warning {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #f59e0b;
+    font-size: 13px;
+}
+
+.staking-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* =========================================== */
+/* Wallet Information - تصميم محسن احترافي */
+/* =========================================== */
+
+.wallet-info-card {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.wallet-info-card.premium {
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.info-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    color: #f8fafc;
+}
+
+.info-header i {
+    color: #60a5fa;
+    font-size: 18px;
+}
+
+.info-header h4 {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.info-item-card {
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 16px;
+    padding: 15px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: transform 0.3s, border-color 0.3s;
+}
+
+.info-item-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.info-icon {
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.info-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.info-label {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-bottom: 4px;
+}
+
+.info-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fbbf24;
+}
+
+/* =========================================== */
+/* نافذة الإيداع المحسنة (تصميم عمودي) */
 /* =========================================== */
 
 .deposit-modal .modal-content {
@@ -633,7 +999,7 @@ body {
     line-height: 1.4;
 }
 
-/* قسم عنوان المحفظة - تصميم عمودي جديد */
+/* قسم عنوان المحفظة - تصميم عمودي */
 .deposit-address-card {
     background: rgba(15, 23, 42, 0.8);
     border-radius: 16px;
@@ -699,10 +1065,6 @@ body {
 .copy-address-btn-large:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
-}
-
-.copy-address-btn-large i {
-    font-size: 18px;
 }
 
 .network-info {
@@ -913,95 +1275,6 @@ body {
 }
 
 /* =========================================== */
-/* كروت العملات - ألوان محسنة */
-/* =========================================== */
-
-/* MWH - أزرق كهربائي */
-.mwh-icon {
-    background: rgba(59, 130, 246, 0.15) !important;
-    color: #3b82f6 !important;
-    border-color: rgba(59, 130, 246, 0.3) !important;
-}
-
-.mwh-price {
-    background: rgba(59, 130, 246, 0.1) !important;
-    color: #3b82f6 !important;
-}
-
-.mwh-value {
-    background: rgba(59, 130, 246, 0.1) !important;
-    color: #3b82f6 !important;
-}
-
-/* USDT - أخضر زمردي */
-.usdt-icon {
-    background: rgba(16, 185, 129, 0.15) !important;
-    color: #10b981 !important;
-    border-color: rgba(16, 185, 129, 0.3) !important;
-}
-
-.usdt-price {
-    background: rgba(16, 185, 129, 0.1) !important;
-    color: #10b981 !important;
-}
-
-.usdt-value {
-    background: rgba(16, 185, 129, 0.1) !important;
-    color: #10b981 !important;
-}
-
-/* BNB - ذهبي */
-.bnb-icon {
-    background: rgba(251, 191, 36, 0.15) !important;
-    color: #fbbf24 !important;
-    border-color: rgba(251, 191, 36, 0.3) !important;
-}
-
-.bnb-price {
-    background: rgba(251, 191, 36, 0.1) !important;
-    color: #fbbf24 !important;
-}
-
-.bnb-value {
-    background: rgba(251, 191, 36, 0.1) !important;
-    color: #fbbf24 !important;
-}
-
-/* TON - أزرق سماوي */
-.ton-icon {
-    background: rgba(6, 182, 212, 0.15) !important;
-    color: #06b6d4 !important;
-    border-color: rgba(6, 182, 212, 0.3) !important;
-}
-
-.ton-price {
-    background: rgba(6, 182, 212, 0.1) !important;
-    color: #06b6d4 !important;
-}
-
-.ton-value {
-    background: rgba(6, 182, 212, 0.1) !important;
-    color: #06b6d4 !important;
-}
-
-/* ETH - بنفسجي */
-.eth-icon {
-    background: rgba(139, 92, 246, 0.15) !important;
-    color: #8b5cf6 !important;
-    border-color: rgba(139, 92, 246, 0.3) !important;
-}
-
-.eth-price {
-    background: rgba(139, 92, 246, 0.1) !important;
-    color: #8b5cf6 !important;
-}
-
-.eth-value {
-    background: rgba(139, 92, 246, 0.1) !important;
-    color: #8b5cf6 !important;
-}
-
-/* =========================================== */
 /* نافذة السواب المحسنة */
 /* =========================================== */
 
@@ -1209,10 +1482,6 @@ body {
 .max-amount-btn-small:hover {
     background: rgba(59, 130, 246, 0.25);
     transform: scale(1.05);
-}
-
-.max-amount-btn-small i {
-    font-size: 10px;
 }
 
 .swap-details-professional {
@@ -1736,985 +2005,6 @@ body {
 }
 
 /* =========================================== */
-/* باقي التصميمات الأصلية (محفوظة كما هي) */
-/* =========================================== */
-
-/* Pages System */
-.page {
-    display: none;
-    max-width: 450px;
-    margin: 0 auto;
-    animation: fadeIn 0.3s ease;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 70px;
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    z-index: 1000;
-    overflow-y: auto;
-    padding: 20px;
-}
-
-.page.active {
-    display: block;
-    animation: slideUp 0.3s ease;
-}
-
-.page.hidden {
-    display: none;
-}
-
-.container.active {
-    display: block;
-}
-
-.container.hidden {
-    display: none;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes slideUp {
-    from { 
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to { 
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Page Header */
-.page-header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 25px;
-    padding: 20px;
-    background: rgba(30, 41, 59, 0.8);
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-}
-
-.back-btn {
-    background: rgba(59, 130, 246, 0.1);
-    color: #60a5fa;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.back-btn:hover {
-    background: rgba(59, 130, 246, 0.2);
-    transform: scale(1.1);
-}
-
-.page-header h2 {
-    font-size: 20px;
-    font-weight: 700;
-    color: #f8fafc;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-/* =========================================== */
-/* Professional Wallet Design */
-/* =========================================== */
-
-.wallet-container {
-    padding: 0 10px;
-}
-
-/* Total Balance Card */
-.total-balance-card {
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    border-radius: 20px;
-    padding: 25px;
-    margin-bottom: 25px;
-    text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
-}
-
-.total-balance-card.compact {
-    padding: 20px !important;
-    height: 70px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-}
-
-.total-balance-card.compact .total-balance-label {
-    font-size: 14px !important;
-    margin-bottom: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-}
-
-.total-balance-card.compact .total-balance-amount {
-    font-size: 28px !important;
-}
-
-.total-balance-card.compact .total-balance-sub {
-    font-size: 11px !important;
-    margin-top: 2px !important;
-}
-
-.total-balance-label {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 14px;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.total-balance-amount {
-    font-size: 42px;
-    font-weight: 800;
-    color: white;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    margin: 10px 0;
-}
-
-.total-balance-sub {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 13px;
-}
-
-/* Quick Actions */
-.wallet-quick-actions {
-    background: rgba(30, 41, 59, 0.8);
-    border-radius: 20px;
-    padding: 25px;
-    margin-bottom: 25px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-}
-
-.wallet-quick-actions.compact {
-    padding: 18px !important;
-    margin-bottom: 20px !important;
-}
-
-.wallet-quick-actions.compact .action-title {
-    font-size: 14px !important;
-    margin-bottom: 15px !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-    font-weight: 600 !important;
-}
-
-.wallet-quick-actions.compact .actions-grid {
-    gap: 12px !important;
-}
-
-.wallet-quick-actions.compact .quick-action {
-    padding: 12px 8px !important;
-    min-height: 70px !important;
-}
-
-.wallet-quick-actions.compact .action-icon {
-    width: 32px !important;
-    height: 32px !important;
-    font-size: 16px !important;
-    margin-bottom: 8px !important;
-}
-
-.wallet-quick-actions.compact .action-text {
-    font-size: 11px !important;
-    line-height: 1.2 !important;
-}
-
-.action-title {
-    font-size: 16px;
-    color: #f8fafc;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.actions-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
-}
-
-.quick-action {
-    background: rgba(15, 23, 42, 0.8);
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    border-radius: 12px;
-    padding: 15px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.quick-action:hover {
-    border-color: rgba(59, 130, 246, 0.4);
-    transform: translateY(-2px);
-}
-
-.action-icon {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, #3b82f6, #6366f1);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 10px;
-    font-size: 18px;
-    color: white;
-}
-
-.action-text {
-    font-size: 12px;
-    color: #cbd5e0;
-    font-weight: 600;
-}
-
-/* Crypto Grid */
-.crypto-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 15px;
-    margin-bottom: 25px;
-}
-
-.crypto-card {
-    background: rgba(30, 41, 59, 0.8);
-    border-radius: 18px;
-    padding: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    backdrop-filter: blur(10px);
-}
-
-.crypto-card:hover {
-    border-color: rgba(59, 130, 246, 0.4);
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-}
-
-.crypto-card.compact {
-    min-height: 140px !important;
-    padding: 20px !important;
-    margin-bottom: 12px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: space-between !important;
-}
-
-.crypto-card.compact .crypto-header {
-    padding-bottom: 12px !important;
-    margin-bottom: 12px !important;
-}
-
-.crypto-card.compact .crypto-title h3 {
-    font-size: 16px !important;
-    margin-bottom: 4px !important;
-}
-
-.crypto-card.compact .crypto-symbol {
-    font-size: 12px !important;
-}
-
-.crypto-card.compact .crypto-price {
-    font-size: 12px !important;
-    padding: 4px 10px !important;
-    border-radius: 12px !important;
-    text-align: left !important;
-    margin-top: 8px !important;
-    display: block !important;
-}
-
-.crypto-card.compact .crypto-balance {
-    margin-bottom: 12px !important;
-}
-
-.crypto-card.compact .crypto-balance .balance-amount {
-    font-size: 24px !important;
-}
-
-.crypto-card.compact .crypto-value {
-    padding: 8px 12px !important;
-    border-radius: 12px !important;
-    font-size: 14px !important;
-    margin-bottom: 15px !important;
-}
-
-.crypto-card.compact .crypto-actions {
-    margin-top: 8px !important;
-}
-
-.crypto-card.compact .crypto-actions .action-btn-small {
-    padding: 8px !important;
-    font-size: 12px !important;
-    min-height: 32px !important;
-}
-
-.crypto-header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.crypto-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    background: rgba(59, 130, 246, 0.15);
-    color: #60a5fa;
-    border: 2px solid rgba(59, 130, 246, 0.3);
-}
-
-.crypto-title {
-    flex: 1;
-}
-
-.crypto-title h3 {
-    font-size: 18px;
-    color: #f8fafc;
-    margin-bottom: 4px;
-}
-
-.crypto-symbol {
-    font-size: 13px;
-    color: #94a3b8;
-    font-weight: 600;
-}
-
-.crypto-price {
-    font-size: 12px;
-    background: rgba(34, 197, 94, 0.1);
-    padding: 4px 10px;
-    border-radius: 20px;
-    white-space: nowrap;
-}
-
-.crypto-balance {
-    margin-bottom: 15px;
-    text-align: center;
-}
-
-.balance-amount {
-    font-size: 32px;
-    font-weight: 800;
-    color: #fbbf24;
-    text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
-    margin-bottom: 5px;
-}
-
-.balance-currency {
-    font-size: 14px;
-    color: #94a3b8;
-}
-
-.crypto-value {
-    text-align: center;
-    font-size: 15px;
-    font-weight: 600;
-    margin-bottom: 20px;
-    background: rgba(34, 197, 94, 0.1);
-    padding: 8px 15px;
-    border-radius: 12px;
-    display: inline-block;
-    width: 100%;
-}
-
-.crypto-actions {
-    display: flex;
-    gap: 10px;
-}
-
-.action-btn-small {
-    flex: 1;
-    padding: 10px;
-    background: linear-gradient(135deg, #3b82f6, #6366f1);
-    border: none;
-    border-radius: 10px;
-    color: white;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    transition: all 0.3s;
-}
-
-.action-btn-small:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
-}
-
-.action-btn-small.disabled {
-    background: rgba(255, 255, 255, 0.1);
-    color: #94a3b8;
-    cursor: not-allowed;
-}
-
-.action-btn-small.disabled:hover {
-    transform: none;
-    box-shadow: none;
-}
-
-.withdraw-btn {
-    background: linear-gradient(135deg, #22c55e, #10b981);
-}
-
-/* =========================================== */
-/* Earning Page Styles */
-/* =========================================== */
-
-.earning-content {
-    padding: 0 10px;
-    padding-bottom: 20px;
-}
-
-.daily-reset-card {
-    background: rgba(30, 41, 59, 0.8);
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 20px;
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    backdrop-filter: blur(10px);
-}
-
-.reset-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.reset-info i {
-    font-size: 24px;
-    color: #60a5fa;
-    background: rgba(59, 130, 246, 0.1);
-    padding: 10px;
-    border-radius: 10px;
-}
-
-.reset-label {
-    color: #cbd5e0;
-    font-size: 14px;
-    margin-bottom: 4px;
-}
-
-.reset-countdown {
-    color: #fbbf24;
-    font-weight: 600;
-    font-size: 15px;
-}
-
-.reset-stats {
-    text-align: right;
-}
-
-.reset-stat-value {
-    font-size: 20px;
-    font-weight: 700;
-    color: #22c55e;
-    margin-bottom: 4px;
-}
-
-.reset-stat-label {
-    color: #94a3b8;
-    font-size: 12px;
-}
-
-.earning-section {
-    background: rgba(30, 41, 59, 0.8);
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-}
-
-.section-header-earning {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 20px;
-}
-
-.section-title-earning {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.section-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-}
-
-.ad-icon {
-    background: rgba(59, 130, 246, 0.15);
-    color: #60a5fa;
-    border: 2px solid rgba(59, 130, 246, 0.3);
-}
-
-.task-icon {
-    background: rgba(34, 197, 94, 0.15);
-    color: #22c55e;
-    border: 2px solid rgba(34, 197, 94, 0.3);
-}
-
-.section-title-earning h3 {
-    font-size: 18px;
-    color: #f8fafc;
-    margin-bottom: 4px;
-}
-
-.section-subtitle {
-    color: #94a3b8;
-    font-size: 13px;
-}
-
-.section-badge {
-    background: rgba(245, 158, 11, 0.1);
-    color: #f59e0b;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.challenge-badge {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-}
-
-.ad-stats-card {
-    background: rgba(15, 23, 42, 0.8);
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 15px;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-}
-
-.ad-stat {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.ad-stat-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #cbd5e0;
-    font-size: 14px;
-}
-
-.ad-stat-value {
-    font-size: 20px;
-    font-weight: 700;
-    color: #fbbf24;
-}
-
-.ad-progress {
-    margin-bottom: 20px;
-}
-
-.progress-label {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    color: #cbd5e0;
-    font-size: 14px;
-}
-
-.progress-bar-earning {
-    height: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.progress-fill-earning {
-    height: 100%;
-    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-    border-radius: 4px;
-    transition: width 0.5s ease;
-}
-
-.watch-ad-btn {
-    width: 100%;
-    background: linear-gradient(135deg, #3b82f6, #6366f1);
-    border: none;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 15px;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.watch-ad-btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
-}
-
-.watch-ad-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.ad-btn-content {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.ad-btn-icon {
-    background: rgba(255, 255, 255, 0.2);
-    width: 50px;
-    height: 50px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    color: white;
-}
-
-.ad-btn-text {
-    flex: 1;
-    text-align: left;
-}
-
-.ad-btn-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: white;
-    margin-bottom: 4px;
-}
-
-.ad-btn-subtitle {
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.ad-note {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #94a3b8;
-    font-size: 13px;
-    padding: 10px;
-    background: rgba(15, 23, 42, 0.8);
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.referral-stats-card {
-    background: rgba(15, 23, 42, 0.8);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.referral-stat-main {
-    margin-bottom: 10px;
-}
-
-.referral-stat-value {
-    font-size: 32px;
-    font-weight: 800;
-    color: #22c55e;
-    margin-bottom: 5px;
-}
-
-.referral-stat-label {
-    color: #94a3b8;
-    font-size: 14px;
-}
-
-.referral-stat-sub {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-}
-
-.referral-stat-sub-item {
-    text-align: center;
-}
-
-.sub-label {
-    color: #cbd5e0;
-    font-size: 12px;
-    margin-bottom: 4px;
-}
-
-.sub-value {
-    color: #fbbf24;
-    font-weight: 600;
-    font-size: 14px;
-}
-
-.challenge-card {
-    background: rgba(15, 23, 42, 0.8);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    position: relative;
-}
-
-.challenge-card.premium {
-    border: 2px solid rgba(245, 158, 11, 0.3);
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9));
-}
-
-.challenge-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.challenge-title {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.challenge-number {
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    color: white;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 16px;
-}
-
-.challenge-info {
-    flex: 1;
-}
-
-.challenge-name {
-    font-size: 16px;
-    color: #f8fafc;
-    margin-bottom: 4px;
-}
-
-.challenge-reward {
-    color: #fbbf24;
-    font-weight: 600;
-    font-size: 14px;
-}
-
-.claim-challenge-btn {
-    background: linear-gradient(135deg, #22c55e, #10b981);
-    border: none;
-    border-radius: 8px;
-    padding: 10px 20px;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s;
-}
-
-.claim-challenge-btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
-}
-
-.claim-challenge-btn:disabled {
-    background: rgba(255, 255, 255, 0.1);
-    color: #94a3b8;
-    cursor: not-allowed;
-}
-
-.claim-challenge-btn.premium-btn {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-}
-
-.premium-badge {
-    position: absolute;
-    top: -10px;
-    right: 20px;
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: white;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.challenge-note {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #f59e0b;
-    font-size: 13px;
-    padding: 12px 15px;
-    background: rgba(245, 158, 11, 0.1);
-    border-radius: 8px;
-    border: 1px solid rgba(245, 158, 11, 0.2);
-    margin-top: 10px;
-}
-
-.coming-soon-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.coming-soon-card {
-    background: rgba(30, 41, 59, 0.8);
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: transform 0.3s;
-}
-
-.coming-soon-card:hover {
-    transform: translateY(-3px);
-    border-color: rgba(59, 130, 246, 0.4);
-}
-
-.coming-soon-icon {
-    font-size: 32px;
-    color: #94a3b8;
-    margin-bottom: 15px;
-}
-
-.coming-soon-content h4 {
-    font-size: 16px;
-    color: #f8fafc;
-    margin-bottom: 8px;
-}
-
-.coming-soon-content p {
-    color: #94a3b8;
-    font-size: 13px;
-    margin-bottom: 12px;
-}
-
-.coming-soon-badge {
-    background: rgba(59, 130, 246, 0.1);
-    color: #60a5fa;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    display: inline-block;
-}
-
-.earning-tips {
-    background: rgba(30, 41, 59, 0.8);
-    border-radius: 16px;
-    padding: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.tips-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
-    color: #f8fafc;
-}
-
-.tips-header i {
-    color: #fbbf24;
-    font-size: 20px;
-}
-
-.tips-header h4 {
-    font-size: 16px;
-}
-
-.tips-content {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.tip-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px;
-    background: rgba(15, 23, 42, 0.8);
-    border-radius: 8px;
-}
-
-.tip-icon {
-    font-size: 20px;
-    width: 36px;
-    height: 36px;
-    background: rgba(59, 130, 246, 0.1);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.tip-text {
-    color: #cbd5e0;
-    font-size: 14px;
-    line-height: 1.4;
-}
-
-/* =========================================== */
 /* Floating Notification System */
 /* =========================================== */
 
@@ -2771,18 +2061,10 @@ body {
 }
 
 @keyframes moveRightToLeft {
-    0% {
-        transform: translateX(100%);
-    }
-    10% {
-        transform: translateX(0);
-    }
-    90% {
-        transform: translateX(0);
-    }
-    100% {
-        transform: translateX(-100%);
-    }
+    0% { transform: translateX(100%); }
+    10% { transform: translateX(0); }
+    90% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
 }
 
 .notification-bar.moving span {
@@ -2868,667 +2150,130 @@ body {
 }
 
 /* =========================================== */
-/* Original App Styles */
+/* كروت العملات - ألوان محسنة (مكرر للتوضيح) */
 /* =========================================== */
 
-.app-header {
-    height: 78px;
-    padding: 12px 20px;
-    margin-bottom: 20px;
+.mwh-icon {
+    background: rgba(59, 130, 246, 0.15) !important;
+    color: #3b82f6 !important;
+    border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+.mwh-price {
+    background: rgba(59, 130, 246, 0.1) !important;
+    color: #3b82f6 !important;
+}
+
+.mwh-value {
+    background: rgba(59, 130, 246, 0.1) !important;
+    color: #3b82f6 !important;
+}
+
+.usdt-icon {
+    background: rgba(16, 185, 129, 0.15) !important;
+    color: #10b981 !important;
+    border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+.usdt-price {
+    background: rgba(16, 185, 129, 0.1) !important;
+    color: #10b981 !important;
+}
+
+.usdt-value {
+    background: rgba(16, 185, 129, 0.1) !important;
+    color: #10b981 !important;
+}
+
+.bnb-icon {
+    background: rgba(251, 191, 36, 0.15) !important;
+    color: #fbbf24 !important;
+    border-color: rgba(251, 191, 36, 0.3) !important;
+}
+
+.bnb-price {
+    background: rgba(251, 191, 36, 0.1) !important;
+    color: #fbbf24 !important;
+}
+
+.bnb-value {
+    background: rgba(251, 191, 36, 0.1) !important;
+    color: #fbbf24 !important;
+}
+
+.ton-icon {
+    background: rgba(6, 182, 212, 0.15) !important;
+    color: #06b6d4 !important;
+    border-color: rgba(6, 182, 212, 0.3) !important;
+}
+
+.ton-price {
+    background: rgba(6, 182, 212, 0.1) !important;
+    color: #06b6d4 !important;
+}
+
+.ton-value {
+    background: rgba(6, 182, 212, 0.1) !important;
+    color: #06b6d4 !important;
+}
+
+.eth-icon {
+    background: rgba(139, 92, 246, 0.15) !important;
+    color: #8b5cf6 !important;
+    border-color: rgba(139, 92, 246, 0.3) !important;
+}
+
+.eth-price {
+    background: rgba(139, 92, 246, 0.1) !important;
+    color: #8b5cf6 !important;
+}
+
+.eth-value {
+    background: rgba(139, 92, 246, 0.1) !important;
+    color: #8b5cf6 !important;
+}
+
+/* =========================================== */
+/* Page Header and Back Button */
+/* =========================================== */
+
+.page-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    background: rgba(15, 23, 42, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    position: relative;
-    overflow: hidden;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding: 20px;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
 }
 
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    z-index: 2;
-}
-
-.logo i {
-    font-size: 26px;
-    color: #fbbf24;
-    background: rgba(251, 191, 36, 0.1);
-    padding: 10px;
-    border-radius: 12px;
-    border: 1px solid rgba(251, 191, 36, 0.2);
-}
-
-.logo h1 {
-    font-size: 18px;
-    font-weight: 700;
-    background: linear-gradient(90deg, #fbbf24, #f59e0b);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    white-space: nowrap;
-}
-
-.token-price {
-    font-size: 11px;
-    color: #22c55e;
-    font-weight: 600;
-    margin-top: 2px;
-    background: rgba(34, 197, 94, 0.1);
-    padding: 3px 8px;
-    border-radius: 8px;
-    display: inline-block;
-}
-
-.user-section {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-left: auto;
-    z-index: 2;
-}
-
-.user-avatar {
+.back-btn {
+    background: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
-    font-size: 16px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    flex-shrink: 0;
-}
-
-.user-info {
-    display: flex;
-    flex-direction: column;
-    text-align: right;
-}
-
-.username {
-    font-weight: 600;
-    font-size: 14px;
-    color: #f8fafc;
-    margin-bottom: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 120px;
-}
-
-.user-id {
-    font-size: 11px;
-    color: #94a3b8;
-    font-family: monospace;
-    opacity: 0.8;
-}
-
-/* Balance Card */
-.balance-card {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
-    border-radius: 20px;
-    padding: 25px;
-    margin-bottom: 25px;
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-}
-
-.balance-card:hover {
-    border-color: rgba(59, 130, 246, 0.4);
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-}
-
-.balance-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-}
-
-.balance-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.balance-header span:first-child {
-    color: #cbd5e0;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.rank-badge {
-    background: rgba(34, 197, 94, 0.2);
-    color: #22c55e;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    border: 1px solid rgba(34, 197, 94, 0.3);
-}
-
-.balance-amount {
-    font-size: 48px;
-    font-weight: 800;
-    color: #fbbf24;
-    text-align: center;
-    margin: 10px 0;
-    text-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
-}
-
-.balance-value {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.balance-sub {
-    font-size: 14px;
-    color: #94a3b8;
-    margin-bottom: 4px;
-}
-
-.balance-usd {
-    font-size: 16px;
-    font-weight: 700;
-    color: #22c55e;
-    background: rgba(34, 197, 94, 0.1);
-    padding: 4px 12px;
-    border-radius: 10px;
-    display: inline-block;
-}
-
-.balance-stats {
-    display: flex;
-    justify-content: space-around;
-    padding-top: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.stat-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #cbd5e0;
-    font-size: 14px;
-}
-
-.stat-item i {
-    color: #60a5fa;
-}
-
-/* Mining Section */
-.mining-section {
-    background: rgba(30, 41, 59, 0.8);
-    border-radius: 20px;
-    padding: 25px;
-    margin-bottom: 25px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
-    position: relative;
-    padding-bottom: 40px;
-    backdrop-filter: blur(10px);
-}
-
-.mining-section:hover {
-    border-color: rgba(59, 130, 246, 0.4);
-}
-
-.mining-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.mining-header h3 {
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #f8fafc;
-}
-
-.mining-power {
-    background: rgba(245, 158, 11, 0.1);
-    color: #f59e0b;
-    padding: 6px 12px;
-    border-radius: 15px;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.mine-btn {
-    width: 100%;
-    background: linear-gradient(135deg, #3b82f6, #6366f1);
-    border: none;
-    border-radius: 15px;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    color: white;
-    font-size: 16px;
-    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
-    margin-bottom: 15px;
-    position: relative;
-    z-index: 10;
 }
 
-.mine-btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+.back-btn:hover {
+    background: rgba(59, 130, 246, 0.2);
+    transform: scale(1.1);
 }
 
-.mine-btn:active:not(:disabled) {
-    transform: scale(0.98);
-}
-
-.mine-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.mine-icon {
-    font-size: 24px;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 12px;
-    border-radius: 12px;
-    animation: hammerSwing 3s ease-in-out infinite;
-    transform-origin: bottom center;
-}
-
-@keyframes hammerSwing {
-    0%, 100% { 
-        transform: rotate(0deg) translateY(0);
-    }
-    25% { 
-        transform: rotate(-15deg) translateY(-3px);
-    }
-    50% { 
-        transform: rotate(0deg) translateY(0);
-    }
-    75% { 
-        transform: rotate(8deg) translateY(-2px);
-    }
-}
-
-.mine-ready .mine-icon {
-    animation: hammerSwing 1.5s ease-in-out infinite;
-}
-
-.mine-text {
-    flex: 1;
-    text-align: center;
-}
-
-.mine-title {
-    font-size: 14px;
-    color: #cbd5e0;
-    margin-bottom: 4px;
-}
-
-.mine-reward {
-    font-size: 22px;
-    font-weight: 800;
-    color: #fbbf24;
-    text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
-}
-
-.mine-subtitle {
-    font-size: 12px;
-    color: #94a3b8;
-    margin-top: 2px;
-}
-
-.mine-cooldown {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-    padding: 8px 12px;
-    border-radius: 10px;
-    font-size: 16px;
-    font-family: monospace;
+.page-header h2 {
+    font-size: 20px;
     font-weight: 700;
-    min-width: 60px;
-    text-align: center;
-}
-
-.next-rank-bonus {
-    text-align: center;
-    color: #f59e0b;
-    font-size: 13px;
-    font-weight: 600;
-    margin: 10px 0;
-    padding: 6px 12px;
-    background: rgba(245, 158, 11, 0.1);
-    border-radius: 10px;
-    border: 1px solid rgba(245, 158, 11, 0.2);
-}
-
-.energy-belt {
-    position: absolute;
-    bottom: 15px;
-    left: 25px;
-    right: 25px;
-    height: 12px;
-    background: rgba(30, 41, 59, 0.9);
-    border-radius: 10px;
-    border: 2px solid rgba(59, 130, 246, 0.3);
-    overflow: hidden;
-    z-index: 5;
-}
-
-.belt-fill {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, 
-        #ef4444 0%, 
-        #f59e0b 25%, 
-        #fbbf24 50%, 
-        #22c55e 75%, 
-        #10b981 100%
-    );
-    border-radius: 8px;
-    transition: width 0.5s ease;
-    box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
-}
-
-.belt-knob {
-    position: absolute;
-    top: -6px;
-    left: 0%;
-    width: 20px;
-    height: 20px;
-    background: #fbbf24;
-    border-radius: 50%;
-    border: 3px solid #1e293b;
-    box-shadow: 0 0 15px rgba(251, 191, 36, 0.8);
-    z-index: 6;
-    transition: left 0.5s ease;
-    transform: translateX(-50%);
-}
-
-.mining-tip {
-    background: rgba(139, 92, 246, 0.1);
-    color: #8b5cf6;
-    padding: 12px 15px;
-    border-radius: 10px;
-    font-size: 13px;
+    color: #f8fafc;
     display: flex;
     align-items: center;
     gap: 10px;
-}
-
-/* Referral System */
-.referral-section {
-    background: rgba(30, 41, 59, 0.8);
-    border-radius: 20px;
-    padding: 25px;
-    margin-bottom: 25px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-}
-
-.referral-section:hover {
-    border-color: rgba(59, 130, 246, 0.4);
-}
-
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-}
-
-.section-header h3 {
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #f8fafc;
-}
-
-.referral-bonus {
-    background: rgba(34, 197, 94, 0.1);
-    color: #22c55e;
-    padding: 6px 12px;
-    border-radius: 15px;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.referral-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-    margin-bottom: 25px;
-}
-
-.ref-stat {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 15px;
-    border-radius: 12px;
-    text-align: center;
-}
-
-.ref-stat-value {
-    font-size: 24px;
-    font-weight: 700;
-    color: #fbbf24;
-    margin-bottom: 5px;
-}
-
-.ref-stat-label {
-    font-size: 12px;
-    color: #94a3b8;
-}
-
-.referral-link-container {
-    margin-bottom: 25px;
-}
-
-.input-group {
-    display: flex;
-    background: rgba(15, 23, 42, 0.8);
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 15px;
-}
-
-.input-icon {
-    padding: 15px;
-    background: rgba(59, 130, 246, 0.1);
-    color: #60a5fa;
-    display: flex;
-    align-items: center;
-}
-
-.referral-input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    padding: 15px;
-    color: white;
-    font-size: 14px;
-    outline: none;
-    font-family: monospace;
-    width: 100%;
-    text-align: left;
-    opacity: 1 !important;
-    visibility: visible !important;
-    display: block !important;
-}
-
-.copy-btn {
-    background: linear-gradient(135deg, #3b82f6, #6366f1);
-    border: none;
-    padding: 0 20px;
-    color: white;
-    cursor: pointer;
-    transition: background 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 70px;
-}
-
-.copy-btn:hover {
-    background: linear-gradient(135deg, #4f93ff, #7c7dff);
-}
-
-.referral-actions {
-    display: flex;
-    gap: 10px;
-}
-
-.action-btn {
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.3s;
-    background: linear-gradient(135deg, #3b82f6, #6366f1);
-    color: white;
-}
-
-.action-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
-}
-
-.referral-info {
-    background: rgba(15, 23, 42, 0.8);
-    border-radius: 15px;
-    padding: 20px;
-    margin-top: 20px;
-}
-
-.referral-info h4 {
-    margin-bottom: 15px;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #f8fafc;
-}
-
-.referral-info p {
-    color: #94a3b8;
-    font-size: 14px;
-    line-height: 1.5;
-}
-
-/* Progress Section */
-.progress-section {
-    background: rgba(30, 41, 59, 0.8);
-    border-radius: 20px;
-    padding: 25px;
-    margin-bottom: 25px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-}
-
-.progress-section:hover {
-    border-color: rgba(59, 130, 246, 0.4);
-}
-
-.progress-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.progress-header h4 {
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #f8fafc;
-}
-
-.next-rank {
-    background: rgba(245, 158, 11, 0.1);
-    color: #f59e0b;
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-size: 12px;
-}
-
-.progress-bar {
-    height: 10px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 5px;
-    overflow: hidden;
-    margin-bottom: 20px;
-}
-
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-    border-radius: 5px;
-    width: 50%;
-    transition: width 0.5s ease;
-}
-
-.progress-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-}
-
-.progress-stat {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 12px;
-    border-radius: 10px;
-    text-align: center;
-}
-
-.progress-stat span:first-child {
-    color: #94a3b8;
-    font-size: 12px;
-    display: block;
-    margin-bottom: 5px;
-}
-
-.progress-stat span:last-child {
-    color: #fbbf24;
-    font-weight: 600;
-    font-size: 14px;
 }
 
 /* =========================================== */
@@ -3667,269 +2412,6 @@ body {
 }
 
 /* =========================================== */
-/* History Modal Design */
-/* =========================================== */
-
-.history-modal .modal-content {
-    max-width: 500px;
-    max-height: 85vh;
-}
-
-.history-tabs {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 25px;
-    padding: 5px;
-    background: rgba(15, 23, 42, 0.8);
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.tab-btn {
-    flex: 1;
-    padding: 12px 15px;
-    border: none;
-    background: transparent;
-    color: #94a3b8;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.3s;
-    position: relative;
-}
-
-.tab-btn.active {
-    background: rgba(59, 130, 246, 0.2);
-    color: #60a5fa;
-}
-
-.tab-btn:hover:not(.active) {
-    background: rgba(255, 255, 255, 0.05);
-    color: #cbd5e0;
-}
-
-.tab-badge {
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    background: #ef4444;
-    color: white;
-    font-size: 10px;
-    font-weight: 700;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.history-content {
-    max-height: 60vh;
-    overflow-y: auto;
-    padding-right: 5px;
-}
-
-.section-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
-    color: #f8fafc;
-    font-weight: 600;
-    font-size: 16px;
-}
-
-.empty-pending, .empty-history-section {
-    text-align: center;
-    padding: 40px 20px;
-    background: rgba(15, 23, 42, 0.8);
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.empty-icon-small {
-    font-size: 40px;
-    color: #94a3b8;
-    margin-bottom: 15px;
-}
-
-.empty-text {
-    color: #94a3b8;
-    font-size: 14px;
-}
-
-.transaction-card {
-    background: rgba(15, 23, 42, 0.8);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s;
-}
-
-.transaction-card:hover {
-    border-color: rgba(59, 130, 246, 0.4);
-    transform: translateY(-2px);
-}
-
-.transaction-card.pending {
-    border-left: 4px solid #f59e0b;
-}
-
-.transaction-card.completed {
-    border-left: 4px solid #22c55e;
-}
-
-.transaction-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.transaction-type {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.type-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-}
-
-.type-icon.deposit {
-    background: rgba(34, 197, 94, 0.15);
-    color: #22c55e;
-}
-
-.type-icon.withdrawal {
-    background: rgba(59, 130, 246, 0.15);
-    color: #60a5fa;
-}
-
-.type-info {
-    flex: 1;
-}
-
-.type-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #f8fafc;
-    margin-bottom: 4px;
-}
-
-.type-subtitle {
-    font-size: 12px;
-    color: #94a3b8;
-}
-
-.transaction-status {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.pending-badge {
-    background: rgba(245, 158, 11, 0.1);
-    color: #f59e0b;
-    border: 1px solid rgba(245, 158, 11, 0.3);
-}
-
-.approved-badge {
-    background: rgba(34, 197, 94, 0.1);
-    color: #22c55e;
-    border: 1px solid rgba(34, 197, 94, 0.3);
-}
-
-.completed-badge {
-    background: rgba(59, 130, 246, 0.1);
-    color: #60a5fa;
-    border: 1px solid rgba(59, 130, 246, 0.3);
-}
-
-.transaction-details {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.detail-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.detail-row span:first-child {
-    color: #94a3b8;
-    font-size: 13px;
-}
-
-.detail-value {
-    color: #f8fafc;
-    font-weight: 600;
-    font-size: 13px;
-}
-
-.detail-value.hash {
-    font-family: monospace;
-    background: rgba(0, 0, 0, 0.3);
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-}
-
-.transaction-note {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 12px;
-    background: rgba(245, 158, 11, 0.1);
-    border-radius: 8px;
-    border: 1px solid rgba(245, 158, 11, 0.2);
-    color: #f59e0b;
-    font-size: 12px;
-}
-
-.empty-history {
-    text-align: center;
-    padding: 50px 20px;
-    background: rgba(15, 23, 42, 0.8);
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    margin-top: 20px;
-}
-
-.empty-icon {
-    font-size: 60px;
-    color: #94a3b8;
-    margin-bottom: 20px;
-}
-
-.empty-title {
-    color: #f8fafc;
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 10px;
-}
-
-/* =========================================== */
 /* Responsive Design */
 /* =========================================== */
 
@@ -3986,25 +2468,9 @@ body {
         padding: 3px 10px;
     }
     
-    .referral-stats,
-    .progress-stats {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-    
-    .referral-actions {
-        flex-direction: column;
-    }
-    
     .mining-section {
         padding: 20px;
         padding-bottom: 35px;
-    }
-    
-    .next-rank-bonus {
-        font-size: 12px;
-        padding: 5px 10px;
-        margin: 8px 0;
     }
     
     .energy-belt {
@@ -4019,101 +2485,22 @@ body {
         top: -5px;
     }
     
-    .mine-reward {
-        font-size: 20px !important;
-    }
-    
-    .mine-cooldown {
-        font-size: 14px !important;
-        min-width: 50px !important;
-    }
-    
-    .crypto-card.compact {
-        min-height: 130px !important;
-        padding: 15px !important;
-    }
-    
-    .crypto-card.compact .crypto-title h3 {
-        font-size: 14px !important;
-    }
-    
-    .crypto-card.compact .crypto-symbol {
-        font-size: 11px !important;
-    }
-    
-    .crypto-card.compact .crypto-price {
-        font-size: 11px !important;
-        padding: 3px 8px !important;
-    }
-    
-    .crypto-card.compact .crypto-balance .balance-amount {
-        font-size: 20px !important;
-    }
-    
-    .crypto-card.compact .crypto-value {
-        font-size: 13px !important;
-        padding: 6px 10px !important;
-    }
-    
-    .crypto-card.compact .crypto-actions .action-btn-small {
-        font-size: 11px !important;
-        padding: 6px !important;
-    }
-    
-    .wallet-quick-actions.compact {
-        padding: 15px !important;
-    }
-    
-    .wallet-quick-actions.compact .quick-action {
-        padding: 10px 6px !important;
-        min-height: 65px !important;
-    }
-    
-    .wallet-quick-actions.compact .action-icon {
-        width: 28px !important;
-        height: 28px !important;
-        font-size: 14px !important;
-    }
-    
-    .wallet-quick-actions.compact .action-text {
-        font-size: 10px !important;
-    }
-    
-    .total-balance-card.compact {
-        padding: 15px !important;
-        height: 65px !important;
-    }
-    
-    .total-balance-card.compact .total-balance-amount {
-        font-size: 24px !important;
-    }
-    
-    .total-balance-card.compact .total-balance-label {
-        font-size: 13px !important;
-    }
-    
-    .total-balance-card.compact .total-balance-sub {
-        font-size: 10px !important;
-    }
-    
-    .visa-real-card {
+    .card-flip-container {
         max-width: 280px;
         height: 176px;
     }
     
-    .notification-bar {
-        bottom: 70px;
-        height: 32px;
+    .airdrop-strip {
+        font-size: 11px;
+        padding: 8px 12px;
     }
     
-    .notification-bar span {
-        font-size: 12px;
-        padding: 0 15px;
+    .info-grid {
+        grid-template-columns: 1fr;
     }
     
     .fab-button {
         bottom: 80px;
-        right: 15px;
         width: 52px;
         height: 52px;
         font-size: 22px;
@@ -4190,17 +2577,9 @@ body {
         font-size: 18px !important;
     }
     
-    .ref-stat-value {
-        font-size: 20px;
-    }
-    
     .app-header {
         height: 70px;
         padding: 10px 15px;
-    }
-    
-    .logo {
-        gap: 8px;
     }
     
     .logo i {
@@ -4236,10 +2615,6 @@ body {
         padding-bottom: 30px;
     }
     
-    .next-rank-bonus {
-        font-size: 11px;
-    }
-    
     .energy-belt {
         left: 15px;
         right: 15px;
@@ -4252,45 +2627,19 @@ body {
         top: -4px;
     }
     
-    .crypto-card.compact {
-        min-height: 120px !important;
-        padding: 12px !important;
-    }
-    
-    .crypto-card.compact .crypto-title h3 {
-        font-size: 13px !important;
-    }
-    
-    .crypto-card.compact .crypto-symbol {
-        font-size: 10px !important;
-    }
-    
-    .crypto-card.compact .crypto-price {
-        font-size: 10px !important;
-        padding: 2px 6px !important;
-    }
-    
-    .crypto-card.compact .crypto-balance .balance-amount {
-        font-size: 18px !important;
-    }
-    
-    .crypto-card.compact .crypto-value {
-        font-size: 12px !important;
-        padding: 5px 8px !important;
-    }
-    
-    .crypto-card.compact .crypto-actions .action-btn-small {
-        font-size: 10px !important;
-        padding: 5px !important;
-    }
-    
-    .visa-real-card {
+    .card-flip-container {
         max-width: 260px;
         height: 164px;
     }
     
-    .visa-real-card .card-number {
+    .card-number {
         font-size: 14px;
+    }
+    
+    .airdrop-strip {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 5px;
     }
     
     .fab-button {
@@ -4324,10 +2673,6 @@ body {
         font-size: 30px;
     }
     
-    .balance-currency {
-        font-size: 20px;
-    }
-    
     .notification-bar {
         height: 30px;
         bottom: 65px;
@@ -4355,4 +2700,107 @@ body {
     .nav-item span {
         font-size: 10px;
     }
+}
+
+/* =========================================== */
+/* Original App Header Styles */
+/* =========================================== */
+
+.app-header {
+    height: 78px;
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 2;
+}
+
+.logo i {
+    font-size: 26px;
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.1);
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.logo h1 {
+    font-size: 18px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #fbbf24, #f59e0b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    white-space: nowrap;
+}
+
+.token-price {
+    font-size: 11px;
+    color: #22c55e;
+    font-weight: 600;
+    margin-top: 2px;
+    background: rgba(34, 197, 94, 0.1);
+    padding: 3px 8px;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.user-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+    z-index: 2;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    flex-shrink: 0;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+}
+
+.username {
+    font-weight: 600;
+    font-size: 14px;
+    color: #f8fafc;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+}
+
+.user-id {
+    font-size: 11px;
+    color: #94a3b8;
+    font-family: monospace;
+    opacity: 0.8;
 }
