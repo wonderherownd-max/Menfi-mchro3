@@ -79,7 +79,15 @@ let dailyStats = {
     lastReset: Date.now()
 };
 
-// Configuration
+// Staking Data
+let stakingData = {
+    activeStakes: [],
+    totalStaked: 0,
+    totalRewards: 0,
+    lastUpdate: Date.now()
+};
+
+// Configuration - محدث بالقيم الجديدة
 const CONFIG = {
     MINE_COOLDOWN: 14400000,
     
@@ -95,14 +103,15 @@ const CONFIG = {
     REFERRAL_REWARD: 0,
     REFERRER_REWARD: 50,
     
+    // الأسعار المحدثة
     MWH_TO_USD: 0.001,
-    BNB_TO_USD: 875,
-    TON_TO_USD: 1.6,
-    ETH_TO_USD: 3000,
+    BNB_TO_USD: 605,
+    TON_TO_USD: 1.32,
+    ETH_TO_USD: 1926,
     
     MIN_SWAP: 10000,
     MWH_TO_USDT_RATE: 1000,
-    BNB_TO_MWH_RATE: 870000,
+    BNB_TO_MWH_RATE: 605000,
     
     MIN_WITHDRAWAL: 50,
     MIN_DEPOSIT_USDT: 10,
@@ -113,14 +122,57 @@ const CONFIG = {
     
     MIN_TRANSACTION_LENGTH: 64,
     
-    // New Earning Config
-    AD_REWARD: 25,
-    DAILY_AD_LIMIT: 100,
+    // New Earning Config - محدث
+    AD_REWARD: 50,
+    DAILY_AD_LIMIT: 50,
+    
     REFERRAL_CHALLENGES: [
         { target: 10, reward: 1000, claimed: false },
         { target: 25, reward: 3000, claimed: false },
         { target: 100, reward: 12000, bonusBNB: 0.05, claimed: false }
-    ]
+    ],
+    
+    // Staking Config - جديد
+    STAKING_PLANS: [
+        { 
+            name: 'Fast Pool', 
+            days: 7, 
+            return: 40, 
+            minAmount: 5000, 
+            maxAmount: 100000,
+            color: 'fast',
+            icon: 'fa-rocket'
+        },
+        { 
+            name: 'Medium Pool', 
+            days: 15, 
+            return: 60, 
+            minAmount: 50000, 
+            maxAmount: 500000,
+            color: 'medium',
+            icon: 'fa-chart-line'
+        },
+        { 
+            name: 'Gold Pool', 
+            days: 30, 
+            return: 70, 
+            minAmount: 100000, 
+            maxAmount: 10000000,
+            color: 'gold',
+            icon: 'fa-crown'
+        },
+        { 
+            name: 'VIP Pool', 
+            days: 90, 
+            return: 80, 
+            minAmount: 250000, 
+            maxAmount: 25000000,
+            color: 'vip',
+            icon: 'fa-gem'
+        }
+    ],
+    
+    EARLY_WITHDRAWAL_PENALTY: 20 // 20% penalty
 };
 
 // ============================================
@@ -1072,7 +1124,241 @@ async function searchUserById() {
 }
 
 // ============================================
-// NEW: EARNING SYSTEM FUNCTIONS
+// STAKING SYSTEM - MWH POOLS
+// ============================================
+
+function initStakingPage() {
+    console.log("💧 Initializing staking page...");
+    updateStakingStats();
+    setupStakingCalculators();
+}
+
+function updateStakingStats() {
+    const totalStakedEl = document.getElementById('totalStaked');
+    const expectedReturnsEl = document.getElementById('expectedReturns');
+    const activePlansEl = document.getElementById('activePlans');
+    
+    if (totalStakedEl) {
+        totalStakedEl.textContent = formatNumber(stakingData.totalStaked) + ' MWH';
+    }
+    
+    if (expectedReturnsEl) {
+        expectedReturnsEl.textContent = formatNumber(stakingData.totalRewards) + ' MWH';
+    }
+    
+    if (activePlansEl) {
+        activePlansEl.textContent = stakingData.activeStakes.length;
+    }
+}
+
+function setupStakingCalculators() {
+    const fastInput = document.getElementById('fastPoolAmount');
+    const mediumInput = document.getElementById('mediumPoolAmount');
+    const goldInput = document.getElementById('goldPoolAmount');
+    const vipInput = document.getElementById('vipPoolAmount');
+    
+    if (fastInput) {
+        fastInput.addEventListener('input', function() {
+            calculateStakingReward('fast', this.value);
+        });
+    }
+    
+    if (mediumInput) {
+        mediumInput.addEventListener('input', function() {
+            calculateStakingReward('medium', this.value);
+        });
+    }
+    
+    if (goldInput) {
+        goldInput.addEventListener('input', function() {
+            calculateStakingReward('gold', this.value);
+        });
+    }
+    
+    if (vipInput) {
+        vipInput.addEventListener('input', function() {
+            calculateStakingReward('vip', this.value);
+        });
+    }
+}
+
+function calculateStakingReward(poolType, amount) {
+    const plan = CONFIG.STAKING_PLANS.find(p => 
+        p.color === poolType || 
+        (poolType === 'fast' && p.name === 'Fast Pool') ||
+        (poolType === 'medium' && p.name === 'Medium Pool') ||
+        (poolType === 'gold' && p.name === 'Gold Pool') ||
+        (poolType === 'vip' && p.name === 'VIP Pool')
+    );
+    
+    if (!plan) return;
+    
+    const numAmount = parseFloat(amount) || 0;
+    let result = 0;
+    
+    if (numAmount >= plan.minAmount && numAmount <= plan.maxAmount) {
+        result = numAmount * (1 + plan.return / 100);
+    }
+    
+    const resultEl = document.getElementById(`${poolType}PoolResult`);
+    if (resultEl) {
+        resultEl.textContent = formatNumber(result) + ' MWH';
+    }
+}
+
+function stakeMWH(planIndex) {
+    const plan = CONFIG.STAKING_PLANS[planIndex];
+    if (!plan) return;
+    
+    let amount = 0;
+    const inputId = `${plan.color}PoolAmount`;
+    const input = document.getElementById(inputId);
+    
+    if (input) {
+        amount = parseFloat(input.value) || 0;
+    }
+    
+    if (amount < plan.minAmount) {
+        showMessage(`❌ Minimum stake for ${plan.name} is ${plan.minAmount.toLocaleString()} MWH`, 'error');
+        return;
+    }
+    
+    if (amount > plan.maxAmount) {
+        showMessage(`❌ Maximum stake for ${plan.name} is ${plan.maxAmount.toLocaleString()} MWH`, 'error');
+        return;
+    }
+    
+    if (amount > walletData.mwhBalance) {
+        showMessage(`❌ Insufficient MWH balance. You have ${walletData.mwhBalance.toLocaleString()} MWH`, 'error');
+        return;
+    }
+    
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + plan.days);
+    
+    const reward = amount * (plan.return / 100);
+    
+    const stake = {
+        id: 'stake_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        plan: plan.name,
+        planIndex: planIndex,
+        amount: amount,
+        reward: reward,
+        totalReturn: amount + reward,
+        startDate: Date.now(),
+        endDate: endDate.getTime(),
+        days: plan.days,
+        status: 'active',
+        earlyPenalty: CONFIG.EARLY_WITHDRAWAL_PENALTY
+    };
+    
+    stakingData.activeStakes.push(stake);
+    stakingData.totalStaked += amount;
+    stakingData.totalRewards += reward;
+    
+    walletData.mwhBalance -= amount;
+    
+    saveStakingData();
+    saveWalletData();
+    saveUserData();
+    
+    updateStakingStats();
+    updateWalletUI();
+    updateUI();
+    
+    showMessage(`✅ Successfully staked ${amount.toLocaleString()} MWH in ${plan.name}! You will receive ${(amount + reward).toLocaleString()} MWH after ${plan.days} days.`, 'success');
+    
+    if (input) {
+        input.value = '';
+    }
+}
+
+function earlyWithdrawal(stakeId) {
+    const stakeIndex = stakingData.activeStakes.findIndex(s => s.id === stakeId);
+    if (stakeIndex === -1) return;
+    
+    const stake = stakingData.activeStakes[stakeIndex];
+    const penalty = stake.amount * (CONFIG.EARLY_WITHDRAWAL_PENALTY / 100);
+    const returnAmount = stake.amount - penalty;
+    
+    if (!confirm(`Early withdrawal will incur a ${CONFIG.EARLY_WITHDRAWAL_PENALTY}% penalty (${penalty.toLocaleString()} MWH). You will receive ${returnAmount.toLocaleString()} MWH. Continue?`)) {
+        return;
+    }
+    
+    stakingData.activeStakes.splice(stakeIndex, 1);
+    stakingData.totalStaked -= stake.amount;
+    stakingData.totalRewards -= stake.reward;
+    
+    walletData.mwhBalance += returnAmount;
+    
+    saveStakingData();
+    saveWalletData();
+    updateStakingStats();
+    updateWalletUI();
+    
+    showMessage(`⚠️ Early withdrawal processed. You received ${returnAmount.toLocaleString()} MWH (${penalty.toLocaleString()} MWH penalty).`, 'warning');
+}
+
+function checkCompletedStakes() {
+    const now = Date.now();
+    let completed = false;
+    
+    stakingData.activeStakes = stakingData.activeStakes.filter(stake => {
+        if (now >= stake.endDate) {
+            walletData.mwhBalance += stake.totalReturn;
+            completed = true;
+            showMessage(`🎉 Your stake in ${stake.plan} has completed! You received ${stake.totalReturn.toLocaleString()} MWH.`, 'success');
+            return false;
+        }
+        return true;
+    });
+    
+    if (completed) {
+        saveStakingData();
+        saveWalletData();
+        updateStakingStats();
+        updateWalletUI();
+    }
+}
+
+function saveStakingData() {
+    if (!userData.userId) return;
+    
+    try {
+        const storageKey = `vip_staking_${userData.userId}`;
+        localStorage.setItem(storageKey, JSON.stringify({
+            activeStakes: stakingData.activeStakes,
+            totalStaked: stakingData.totalStaked,
+            totalRewards: stakingData.totalRewards,
+            lastUpdate: Date.now()
+        }));
+        console.log("💾 Staking data saved");
+    } catch (error) {
+        console.error("❌ Staking save error:", error);
+    }
+}
+
+function loadStakingData() {
+    if (!userData.userId) return;
+    
+    try {
+        const storageKey = `vip_staking_${userData.userId}`;
+        const saved = localStorage.getItem(storageKey);
+        
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            stakingData.activeStakes = parsed.activeStakes || [];
+            stakingData.totalStaked = parsed.totalStaked || 0;
+            stakingData.totalRewards = parsed.totalRewards || 0;
+            console.log("✅ Staking data loaded");
+        }
+    } catch (error) {
+        console.error("❌ Staking load error:", error);
+    }
+}
+
+// ============================================
+// EARNING SYSTEM FUNCTIONS
 // ============================================
 
 function initEarningPage() {
@@ -1126,7 +1412,7 @@ function updateResetCountdown() {
     
     const countdownElement = document.getElementById('dailyResetCountdown');
     if (countdownElement) {
-        countdownElement.textContent = `Daily reset in: ${hours}h ${minutes}m`;
+        countdownElement.textContent = `Resets in: ${hours}h ${minutes}m`;
     }
 }
 
@@ -1161,7 +1447,7 @@ function updateEarningUI() {
             watchAdButton.innerHTML = '<i class="fas fa-ban"></i> Daily Limit Reached';
         } else {
             watchAdButton.disabled = false;
-            watchAdButton.innerHTML = '<i class="fas fa-play"></i> Watch Ad & Earn 25 MWH';
+            watchAdButton.innerHTML = '<i class="fas fa-play"></i> Watch Ad & Earn 50 MWH';
         }
     }
     
@@ -1244,7 +1530,7 @@ function watchAd() {
         }).catch(e => {
             if (watchAdButton) {
                 watchAdButton.disabled = false;
-                watchAdButton.innerHTML = '<i class="fas fa-play"></i> Watch Ad & Earn 25 MWH';
+                watchAdButton.innerHTML = '<i class="fas fa-play"></i> Watch Ad & Earn 50 MWH';
             }
             console.log("Ad closed or error:", e);
         });
@@ -1253,7 +1539,7 @@ function watchAd() {
         console.error("Ad error:", error);
         if (watchAdButton) {
             watchAdButton.disabled = false;
-            watchAdButton.innerHTML = '<i class="fas fa-play"></i> Watch Ad & Earn 25 MWH';
+            watchAdButton.innerHTML = '<i class="fas fa-play"></i> Watch Ad & Earn 50 MWH';
         }
         showMessage('❌ Ad service not available', 'error');
     }
@@ -1285,7 +1571,7 @@ function rewardAdWatched() {
             watchAdButton.innerHTML = '<i class="fas fa-ban"></i> Daily Limit Reached';
         } else {
             watchAdButton.disabled = false;
-            watchAdButton.innerHTML = '<i class="fas fa-play"></i> Watch Ad & Earn 25 MWH';
+            watchAdButton.innerHTML = '<i class="fas fa-play"></i> Watch Ad & Earn 50 MWH';
         }
     }
 }
@@ -1384,7 +1670,7 @@ function loadDailyStats() {
 }
 
 // ============================================
-// REAL-TIME LISTENER FOR USER DATA - IMPROVED
+// REAL-TIME LISTENER FOR USER DATA
 // ============================================
 
 function setupRealTimeListeners() {
@@ -1572,7 +1858,7 @@ function updateUserLocalWithdrawal(firebaseId, withdrawalData) {
 }
 
 // ============================================
-// NEW: AUTO-CHECK TRANSACTIONS ON APP START
+// AUTO-CHECK TRANSACTIONS ON APP START
 // ============================================
 
 async function checkAndUpdateTransactionsOnStart() {
@@ -1978,7 +2264,7 @@ function checkAndShowNotification() {
 }
 
 // ============================================
-// TRANSACTION HISTORY SYSTEM - IMPROVED WITH REJECTED STATUS
+// TRANSACTION HISTORY SYSTEM
 // ============================================
 
 function showTransactionHistory() {
@@ -3254,8 +3540,14 @@ function openSwapModal(currency) {
                                        min="${minSwap}" 
                                        step="${isBNB ? '0.001' : isUSDT ? '0.01' : '1000'}"
                                        oninput="calculateSwap('${fromCurrency}', '${toCurrency}')">
-                                <button class="max-amount-btn-swap" onclick="setMaxSwap('${fromCurrency}')">MAX</button>
                             </div>
+                        </div>
+                        
+                        <!-- زر MAX في المنتصف - تصميم جديد -->
+                        <div class="max-btn-container">
+                            <button class="max-amount-btn-swap-centered" onclick="setMaxSwap('${fromCurrency}')">
+                                <i class="fas fa-bolt"></i> MAX
+                            </button>
                         </div>
                         
                         <div class="swap-amount-section">
@@ -4203,6 +4495,8 @@ async function loadUserData() {
         
         initWallet();
         
+        loadStakingData();
+        
         if (db) {
             await loadUserFromFirebase();
             
@@ -4510,6 +4804,12 @@ async function initApp() {
         
         userData.isInitialized = true;
         
+        // التحقق من الصفحة النشطة
+        const activePage = document.querySelector('.page.active, .container.active');
+        if (activePage?.id === 'poolsPage') {
+            initStakingPage();
+        }
+        
         console.log("✅ App ready! Balance:", userData.balance, "User ID:", userData.userId);
         
         setTimeout(() => {
@@ -4530,6 +4830,8 @@ setInterval(() => {
     if (userData.userId && userData.isInitialized) {
         saveUserData();
         saveWalletData();
+        saveStakingData();
+        checkCompletedStakes();
     }
 }, 30000);
 
@@ -4538,6 +4840,7 @@ window.addEventListener('beforeunload', function() {
         console.log("💾 Saving data before page unload...");
         saveUserData();
         saveWalletData();
+        saveStakingData();
         stopNotificationTimer();
     }
 });
@@ -4609,9 +4912,16 @@ window.minePoints = minePoints;
 
 window.loadAdminPendingRequests = loadAdminPendingRequests;
 
+// دوال Staking الجديدة
+window.initStakingPage = initStakingPage;
+window.calculateStakingReward = calculateStakingReward;
+window.stakeMWH = stakeMWH;
+window.earlyWithdrawal = earlyWithdrawal;
+window.checkCompletedStakes = checkCompletedStakes;
+
 window.switchToPage = switchToPage || function(page) {};
 window.showComingSoon = function() {
-    showMessage('🚧 This feature is coming soon!', 'info');
+    showMessage('🚀 This feature is coming soon!', 'info');
 };
 
-console.log("✅ VIP Mining Wallet v6.5 loaded with Advanced Earning System!");
+console.log("✅ VIP Mining Wallet v6.5 loaded with Advanced Earning System and MWH Pools!");
