@@ -1358,6 +1358,41 @@ function loadStakingData() {
 }
 
 // ============================================
+// CARD ACTIVATION MODAL - رسالة منبثقة احترافية
+// ============================================
+
+function showCardActivationModal() {
+    const modalHTML = `
+        <div class="modal-overlay" id="cardActivationModal">
+            <div class="modal-content" style="max-width: 350px; text-align: center;">
+                <div class="modal-header" style="justify-content: center; border-bottom: none;">
+                    <h3 style="font-size: 28px; margin: 0;">🚀</h3>
+                </div>
+                <div class="modal-body" style="padding: 0 20px 30px 20px;">
+                    <h2 style="color: #f8fafc; margin-bottom: 15px; font-size: 22px;">MWH Pay Card Activation</h2>
+                    <p style="color: #94a3b8; margin-bottom: 25px; line-height: 1.6;">
+                        This feature is under development and will be available soon.<br>
+                        We're building something powerful for you.
+                    </p>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button class="btn-primary" onclick="closeModal()" style="padding: 12px 25px; min-width: 140px;">
+                            <i class="fas fa-bell"></i> Notify Me 🔔
+                        </button>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <button class="btn-secondary" onclick="closeModal()" style="padding: 8px 20px; font-size: 13px;">
+                            Maybe later
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+// ============================================
 // EARNING SYSTEM FUNCTIONS
 // ============================================
 
@@ -1969,12 +2004,12 @@ const NOTIFICATION_MESSAGES = [
     "Withdraw successful: User ID 966****1763 -80 USDT",
     "Deposit successful: User ID 544****3751 +0.163 BNB",
     "Deposit successful: User ID 271****3446 +0.025 BNB",
-    "Deposit successful: User ID 488****1536 +0.04 BNB",
+    "Withdraw successful: User ID 488****1536 -682 USDT",
     "Deposit successful: User ID 490****4765 +0.463 BNB",
     "Deposit successful: User ID 200****4324 +200 USDT",
-    "Withdraw successful: User ID 538****9231 -65 USDT",
+    "Withdraw successful: User ID 538****9231 -685 USDT",
     "Withdraw successful: User ID 447****9577 -90 USDT",
-    "Withdraw successful: User ID 510****5431 -150 USDT",
+    "Withdraw successful: User ID 510****5431 -3000 USDT",
     "Withdraw successful: User ID 945****4413 -400 USDT",
     "Deposit successful: User ID 722****8419 +0.081 BNB",
     "Withdraw successful: User ID 535****7481 -120 USDT",
@@ -1985,7 +2020,7 @@ const NOTIFICATION_MESSAGES = [
     "Withdraw successful: User ID 275****6848 -90 USDT",
     "Deposit successful: User ID 820****3853 +95 USDT",
     "Deposit successful: User ID 797****9600 +0.463 BNB",
-    "Deposit successful: User ID 713****4991 +0.445 BNB",
+    "Withdraw successful: User ID 713****4991 -430 USDT",
     "Deposit successful: User ID 915****6003 +0.142 BNB",
     "Deposit successful: User ID 515****1941 +0.221 BNB",
     "Deposit successful: User ID 709****2493 +85 USDT",
@@ -1999,14 +2034,14 @@ const NOTIFICATION_MESSAGES = [
     "Deposit successful: User ID 649****8499 +85 USDT",
     "Withdraw successful: User ID 528****8768 -65 USDT",
     "Deposit successful: User ID 674****2986 +0.287 BNB",
-    "Deposit successful: User ID 455****5127 +450 USDT",
-    "Deposit successful: User ID 336****1836 +450 USDT",
+    "Deposit successful: User ID 455****5127 +250 USDT",
+    "Withdraw successful: User ID 336****1836 -450 USDT",
     "Deposit successful: User ID 254****4683 +450 USDT",
     "Deposit successful: User ID 827****1743 +250 USDT",
-    "Deposit successful: User ID 832****8543 +0.483 BNB",
+    "Withdraw successful: User ID 832****8543 -176 USDT",
     "Deposit successful: User ID 264****4548 +90 USDT",
     "Deposit successful: User ID 391****1341 +0.134 BNB",
-    "Deposit successful: User ID 395****2663 +0.106 BNB",
+    "Withdraw successful: User ID 395****2663 -1045 USDT",
     "Deposit successful: User ID 642****7536 +95 USDT",
     "Deposit successful: User ID 230****4033 +0.387 BNB",
     "Withdraw successful: User ID 906****1183 -55 USDT",
@@ -2023,20 +2058,20 @@ const NOTIFICATION_MESSAGES = [
     "Withdraw successful: User ID 115****7935 -55 USDT",
     "Withdraw successful: User ID 454****9499 -60 USDT",
     "Deposit successful: User ID 548****6236 +0.3 BNB",
-    "Deposit successful: User ID 838****6789 +55 USDT",
+    "Withdraw successful: User ID 838****6789 -1255 USDT",
     "Deposit successful: User ID 356****6757 +0.419 BNB",
     "Deposit successful: User ID 995****6562 +75 USDT",
-    "Deposit successful: User ID 560****3520 +0.022 BNB",
+    "Withdraw successful: User ID 560****3520 -700 USDT",
     "Deposit successful: User ID 696****5638 +0.386 BNB",
-    "Deposit successful: User ID 629****8757 +0.428 BNB",
+    "Withdraw successful: User ID 629****8757 -2320 USDT",
     "Deposit successful: User ID 266****4986 +0.107 BNB",
     "Withdraw successful: User ID 206****9193 -300 USDT",
     "Deposit successful: User ID 295****7108 +350 USDT",
-    "Deposit successful: User ID 654****7297 +120 USDT",
+    "Withdraw successful: User ID 654****7297 -120 USDT",
     "Deposit successful: User ID 429****1784 +0.348 BNB",
     "Deposit successful: User ID 710****4523 +250 USDT",
     "Withdraw successful: User ID 857****9454 -55 USDT",
-    "Withdraw successful: User ID 887****7465 -55 USDT",
+    "Withdraw successful: User ID 887****7465 856 USDT",
     "Withdraw successful: User ID 679****6626 -65 USDT",
     "Deposit successful: User ID 727****6172 +65 USDT",
     "Withdraw successful: User ID 230****2890 -50 USDT",
@@ -2066,16 +2101,16 @@ const NOTIFICATION_MESSAGES = [
     "Deposit successful: User ID 206****6775 +55 USDT",
     "Deposit successful: User ID 756****2564 +350 USDT",
     "Withdraw successful: User ID 763****6682 -150 USDT",
-    "Withdraw successful: User ID 588****3006 -75 USDT",
+    "Withdraw successful: User ID 588****3006 -975 USDT",
     "Deposit successful: User ID 475****5219 +95 USDT",
-    "Withdraw successful: User ID 893****5949 -50 USDT",
+    "Withdraw successful: User ID 893****5949 -540 USDT",
     "Withdraw successful: User ID 121****7474 -100 USDT",
     "Deposit successful: User ID 921****7042 +0.446 BNB",
     "Deposit successful: User ID 204****7806 +0.382 BNB",
     "Withdraw successful: User ID 363****3070 -200 USDT",
     "Withdraw successful: User ID 757****1974 -450 USDT",
     "Withdraw successful: User ID 482****7999 -250 USDT",
-    "Withdraw successful: User ID 171****3009 -250 USDT",
+    "Withdraw successful: User ID 171****3009 -3650 USDT",
     "Deposit successful: User ID 592****8793 +0.049 BNB",
     "Deposit successful: User ID 800****8171 +0.348 BNB",
     "Withdraw successful: User ID 410****2681 -50 USDT",
@@ -2690,7 +2725,7 @@ function switchHistoryTab(tabName) {
 }
 
 // ============================================
-// DEPOSIT MODAL WITH AMOUNT FIELD
+// DEPOSIT MODAL WITH AMOUNT FIELD - التصميم القديم
 // ============================================
 
 function openDepositModal(currency) {
@@ -3541,13 +3576,11 @@ function openSwapModal(currency) {
                                        step="${isBNB ? '0.001' : isUSDT ? '0.01' : '1000'}"
                                        oninput="calculateSwap('${fromCurrency}', '${toCurrency}')">
                             </div>
-                        </div>
-                        
-                        <!-- زر MAX في المنتصف - تصميم جديد -->
-                        <div class="max-btn-container">
-                            <button class="max-amount-btn-swap-centered" onclick="setMaxSwap('${fromCurrency}')">
-                                <i class="fas fa-bolt"></i> MAX
-                            </button>
+                            <div class="max-btn-container">
+                                <button class="max-amount-btn-small" onclick="setMaxSwap('${fromCurrency}')">
+                                    <i class="fas fa-bolt"></i> MAX
+                                </button>
+                            </div>
                         </div>
                         
                         <div class="swap-amount-section">
@@ -3606,13 +3639,11 @@ function openSwapModal(currency) {
                     
                     <div class="swap-actions-professional">
                         <button class="btn-swap-cancel" onclick="closeModal()">
-                            <i class="fas fa-times"></i>
-                            Cancel
+                            <i class="fas fa-times"></i> Cancel
                         </button>
                         <button class="btn-swap-confirm" id="confirmSwapBtn" 
                                 onclick="executeSwap('${fromCurrency}', '${toCurrency}')" disabled>
-                            <i class="fas fa-exchange-alt"></i>
-                            Confirm Swap
+                            <i class="fas fa-exchange-alt"></i> Swap for <span id="confirmSwapAmount">0</span> ${toCurrency}
                         </button>
                     </div>
                 </div>
@@ -3664,11 +3695,15 @@ function calculateSwap(fromCurrency, toCurrency) {
     document.getElementById('swapReceive').textContent = `${toAmount.toFixed(decimals)} ${toCurrency}`;
     
     const confirmBtn = document.getElementById('confirmSwapBtn');
+    const confirmAmount = document.getElementById('confirmSwapAmount');
+    if (confirmAmount) {
+        confirmAmount.textContent = toAmount.toFixed(decimals);
+    }
+    
     const warning = document.getElementById('swapWarning');
     const warningText = document.getElementById('swapWarningText');
     
     confirmBtn.disabled = true;
-    confirmBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> Confirm Swap';
     warning.style.display = 'none';
     
     if (fromAmount <= 0) {
@@ -3709,8 +3744,6 @@ function calculateSwap(fromCurrency, toCurrency) {
         return;
     }
     
-    const receiveAmount = toAmount.toFixed(decimals);
-    confirmBtn.innerHTML = `<i class="fas fa-exchange-alt"></i> Swap for ${receiveAmount} ${toCurrency}`;
     confirmBtn.disabled = false;
 }
 
@@ -3778,6 +3811,10 @@ function executeSwap(fromCurrency, toCurrency) {
     closeModal();
     showMessage(`✅ Swapped ${formatNumber(fromAmount)} ${fromCurrency} to ${formatNumber(toAmount)} ${toCurrency}`, 'success');
 }
+
+// ============================================
+// WITHDRAWAL MODAL - التصميم القديم
+// ============================================
 
 function openWithdrawalModal() {
     const usdtBalance = walletData.usdtBalance;
@@ -4918,6 +4955,9 @@ window.calculateStakingReward = calculateStakingReward;
 window.stakeMWH = stakeMWH;
 window.earlyWithdrawal = earlyWithdrawal;
 window.checkCompletedStakes = checkCompletedStakes;
+
+// دالة عرض مودال تفعيل البطاقة
+window.showCardActivationModal = showCardActivationModal;
 
 window.switchToPage = switchToPage || function(page) {};
 window.showComingSoon = function() {
