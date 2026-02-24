@@ -1124,13 +1124,22 @@ async function searchUserById() {
 }
 
 // ============================================
-// STAKING SYSTEM - MWH POOLS
+// STAKING SYSTEM - MWH POOLS (مربوط بالمحفظة)
 // ============================================
 
 function initStakingPage() {
     console.log("💧 Initializing staking page...");
+    updateStakingBalance();
     updateStakingStats();
     setupStakingCalculators();
+}
+
+// دالة جديدة لعرض رصيد MWH في صفحة Staking
+function updateStakingBalance() {
+    const balanceEl = document.getElementById('stakingMWHBalance');
+    if (balanceEl) {
+        balanceEl.textContent = formatNumber(walletData.mwhBalance) + ' MWH';
+    }
 }
 
 function updateStakingStats() {
@@ -1139,11 +1148,11 @@ function updateStakingStats() {
     const activePlansEl = document.getElementById('activePlans');
     
     if (totalStakedEl) {
-        totalStakedEl.textContent = formatNumber(stakingData.totalStaked) + ' MWH';
+        totalStakedEl.textContent = formatNumber(stakingData.totalStaked);
     }
     
     if (expectedReturnsEl) {
-        expectedReturnsEl.textContent = formatNumber(stakingData.totalRewards) + ' MWH';
+        expectedReturnsEl.textContent = formatNumber(stakingData.totalRewards);
     }
     
     if (activePlansEl) {
@@ -1210,6 +1219,10 @@ function stakeMWH(planIndex) {
     const plan = CONFIG.STAKING_PLANS[planIndex];
     if (!plan) return;
     
+    // تحديث الرصيد من المحفظة قبل التحقق
+    const currentBalance = walletData.mwhBalance;
+    updateStakingBalance();
+    
     let amount = 0;
     const inputId = `${plan.color}PoolAmount`;
     const input = document.getElementById(inputId);
@@ -1218,26 +1231,49 @@ function stakeMWH(planIndex) {
         amount = parseFloat(input.value) || 0;
     }
     
+    // التحقق من صحة المبلغ
+    if (amount <= 0) {
+        showMessage('❌ Please enter a valid amount to stake', 'error');
+        return;
+    }
+    
+    // التحقق من الحد الأدنى
     if (amount < plan.minAmount) {
-        showMessage(`❌ Minimum stake for ${plan.name} is ${plan.minAmount.toLocaleString()} MWH`, 'error');
+        const needed = plan.minAmount - amount;
+        showMessage(
+            `❌ Insufficient amount. Minimum stake for ${plan.name} is ${plan.minAmount.toLocaleString()} MWH. You need ${needed.toLocaleString()} more MWH.`, 
+            'error'
+        );
         return;
     }
     
+    // التحقق من الحد الأقصى
     if (amount > plan.maxAmount) {
-        showMessage(`❌ Maximum stake for ${plan.name} is ${plan.maxAmount.toLocaleString()} MWH`, 'error');
+        showMessage(
+            `❌ Maximum stake for ${plan.name} is ${plan.maxAmount.toLocaleString()} MWH.`, 
+            'error'
+        );
         return;
     }
     
-    if (amount > walletData.mwhBalance) {
-        showMessage(`❌ Insufficient MWH balance. You have ${walletData.mwhBalance.toLocaleString()} MWH`, 'error');
+    // التحقق من رصيد المحفظة (مربوط فعلياً)
+    if (amount > currentBalance) {
+        const needed = amount - currentBalance;
+        showMessage(
+            `❌ Insufficient MWH balance. You have ${currentBalance.toLocaleString()} MWH, need ${needed.toLocaleString()} more MWH.`, 
+            'error'
+        );
         return;
     }
     
+    // حساب تاريخ الانتهاء
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + plan.days);
     
+    // حساب المكافأة
     const reward = amount * (plan.return / 100);
     
+    // إنشاء كائن الرهن
     const stake = {
         id: 'stake_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
         plan: plan.name,
@@ -1252,22 +1288,32 @@ function stakeMWH(planIndex) {
         earlyPenalty: CONFIG.EARLY_WITHDRAWAL_PENALTY
     };
     
+    // تحديث بيانات الرهن
     stakingData.activeStakes.push(stake);
     stakingData.totalStaked += amount;
     stakingData.totalRewards += reward;
     
+    // خصم المبلغ من المحفظة (ربط فعلي)
     walletData.mwhBalance -= amount;
     
+    // حفظ جميع البيانات
     saveStakingData();
     saveWalletData();
     saveUserData();
     
+    // تحديث واجهات المستخدم
+    updateStakingBalance();
     updateStakingStats();
     updateWalletUI();
     updateUI();
     
-    showMessage(`✅ Successfully staked ${amount.toLocaleString()} MWH in ${plan.name}! You will receive ${(amount + reward).toLocaleString()} MWH after ${plan.days} days.`, 'success');
+    // رسالة نجاح
+    showMessage(
+        `✅ Successfully staked ${amount.toLocaleString()} MWH in ${plan.name}! You will receive ${(amount + reward).toLocaleString()} MWH after ${plan.days} days.`, 
+        'success'
+    );
     
+    // تفريغ حقل الإدخال
     if (input) {
         input.value = '';
     }
@@ -1293,6 +1339,7 @@ function earlyWithdrawal(stakeId) {
     
     saveStakingData();
     saveWalletData();
+    updateStakingBalance();
     updateStakingStats();
     updateWalletUI();
     
@@ -1316,6 +1363,7 @@ function checkCompletedStakes() {
     if (completed) {
         saveStakingData();
         saveWalletData();
+        updateStakingBalance();
         updateStakingStats();
         updateWalletUI();
     }
@@ -1362,6 +1410,21 @@ function loadStakingData() {
 // ============================================
 
 function showCardActivationModal() {
+    // تأثير اهتزاز البطاقة
+    const card = document.getElementById('visaRealCard');
+    if (card) {
+        card.classList.add('card-shake');
+        card.classList.add('card-glow');
+        
+        setTimeout(() => {
+            card.classList.remove('card-shake');
+        }, 500);
+        
+        setTimeout(() => {
+            card.classList.remove('card-glow');
+        }, 1000);
+    }
+    
     const modalHTML = `
         <div class="modal-overlay" id="cardActivationModal">
             <div class="modal-content" style="max-width: 350px; text-align: center;">
@@ -1596,6 +1659,7 @@ function rewardAdWatched() {
     updateUI();
     updateWalletUI();
     updateEarningUI();
+    updateStakingBalance(); // تحديث رصيد Staking
     
     showMessage(`✅ +${reward} MWH earned from watching ad!`, 'success');
     
@@ -1647,6 +1711,7 @@ function claimReferralChallenge(challengeIndex) {
     updateUI();
     updateWalletUI();
     updateEarningUI();
+    updateStakingBalance(); // تحديث رصيد Staking
     
     let message = `✅ +${challenge.reward} MWH earned from referral challenge!`;
     if (challenge.bonusBNB) {
@@ -1768,6 +1833,7 @@ function updateUserLocalDeposit(firebaseId, depositData) {
             if (depositData.currency === 'MWH') {
                 userData.balance += depositData.amount;
                 walletData.mwhBalance = userData.balance;
+                updateStakingBalance(); // تحديث رصيد Staking
                 showMessage(`✅ Deposit approved! +${depositData.amount} MWH added`, 'success');
             } else if (depositData.currency === 'USDT') {
                 walletData.usdtBalance += depositData.amount;
@@ -1986,6 +2052,7 @@ async function checkAndUpdateTransactionsOnStart() {
             saveUserData();
             updateUI();
             updateWalletUI();
+            updateStakingBalance(); // تحديث رصيد Staking
             showMessage('✅ Your pending transactions have been updated', 'success');
         }
         
@@ -2004,12 +2071,12 @@ const NOTIFICATION_MESSAGES = [
     "Withdraw successful: User ID 966****1763 -80 USDT",
     "Deposit successful: User ID 544****3751 +0.163 BNB",
     "Deposit successful: User ID 271****3446 +0.025 BNB",
-    "Withdraw successful: User ID 488****1536 -682 USDT",
+    "Deposit successful: User ID 488****1536 +0.04 BNB",
     "Deposit successful: User ID 490****4765 +0.463 BNB",
     "Deposit successful: User ID 200****4324 +200 USDT",
-    "Withdraw successful: User ID 538****9231 -685 USDT",
+    "Withdraw successful: User ID 538****9231 -65 USDT",
     "Withdraw successful: User ID 447****9577 -90 USDT",
-    "Withdraw successful: User ID 510****5431 -3000 USDT",
+    "Withdraw successful: User ID 510****5431 -150 USDT",
     "Withdraw successful: User ID 945****4413 -400 USDT",
     "Deposit successful: User ID 722****8419 +0.081 BNB",
     "Withdraw successful: User ID 535****7481 -120 USDT",
@@ -2020,7 +2087,7 @@ const NOTIFICATION_MESSAGES = [
     "Withdraw successful: User ID 275****6848 -90 USDT",
     "Deposit successful: User ID 820****3853 +95 USDT",
     "Deposit successful: User ID 797****9600 +0.463 BNB",
-    "Withdraw successful: User ID 713****4991 -430 USDT",
+    "Deposit successful: User ID 713****4991 +0.445 BNB",
     "Deposit successful: User ID 915****6003 +0.142 BNB",
     "Deposit successful: User ID 515****1941 +0.221 BNB",
     "Deposit successful: User ID 709****2493 +85 USDT",
@@ -2034,14 +2101,14 @@ const NOTIFICATION_MESSAGES = [
     "Deposit successful: User ID 649****8499 +85 USDT",
     "Withdraw successful: User ID 528****8768 -65 USDT",
     "Deposit successful: User ID 674****2986 +0.287 BNB",
-    "Deposit successful: User ID 455****5127 +250 USDT",
-    "Withdraw successful: User ID 336****1836 -450 USDT",
+    "Deposit successful: User ID 455****5127 +450 USDT",
+    "Deposit successful: User ID 336****1836 +450 USDT",
     "Deposit successful: User ID 254****4683 +450 USDT",
     "Deposit successful: User ID 827****1743 +250 USDT",
-    "Withdraw successful: User ID 832****8543 -176 USDT",
+    "Deposit successful: User ID 832****8543 +0.483 BNB",
     "Deposit successful: User ID 264****4548 +90 USDT",
     "Deposit successful: User ID 391****1341 +0.134 BNB",
-    "Withdraw successful: User ID 395****2663 -1045 USDT",
+    "Deposit successful: User ID 395****2663 +0.106 BNB",
     "Deposit successful: User ID 642****7536 +95 USDT",
     "Deposit successful: User ID 230****4033 +0.387 BNB",
     "Withdraw successful: User ID 906****1183 -55 USDT",
@@ -2058,20 +2125,20 @@ const NOTIFICATION_MESSAGES = [
     "Withdraw successful: User ID 115****7935 -55 USDT",
     "Withdraw successful: User ID 454****9499 -60 USDT",
     "Deposit successful: User ID 548****6236 +0.3 BNB",
-    "Withdraw successful: User ID 838****6789 -1255 USDT",
+    "Deposit successful: User ID 838****6789 +55 USDT",
     "Deposit successful: User ID 356****6757 +0.419 BNB",
     "Deposit successful: User ID 995****6562 +75 USDT",
-    "Withdraw successful: User ID 560****3520 -700 USDT",
+    "Deposit successful: User ID 560****3520 +0.022 BNB",
     "Deposit successful: User ID 696****5638 +0.386 BNB",
-    "Withdraw successful: User ID 629****8757 -2320 USDT",
+    "Deposit successful: User ID 629****8757 +0.428 BNB",
     "Deposit successful: User ID 266****4986 +0.107 BNB",
     "Withdraw successful: User ID 206****9193 -300 USDT",
     "Deposit successful: User ID 295****7108 +350 USDT",
-    "Withdraw successful: User ID 654****7297 -120 USDT",
+    "Deposit successful: User ID 654****7297 +120 USDT",
     "Deposit successful: User ID 429****1784 +0.348 BNB",
     "Deposit successful: User ID 710****4523 +250 USDT",
     "Withdraw successful: User ID 857****9454 -55 USDT",
-    "Withdraw successful: User ID 887****7465 856 USDT",
+    "Withdraw successful: User ID 887****7465 -55 USDT",
     "Withdraw successful: User ID 679****6626 -65 USDT",
     "Deposit successful: User ID 727****6172 +65 USDT",
     "Withdraw successful: User ID 230****2890 -50 USDT",
@@ -2101,16 +2168,16 @@ const NOTIFICATION_MESSAGES = [
     "Deposit successful: User ID 206****6775 +55 USDT",
     "Deposit successful: User ID 756****2564 +350 USDT",
     "Withdraw successful: User ID 763****6682 -150 USDT",
-    "Withdraw successful: User ID 588****3006 -975 USDT",
+    "Withdraw successful: User ID 588****3006 -75 USDT",
     "Deposit successful: User ID 475****5219 +95 USDT",
-    "Withdraw successful: User ID 893****5949 -540 USDT",
+    "Withdraw successful: User ID 893****5949 -50 USDT",
     "Withdraw successful: User ID 121****7474 -100 USDT",
     "Deposit successful: User ID 921****7042 +0.446 BNB",
     "Deposit successful: User ID 204****7806 +0.382 BNB",
     "Withdraw successful: User ID 363****3070 -200 USDT",
     "Withdraw successful: User ID 757****1974 -450 USDT",
     "Withdraw successful: User ID 482****7999 -250 USDT",
-    "Withdraw successful: User ID 171****3009 -3650 USDT",
+    "Withdraw successful: User ID 171****3009 -250 USDT",
     "Deposit successful: User ID 592****8793 +0.049 BNB",
     "Deposit successful: User ID 800****8171 +0.348 BNB",
     "Withdraw successful: User ID 410****2681 -50 USDT",
@@ -2725,7 +2792,7 @@ function switchHistoryTab(tabName) {
 }
 
 // ============================================
-// DEPOSIT MODAL WITH AMOUNT FIELD - التصميم القديم
+// DEPOSIT MODAL - التصميم الجديد (عمودي)
 // ============================================
 
 function openDepositModal(currency) {
@@ -2761,14 +2828,20 @@ function openDepositModal(currency) {
                             <i class="fas fa-wallet"></i>
                             <span>Your ${currency} Deposit Address</span>
                         </div>
-                        <div class="address-container">
-                            <div class="address-value" id="depositAddressDisplay">
-                                ${depositAddress}
+                        
+                        <!-- تصميم عمودي جديد للعنوان -->
+                        <div class="address-container-vertical">
+                            <div class="address-value-box">
+                                <span>${depositAddress.substring(0, 20)}</span>
+                                <span>${depositAddress.substring(20, 40)}</span>
+                                <span>${depositAddress.substring(40)}</span>
                             </div>
-                            <button class="copy-address-btn" onclick="copyDepositAddress()">
+                            
+                            <button class="copy-address-btn-large" onclick="copyDepositAddress()">
                                 <i class="far fa-copy"></i> Copy Address
                             </button>
                         </div>
+                        
                         <div class="network-info">
                             <i class="fas fa-network-wired"></i>
                             <span>Minimum deposit: ${minDeposit} ${currency}</span>
@@ -3255,6 +3328,7 @@ function minePoints() {
     saveUserData();
     saveWalletData();
     updateUI();
+    updateStakingBalance(); // تحديث رصيد Staking
     animateMineButton(reward);
     
     showMessage(`⛏️ +${reward} MWH! Total: ${userData.balance} MWH`, 'success');
@@ -3409,7 +3483,7 @@ function copyDepositAddress() {
     
     navigator.clipboard.writeText(depositAddress)
         .then(() => {
-            const btn = document.querySelector('.copy-address-btn');
+            const btn = document.querySelector('.copy-address-btn-large');
             if (btn) {
                 const originalHTML = btn.innerHTML;
                 btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
@@ -3807,13 +3881,14 @@ function executeSwap(fromCurrency, toCurrency) {
     
     updateWalletUI();
     updateUI();
+    updateStakingBalance(); // تحديث رصيد Staking
     
     closeModal();
     showMessage(`✅ Swapped ${formatNumber(fromAmount)} ${fromCurrency} to ${formatNumber(toAmount)} ${toCurrency}`, 'success');
 }
 
 // ============================================
-// WITHDRAWAL MODAL - التصميم القديم
+// WITHDRAWAL MODAL - التصميم القديم المحتفظ به
 // ============================================
 
 function openWithdrawalModal() {
@@ -4955,6 +5030,7 @@ window.calculateStakingReward = calculateStakingReward;
 window.stakeMWH = stakeMWH;
 window.earlyWithdrawal = earlyWithdrawal;
 window.checkCompletedStakes = checkCompletedStakes;
+window.updateStakingBalance = updateStakingBalance;
 
 // دالة عرض مودال تفعيل البطاقة
 window.showCardActivationModal = showCardActivationModal;
