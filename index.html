@@ -725,7 +725,7 @@
     </div>
 
     <!-- =========================================== -->
-    <!-- MWH Pools Page - NEW مع بطاقة فيزا احترافية -->
+    <!-- MWH Pools Page - NEW DESIGN مع بطاقة سوداء -->
     <!-- =========================================== -->
 
     <div id="poolsPage" class="page hidden">
@@ -737,74 +737,74 @@
         </div>
         
         <div class="pools-content">
-            <!-- MWH Pay Header مع بطاقة فيزا احترافية -->
+            <!-- MWH Pay Header مع بطاقة سوداء -->
             <div class="mwh-pay-header">
                 <div class="mwh-pay-title">
                     <i class="fas fa-bolt"></i>
                     <span>MWH Pay</span>
                 </div>
                 
-                <!-- بطاقة فيزا احترافية -->
-                <div class="visa-card">
-                    <div class="visa-card-bg"></div>
-                    <div class="visa-card-content">
-                        <div class="visa-chip">
+                <!-- بطاقة سوداء فخمة - Future Locked Card -->
+                <div class="future-card" id="futureCard">
+                    <!-- طبقة التعتيم -->
+                    <div class="card-overlay"></div>
+                    
+                    <!-- محتوى البطاقة -->
+                    <div class="card-content">
+                        <div class="card-header">
+                            <div class="card-logo">MWH Pay</div>
+                            <div class="card-badge">🔒 Inactive</div>
+                        </div>
+                        
+                        <div class="card-chip">
                             <i class="fas fa-microchip"></i>
                         </div>
-                        <div class="visa-logo">
-                            <span>MWH</span>
-                            <i class="fab fa-cc-visa"></i>
-                        </div>
-                        <div class="visa-number">**** **** **** 2024</div>
-                        <div class="visa-footer">
-                            <div class="visa-holder">
-                                <div class="visa-label">CARD HOLDER</div>
-                                <div class="visa-name" id="visaCardName">USER NAME</div>
+                        
+                        <div class="card-number">**** **** **** 2024</div>
+                        
+                        <div class="card-footer">
+                            <div class="card-holder">
+                                <div class="card-label">CARD HOLDER</div>
+                                <div class="card-name" id="cardUserName">USER NAME</div>
                             </div>
-                            <div class="visa-expiry">
-                                <div class="visa-label">EXPIRES</div>
-                                <div class="visa-date">12/28</div>
+                            <div class="card-expiry">
+                                <div class="card-label">EXPIRES</div>
+                                <div class="card-date">12/28</div>
                             </div>
                         </div>
-                        <div class="visa-coming-soon">COMING SOON</div>
+                        
+                        <!-- Progress bar صغير اختياري -->
+                        <div class="card-progress">
+                            <div class="progress-bar-small">
+                                <div class="progress-fill-small" style="width: 72%;"></div>
+                            </div>
+                            <div class="progress-text">
+                                <span>Beta</span>
+                                <span>72% Ready</span>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <!-- زر تفعيل البطاقة العائم -->
-                    <button class="visa-activate-btn" onclick="showComingSoon()">
-                        <i class="fas fa-bolt"></i>
-                        <span>Activate Card</span>
-                    </button>
                 </div>
             </div>
 
+            <!-- Floating Action Button - FAB -->
+            <button class="fab-button" id="fabButton" onclick="showCardActivationModal()">
+                <i class="fas fa-bolt"></i>
+            </button>
+
             <!-- إحصائيات الرهن -->
-            <div class="staking-stats">
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-lock"></i>
-                    </div>
-                    <div class="stat-info">
-                        <div class="stat-value" id="totalStaked">0 MWH</div>
-                        <div class="stat-label">Total Staked</div>
-                    </div>
+            <div class="staking-stats-compact">
+                <div class="stat-item-compact">
+                    <div class="stat-value-compact" id="totalStaked">0</div>
+                    <div class="stat-label-compact">Total Staked</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <div class="stat-info">
-                        <div class="stat-value" id="expectedReturns">0 MWH</div>
-                        <div class="stat-label">Expected Returns</div>
-                    </div>
+                <div class="stat-item-compact">
+                    <div class="stat-value-compact" id="expectedReturns">0</div>
+                    <div class="stat-label-compact">Expected Returns</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-layer-group"></i>
-                    </div>
-                    <div class="stat-info">
-                        <div class="stat-value" id="activePlans">0</div>
-                        <div class="stat-label">Active Plans</div>
-                    </div>
+                <div class="stat-item-compact">
+                    <div class="stat-value-compact" id="activePlans">0</div>
+                    <div class="stat-label-compact">Active Plans</div>
                 </div>
             </div>
 
@@ -814,195 +814,106 @@
                 <span>MWH Staking Pools</span>
             </div>
 
-            <!-- كروت الخطط - 4 خطط -->
-            <div class="pools-grid">
+            <!-- كروت الخطط - تصميم مضغوط -->
+            <div class="pools-grid-compact">
                 <!-- خطة سريعة - 7 أيام 40% -->
-                <div class="pool-card fast">
-                    <div class="pool-badge">POPULAR</div>
-                    <div class="pool-header">
-                        <div class="pool-icon">
+                <div class="pool-card-compact fast">
+                    <div class="pool-header-compact">
+                        <div class="pool-icon-compact">
                             <i class="fas fa-rocket"></i>
                         </div>
-                        <div class="pool-name">Fast Pool</div>
-                        <div class="pool-apy">+40%</div>
+                        <div class="pool-info-compact">
+                            <div class="pool-name-compact">Fast Pool</div>
+                            <div class="pool-duration-compact">7 Days</div>
+                        </div>
+                        <div class="pool-apy-compact">+40%</div>
                     </div>
-                    <div class="pool-details">
-                        <div class="pool-detail">
-                            <span>Duration</span>
-                            <span class="detail-value">7 Days</span>
+                    <div class="pool-details-compact">
+                        <div class="pool-minmax">
+                            <span>5K - 100K MWH</span>
                         </div>
-                        <div class="pool-detail">
-                            <span>Min Stake</span>
-                            <span class="detail-value">5,000 MWH</span>
-                        </div>
-                        <div class="pool-detail">
-                            <span>Max Stake</span>
-                            <span class="detail-value">100,000 MWH</span>
-                        </div>
-                        <div class="pool-detail">
-                            <span>Return</span>
-                            <span class="detail-value">40% (≈5.71% daily)</span>
+                        <div class="pool-stake-btn-compact" onclick="stakeMWH(0)">
+                            Stake
                         </div>
                     </div>
-                    <div class="pool-calculator">
-                        <input type="number" class="pool-input" placeholder="Enter amount" min="5000" max="100000" id="fastPoolAmount">
-                        <div class="pool-result">
-                            <span>You will receive:</span>
-                            <span class="result-value" id="fastPoolResult">0 MWH</span>
-                        </div>
-                    </div>
-                    <button class="pool-stake-btn" onclick="showComingSoon()">
-                        <i class="fas fa-lock"></i>
-                        Stake Now
-                    </button>
                 </div>
 
                 <!-- خطة متوسطة - 15 يوم 60% -->
-                <div class="pool-card medium">
-                    <div class="pool-header">
-                        <div class="pool-icon">
+                <div class="pool-card-compact medium">
+                    <div class="pool-header-compact">
+                        <div class="pool-icon-compact">
                             <i class="fas fa-chart-line"></i>
                         </div>
-                        <div class="pool-name">Medium Pool</div>
-                        <div class="pool-apy">+60%</div>
+                        <div class="pool-info-compact">
+                            <div class="pool-name-compact">Medium Pool</div>
+                            <div class="pool-duration-compact">15 Days</div>
+                        </div>
+                        <div class="pool-apy-compact">+60%</div>
                     </div>
-                    <div class="pool-details">
-                        <div class="pool-detail">
-                            <span>Duration</span>
-                            <span class="detail-value">15 Days</span>
+                    <div class="pool-details-compact">
+                        <div class="pool-minmax">
+                            <span>50K - 500K MWH</span>
                         </div>
-                        <div class="pool-detail">
-                            <span>Min Stake</span>
-                            <span class="detail-value">50,000 MWH</span>
-                        </div>
-                        <div class="pool-detail">
-                            <span>Max Stake</span>
-                            <span class="detail-value">500,000 MWH</span>
-                        </div>
-                        <div class="pool-detail">
-                            <span>Return</span>
-                            <span class="detail-value">60% (≈4% daily)</span>
+                        <div class="pool-stake-btn-compact" onclick="stakeMWH(1)">
+                            Stake
                         </div>
                     </div>
-                    <div class="pool-calculator">
-                        <input type="number" class="pool-input" placeholder="Enter amount" min="50000" max="500000" id="mediumPoolAmount">
-                        <div class="pool-result">
-                            <span>You will receive:</span>
-                            <span class="result-value" id="mediumPoolResult">0 MWH</span>
-                        </div>
-                    </div>
-                    <button class="pool-stake-btn" onclick="showComingSoon()">
-                        <i class="fas fa-lock"></i>
-                        Stake Now
-                    </button>
                 </div>
 
                 <!-- خطة ذهبية - 30 يوم 70% -->
-                <div class="pool-card gold">
-                    <div class="pool-badge gold-badge">BEST VALUE</div>
-                    <div class="pool-header">
-                        <div class="pool-icon">
+                <div class="pool-card-compact gold">
+                    <div class="pool-header-compact">
+                        <div class="pool-icon-compact">
                             <i class="fas fa-crown"></i>
                         </div>
-                        <div class="pool-name">Gold Pool</div>
-                        <div class="pool-apy">+70%</div>
+                        <div class="pool-info-compact">
+                            <div class="pool-name-compact">Gold Pool</div>
+                            <div class="pool-duration-compact">30 Days</div>
+                        </div>
+                        <div class="pool-apy-compact">+70%</div>
                     </div>
-                    <div class="pool-details">
-                        <div class="pool-detail">
-                            <span>Duration</span>
-                            <span class="detail-value">30 Days</span>
+                    <div class="pool-details-compact">
+                        <div class="pool-minmax">
+                            <span>100K - 10M MWH</span>
                         </div>
-                        <div class="pool-detail">
-                            <span>Min Stake</span>
-                            <span class="detail-value">100,000 MWH</span>
-                        </div>
-                        <div class="pool-detail">
-                            <span>Max Stake</span>
-                            <span class="detail-value">10,000,000 MWH</span>
-                        </div>
-                        <div class="pool-detail">
-                            <span>Return</span>
-                            <span class="detail-value">70% (≈2.33% daily)</span>
+                        <div class="pool-stake-btn-compact" onclick="stakeMWH(2)">
+                            Stake
                         </div>
                     </div>
-                    <div class="pool-calculator">
-                        <input type="number" class="pool-input" placeholder="Enter amount" min="100000" max="10000000" id="goldPoolAmount">
-                        <div class="pool-result">
-                            <span>You will receive:</span>
-                            <span class="result-value" id="goldPoolResult">0 MWH</span>
-                        </div>
-                    </div>
-                    <button class="pool-stake-btn" onclick="showComingSoon()">
-                        <i class="fas fa-lock"></i>
-                        Stake Now
-                    </button>
                 </div>
 
                 <!-- خطة VIP - 90 يوم 80% -->
-                <div class="pool-card vip">
-                    <div class="pool-badge vip-badge">VIP</div>
-                    <div class="pool-header">
-                        <div class="pool-icon">
+                <div class="pool-card-compact vip">
+                    <div class="pool-header-compact">
+                        <div class="pool-icon-compact">
                             <i class="fas fa-gem"></i>
                         </div>
-                        <div class="pool-name">VIP Pool</div>
-                        <div class="pool-apy">+80%</div>
+                        <div class="pool-info-compact">
+                            <div class="pool-name-compact">VIP Pool</div>
+                            <div class="pool-duration-compact">90 Days</div>
+                        </div>
+                        <div class="pool-apy-compact">+80%</div>
                     </div>
-                    <div class="pool-details">
-                        <div class="pool-detail">
-                            <span>Duration</span>
-                            <span class="detail-value">90 Days</span>
+                    <div class="pool-details-compact">
+                        <div class="pool-minmax">
+                            <span>250K - 25M MWH</span>
                         </div>
-                        <div class="pool-detail">
-                            <span>Min Stake</span>
-                            <span class="detail-value">250,000 MWH</span>
-                        </div>
-                        <div class="pool-detail">
-                            <span>Max Stake</span>
-                            <span class="detail-value">25,000,000 MWH</span>
-                        </div>
-                        <div class="pool-detail">
-                            <span>Return</span>
-                            <span class="detail-value">80% (≈0.88% daily)</span>
+                        <div class="pool-stake-btn-compact" onclick="stakeMWH(3)">
+                            Stake
                         </div>
                     </div>
-                    <div class="pool-calculator">
-                        <input type="number" class="pool-input" placeholder="Enter amount" min="250000" max="25000000" id="vipPoolAmount">
-                        <div class="pool-result">
-                            <span>You will receive:</span>
-                            <span class="result-value" id="vipPoolResult">0 MWH</span>
-                        </div>
-                    </div>
-                    <button class="pool-stake-btn" onclick="showComingSoon()">
-                        <i class="fas fa-lock"></i>
-                        Stake Now
-                    </button>
                 </div>
             </div>
 
             <!-- شروط الرهن -->
-            <div class="staking-terms">
-                <div class="terms-header">
-                    <i class="fas fa-info-circle"></i>
-                    <span>Staking Terms & Conditions</span>
+            <div class="staking-terms-compact">
+                <div class="term-item-compact">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Early withdrawal: 20% penalty</span>
                 </div>
-                <div class="terms-content">
-                    <div class="term-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Early withdrawal penalty: 20% of principal amount</span>
-                    </div>
-                    <div class="term-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Rewards distributed at the end of staking period</span>
-                    </div>
-                    <div class="term-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Minimum stake varies by pool (5K - 250K MWH)</span>
-                    </div>
-                    <div class="term-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Maximum stake varies by pool (100K - 25M MWH)</span>
-                    </div>
+                <div class="term-item-compact">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Rewards distributed at end</span>
                 </div>
             </div>
         </div>
@@ -1150,9 +1061,13 @@
                     
                     // تحديث اسم المستخدم على البطاقة
                     const userName = document.getElementById('username')?.textContent || 'USER';
-                    const visaName = document.getElementById('visaCardName');
-                    if (visaName) {
-                        visaName.textContent = userName.toUpperCase();
+                    const cardName = document.getElementById('cardUserName');
+                    if (cardName) {
+                        cardName.textContent = userName.toUpperCase();
+                    }
+                    
+                    if (window.initStakingPage) {
+                        window.initStakingPage();
                     }
                 }
                 
@@ -1173,6 +1088,30 @@
                 window.showMessage('🚀 Coming Soon!', 'info');
             } else {
                 alert('🚀 Coming Soon!');
+            }
+        }
+        
+        function showCardActivationModal() {
+            // تأثير اهتزاز البطاقة
+            const card = document.getElementById('futureCard');
+            if (card) {
+                card.classList.add('card-shake');
+                card.classList.add('card-glow');
+                
+                setTimeout(() => {
+                    card.classList.remove('card-shake');
+                }, 500);
+                
+                setTimeout(() => {
+                    card.classList.remove('card-glow');
+                }, 1000);
+            }
+            
+            // عرض المودال
+            if (window.showCardModal) {
+                window.showCardModal();
+            } else {
+                showComingSoon();
             }
         }
         
@@ -1206,6 +1145,7 @@
         
         window.switchToPage = switchToPage;
         window.showComingSoon = showComingSoon;
+        window.showCardActivationModal = showCardActivationModal;
         window.initializeHomePage = initializeHomePage;
         window.updateLoadingStatus = updateLoadingStatus;
         
