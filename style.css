@@ -24,7 +24,7 @@ body {
 }
 
 /* =========================================== */
-/* MWH Pools Page - تصميم جديد مع بطاقة سوداء */
+/* MWH Pools Page - بطاقة فيزا بحجم حقيقي */
 /* =========================================== */
 
 .pools-content {
@@ -58,24 +58,30 @@ body {
     border-radius: 12px;
 }
 
-/* ====== بطاقة سوداء فخمة (Future Locked Card) ====== */
-.future-card {
-    background: #0a0c14; /* أسود فخم */
-    border-radius: 24px;
-    padding: 25px;
+/* ====== بطاقة فيزا بحجم حقيقي (Real Size Visa Card) ====== */
+.visa-real-card {
+    width: 100%;
+    max-width: 300px;
+    height: 190px;
+    margin: 0 auto 20px auto;
+    background: #0a0c14;
+    border-radius: 16px;
     position: relative;
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-    margin-bottom: 20px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    min-height: 220px;
     background-image: radial-gradient(circle at 30% 40%, rgba(59, 130, 246, 0.1) 0%, transparent 30%),
                       radial-gradient(circle at 70% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 30%);
 }
 
-/* طبقة التعتيم - 20% blur */
-.card-overlay {
+.visa-real-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7);
+}
+
+/* طبقة التعتيم */
+.visa-real-card .card-overlay {
     position: absolute;
     top: 0;
     left: 0;
@@ -85,130 +91,242 @@ body {
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     z-index: 1;
-    border-radius: 24px;
+    border-radius: 16px;
     opacity: 0.7;
     pointer-events: none;
 }
 
-.card-content {
+.visa-real-card .card-content {
     position: relative;
     z-index: 2;
+    padding: 15px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
-.card-header {
+.visa-real-card .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
+    margin-bottom: 10px;
 }
 
-.card-logo {
-    font-size: 20px;
+.visa-real-card .card-logo {
+    font-size: 16px;
     font-weight: 700;
     background: linear-gradient(135deg, #f8fafc, #cbd5e0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 0.5px;
+}
+
+.visa-real-card .card-badge {
+    font-size: 10px;
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.15);
+    padding: 3px 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    font-weight: 600;
+}
+
+.visa-real-card .card-chip {
+    margin-bottom: 10px;
+}
+
+.visa-real-card .card-chip i {
+    font-size: 30px;
+    color: #fbbf24;
+    transform: rotate(90deg);
+    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.3));
+    opacity: 0.9;
+}
+
+.visa-real-card .card-number {
+    font-size: 16px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+    margin-bottom: 15px;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.visa-real-card .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.visa-real-card .card-holder {
+    flex: 1;
+}
+
+.visa-real-card .card-label {
+    font-size: 7px;
+    color: rgba(148, 163, 184, 0.7);
+    margin-bottom: 2px;
+    letter-spacing: 0.5px;
+}
+
+.visa-real-card .card-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.5px;
+}
+
+.visa-real-card .card-expiry {
+    text-align: right;
+}
+
+.visa-real-card .card-date {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* شعار Visa احترافي */
+.visa-real-card .visa-logo-real {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.visa-real-card .visa-logo-real i {
+    font-size: 24px;
+    color: #1a1f71;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.visa-real-card .visa-logo-real span {
+    font-size: 14px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     letter-spacing: 1px;
 }
 
-.card-badge {
-    font-size: 12px;
-    color: #f59e0b;
-    background: rgba(245, 158, 11, 0.15);
-    padding: 4px 10px;
-    border-radius: 20px;
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    font-weight: 600;
-    letter-spacing: 0.5px;
-}
-
-.card-chip {
-    margin-bottom: 25px;
-}
-
-.card-chip i {
-    font-size: 40px;
-    color: #fbbf24;
-    transform: rotate(90deg);
-    filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.3));
-    opacity: 0.8;
-}
-
-.card-number {
-    font-size: 22px;
-    font-family: 'Courier New', monospace;
-    letter-spacing: 3px;
-    margin-bottom: 25px;
-    color: rgba(255, 255, 255, 0.9);
-    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-}
-
-.card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.card-holder {
-    flex: 1;
-}
-
-.card-label {
-    font-size: 9px;
-    color: rgba(148, 163, 184, 0.7);
-    margin-bottom: 4px;
-    letter-spacing: 1px;
-}
-
-.card-name {
-    font-size: 14px;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.9);
-    letter-spacing: 1px;
-}
-
-.card-expiry {
-    text-align: right;
-}
-
-.card-date {
-    font-size: 14px;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.9);
-}
-
-/* Progress bar صغير */
-.card-progress {
-    margin-top: 10px;
-    padding-top: 10px;
+/* شريط تقدم الاستثمار */
+.visa-real-card .investment-progress {
+    margin-top: 5px;
+    padding-top: 5px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.progress-bar-small {
-    height: 4px;
+.visa-real-card .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.visa-real-card .progress-title {
+    font-size: 8px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.visa-real-card .progress-percent {
+    font-size: 8px;
+    font-weight: 700;
+    color: #22c55e;
+}
+
+.visa-real-card .progress-bar-investment {
+    height: 3px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 2px;
     overflow: hidden;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
-.progress-fill-small {
+.visa-real-card .progress-fill-investment {
     height: 100%;
     background: linear-gradient(90deg, #3b82f6, #8b5cf6);
     border-radius: 2px;
 }
 
-.progress-text {
+.visa-real-card .progress-stats {
     display: flex;
     justify-content: space-between;
-    font-size: 10px;
+    margin-bottom: 3px;
+    font-size: 7px;
     color: #94a3b8;
 }
 
-.progress-text span:first-child {
-    color: #f59e0b;
+.visa-real-card .progress-raised {
+    color: #22c55e;
     font-weight: 600;
+}
+
+.visa-real-card .progress-target {
+    color: #94a3b8;
+}
+
+.visa-real-card .progress-remaining {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 7px;
+    color: #f59e0b;
+}
+
+.visa-real-card .progress-remaining i {
+    font-size: 7px;
+}
+
+/* ====== عرض رصيد MWH في صفحة Staking ====== */
+.wallet-balance-staking {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.balance-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(59, 130, 246, 0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #3b82f6;
+    font-size: 22px;
+    border: 2px solid rgba(59, 130, 246, 0.3);
+}
+
+.balance-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.balance-label {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-bottom: 4px;
+}
+
+.balance-amount-staking {
+    font-size: 24px;
+    font-weight: 700;
+    color: #fbbf24;
+    line-height: 1.2;
 }
 
 /* ====== Floating Action Button (FAB) ====== */
@@ -434,11 +552,18 @@ body {
     cursor: pointer;
     transition: all 0.3s;
     display: inline-block;
+    border: none;
 }
 
 .pool-stake-btn-compact:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+}
+
+.pool-stake-btn-compact:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(255, 255, 255, 0.1);
 }
 
 /* شروط الرهن المضغوطة */
@@ -467,7 +592,417 @@ body {
 }
 
 /* =========================================== */
-/* نافذة السواب المحسنة (بدون زر MAX في المنتصف) */
+/* نافذة الإيداع المحسنة (تصميم عمودي احترافي) */
+/* =========================================== */
+
+.deposit-modal .modal-content {
+    max-width: 500px;
+}
+
+.deposit-warning {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(239, 68, 68, 0.1));
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+.deposit-warning .warning-icon {
+    color: #f59e0b;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.deposit-warning .warning-content {
+    flex: 1;
+}
+
+.deposit-warning .warning-title {
+    color: #f59e0b;
+    font-weight: 700;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.deposit-warning .warning-text {
+    color: #f8fafc;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* قسم عنوان المحفظة - تصميم عمودي جديد */
+.deposit-address-card {
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.address-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    color: #60a5fa;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.address-container-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.address-value-box {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    padding: 15px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: #f8fafc;
+    word-break: break-all;
+    line-height: 1.5;
+    text-align: center;
+    border: 1px dashed rgba(59, 130, 246, 0.4);
+}
+
+.address-value-box span {
+    display: block;
+    margin: 2px 0;
+}
+
+.copy-address-btn-large {
+    background: linear-gradient(135deg, #3b82f6, #6366f1);
+    border: none;
+    border-radius: 12px;
+    padding: 14px 20px;
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s;
+    width: 100%;
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+}
+
+.copy-address-btn-large:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
+}
+
+.copy-address-btn-large i {
+    font-size: 18px;
+}
+
+.network-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #fbbf24;
+    font-size: 13px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 5px;
+}
+
+/* باقي أقسام الإيداع */
+.transaction-hash-section {
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    color: #f8fafc;
+    font-weight: 600;
+}
+
+.transaction-input-group {
+    margin-bottom: 15px;
+}
+
+.input-label {
+    color: #cbd5e0;
+    font-size: 14px;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.transaction-input {
+    width: 100%;
+    padding: 14px 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 12px;
+    color: #f8fafc;
+    font-size: 14px;
+    font-family: monospace;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.transaction-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.input-hint {
+    color: #94a3b8;
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+.transaction-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 15px;
+    border-radius: 12px;
+    margin-top: 10px;
+}
+
+.status-icon {
+    font-size: 18px;
+}
+
+.status-text {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.deposit-instructions {
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.instructions-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    color: #f8fafc;
+    font-weight: 600;
+}
+
+.instructions-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.instruction-step {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+.step-number {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.step-content {
+    color: #cbd5e0;
+    font-size: 14px;
+    line-height: 1.4;
+    padding-top: 5px;
+}
+
+.deposit-note {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 16px;
+    padding: 15px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.note-icon {
+    color: #f59e0b;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.note-content {
+    flex: 1;
+    color: #f8fafc;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.note-content strong {
+    color: #f59e0b;
+}
+
+.deposit-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.btn-secondary, .btn-primary {
+    flex: 1;
+    padding: 16px;
+    border-radius: 12px;
+    border: none;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #cbd5e0;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3b82f6, #6366f1);
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* =========================================== */
+/* كروت العملات - ألوان محسنة */
+/* =========================================== */
+
+/* MWH - أزرق كهربائي */
+.mwh-icon {
+    background: rgba(59, 130, 246, 0.15) !important;
+    color: #3b82f6 !important;
+    border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+.mwh-price {
+    background: rgba(59, 130, 246, 0.1) !important;
+    color: #3b82f6 !important;
+}
+
+.mwh-value {
+    background: rgba(59, 130, 246, 0.1) !important;
+    color: #3b82f6 !important;
+}
+
+/* USDT - أخضر زمردي */
+.usdt-icon {
+    background: rgba(16, 185, 129, 0.15) !important;
+    color: #10b981 !important;
+    border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+.usdt-price {
+    background: rgba(16, 185, 129, 0.1) !important;
+    color: #10b981 !important;
+}
+
+.usdt-value {
+    background: rgba(16, 185, 129, 0.1) !important;
+    color: #10b981 !important;
+}
+
+/* BNB - ذهبي */
+.bnb-icon {
+    background: rgba(251, 191, 36, 0.15) !important;
+    color: #fbbf24 !important;
+    border-color: rgba(251, 191, 36, 0.3) !important;
+}
+
+.bnb-price {
+    background: rgba(251, 191, 36, 0.1) !important;
+    color: #fbbf24 !important;
+}
+
+.bnb-value {
+    background: rgba(251, 191, 36, 0.1) !important;
+    color: #fbbf24 !important;
+}
+
+/* TON - أزرق سماوي */
+.ton-icon {
+    background: rgba(6, 182, 212, 0.15) !important;
+    color: #06b6d4 !important;
+    border-color: rgba(6, 182, 212, 0.3) !important;
+}
+
+.ton-price {
+    background: rgba(6, 182, 212, 0.1) !important;
+    color: #06b6d4 !important;
+}
+
+.ton-value {
+    background: rgba(6, 182, 212, 0.1) !important;
+    color: #06b6d4 !important;
+}
+
+/* ETH - بنفسجي */
+.eth-icon {
+    background: rgba(139, 92, 246, 0.15) !important;
+    color: #8b5cf6 !important;
+    border-color: rgba(139, 92, 246, 0.3) !important;
+}
+
+.eth-price {
+    background: rgba(139, 92, 246, 0.1) !important;
+    color: #8b5cf6 !important;
+}
+
+.eth-value {
+    background: rgba(139, 92, 246, 0.1) !important;
+    color: #8b5cf6 !important;
+}
+
+/* =========================================== */
+/* نافذة السواب المحسنة */
 /* =========================================== */
 
 .swap-modal-professional .modal-content {
@@ -507,24 +1042,6 @@ body {
     background: rgba(59, 130, 246, 0.15);
     color: #60a5fa;
     border: 2px solid rgba(59, 130, 246, 0.3);
-}
-
-.currency-icon.usdt {
-    background: rgba(34, 197, 94, 0.15);
-    color: #22c55e;
-    border-color: rgba(34, 197, 94, 0.3);
-}
-
-.currency-icon.bnb {
-    background: rgba(245, 158, 11, 0.15);
-    color: #f59e0b;
-    border-color: rgba(245, 158, 11, 0.3);
-}
-
-.currency-icon.mwh {
-    background: rgba(139, 92, 246, 0.15);
-    color: #8b5cf6;
-    border-color: rgba(139, 92, 246, 0.3);
 }
 
 .currency-info {
@@ -588,7 +1105,6 @@ body {
     font-size: 14px;
 }
 
-/* ====== قسم الإدخال المحسن (بدون فراغات) ====== */
 .swap-inputs-professional {
     margin-bottom: 20px;
 }
@@ -668,7 +1184,6 @@ body {
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
-/* ====== زر MAX الجديد (صغير تحت Available) ====== */
 .max-btn-container {
     display: flex;
     justify-content: flex-end;
@@ -700,7 +1215,6 @@ body {
     font-size: 10px;
 }
 
-/* تفاصيل السواب */
 .swap-details-professional {
     background: rgba(15, 23, 42, 0.8);
     border-radius: 12px;
@@ -839,308 +1353,9 @@ body {
 }
 
 /* =========================================== */
-/* استرجاع التصميم القديم لنوافذ السحب والإيداع */
+/* Withdrawal Modal - التصميم القديم المحتفظ به */
 /* =========================================== */
 
-/* Deposit Modal - التصميم القديم */
-.deposit-modal .modal-content {
-    max-width: 500px;
-}
-
-.deposit-warning {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(239, 68, 68, 0.1));
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 20px;
-    display: flex;
-    gap: 15px;
-    align-items: flex-start;
-}
-
-.deposit-warning .warning-icon {
-    color: #f59e0b;
-    font-size: 24px;
-    flex-shrink: 0;
-}
-
-.deposit-warning .warning-content {
-    flex: 1;
-}
-
-.deposit-warning .warning-title {
-    color: #f59e0b;
-    font-weight: 700;
-    margin-bottom: 5px;
-    font-size: 14px;
-}
-
-.deposit-warning .warning-text {
-    color: #f8fafc;
-    font-size: 12px;
-    line-height: 1.4;
-}
-
-.deposit-address-card {
-    background: rgba(15, 23, 42, 0.8);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-    border: 1px solid rgba(59, 130, 246, 0.3);
-}
-
-.address-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 15px;
-    color: #60a5fa;
-    font-weight: 600;
-}
-
-.address-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.address-value {
-    flex: 1;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
-    padding: 12px 15px;
-    font-family: monospace;
-    font-size: 14px;
-    color: #f8fafc;
-    word-break: break-all;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.copy-address-btn {
-    background: linear-gradient(135deg, #3b82f6, #6366f1);
-    border: none;
-    border-radius: 8px;
-    padding: 12px 20px;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s;
-    white-space: nowrap;
-}
-
-.copy-address-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
-}
-
-.network-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #fbbf24;
-    font-size: 12px;
-    padding-top: 10px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.transaction-hash-section {
-    background: rgba(15, 23, 42, 0.8);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.section-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 15px;
-    color: #f8fafc;
-    font-weight: 600;
-}
-
-.transaction-input-group {
-    margin-bottom: 15px;
-}
-
-.input-label {
-    color: #cbd5e0;
-    font-size: 14px;
-    margin-bottom: 8px;
-    font-weight: 500;
-}
-
-.transaction-input {
-    width: 100%;
-    padding: 12px 15px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    border-radius: 8px;
-    color: #f8fafc;
-    font-size: 14px;
-    font-family: monospace;
-    outline: none;
-    transition: border-color 0.3s;
-}
-
-.transaction-input:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-}
-
-.input-hint {
-    color: #94a3b8;
-    font-size: 12px;
-    margin-top: 5px;
-}
-
-.transaction-status {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 15px;
-    border-radius: 8px;
-    margin-top: 10px;
-}
-
-.status-icon {
-    font-size: 18px;
-}
-
-.status-text {
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.deposit-instructions {
-    background: rgba(15, 23, 42, 0.8);
-    border-radius: 12px;
-    padding: 20px;
-    margin-top: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.instructions-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
-    color: #f8fafc;
-    font-weight: 600;
-}
-
-.instructions-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.instruction-step {
-    display: flex;
-    gap: 15px;
-    align-items: flex-start;
-}
-
-.step-number {
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    color: white;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 14px;
-    flex-shrink: 0;
-}
-
-.step-content {
-    color: #cbd5e0;
-    font-size: 14px;
-    line-height: 1.4;
-    padding-top: 5px;
-}
-
-.deposit-note {
-    background: rgba(245, 158, 11, 0.1);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 20px;
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-}
-
-.note-icon {
-    color: #f59e0b;
-    font-size: 20px;
-    flex-shrink: 0;
-}
-
-.note-content {
-    flex: 1;
-    color: #f8fafc;
-    font-size: 13px;
-    line-height: 1.4;
-}
-
-.note-content strong {
-    color: #f59e0b;
-}
-
-.deposit-actions {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.btn-secondary, .btn-primary {
-    flex: 1;
-    padding: 14px;
-    border-radius: 10px;
-    border: none;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.3s;
-}
-
-.btn-secondary {
-    background: rgba(255, 255, 255, 0.1);
-    color: #cbd5e0;
-}
-
-.btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #3b82f6, #6366f1);
-    color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
-}
-
-.btn-primary:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-/* Withdrawal Modal - التصميم القديم */
 .withdrawal-modal .modal-content {
     max-width: 500px;
 }
@@ -1220,7 +1435,7 @@ body {
     padding: 14px 45px 14px 15px;
     background: rgba(15, 23, 42, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+    border-radius: 12px;
     color: #f8fafc;
     font-size: 14px;
     outline: none;
@@ -1879,30 +2094,6 @@ body {
     border: 2px solid rgba(59, 130, 246, 0.3);
 }
 
-.crypto-icon.usdt {
-    background: rgba(34, 197, 94, 0.15);
-    color: #22c55e;
-    border-color: rgba(34, 197, 94, 0.3);
-}
-
-.crypto-icon.bnb {
-    background: rgba(245, 158, 11, 0.15);
-    color: #f59e0b;
-    border-color: rgba(245, 158, 11, 0.3);
-}
-
-.crypto-icon.ton {
-    background: rgba(139, 92, 246, 0.15);
-    color: #8b5cf6;
-    border-color: rgba(139, 92, 246, 0.3);
-}
-
-.crypto-icon.eth {
-    background: rgba(99, 102, 241, 0.15);
-    color: #6366f1;
-    border-color: rgba(99, 102, 241, 0.3);
-}
-
 .crypto-title {
     flex: 1;
 }
@@ -1921,7 +2112,6 @@ body {
 
 .crypto-price {
     font-size: 12px;
-    color: #22c55e;
     background: rgba(34, 197, 94, 0.1);
     padding: 4px 10px;
     border-radius: 20px;
@@ -1949,7 +2139,6 @@ body {
 .crypto-value {
     text-align: center;
     font-size: 15px;
-    color: #22c55e;
     font-weight: 600;
     margin-bottom: 20px;
     background: rgba(34, 197, 94, 0.1);
@@ -3907,7 +4096,11 @@ body {
         font-size: 10px !important;
     }
     
-    /* Notification Bar Responsive */
+    .visa-real-card {
+        max-width: 280px;
+        height: 176px;
+    }
+    
     .notification-bar {
         bottom: 70px;
         height: 32px;
@@ -3924,6 +4117,14 @@ body {
         width: 52px;
         height: 52px;
         font-size: 22px;
+    }
+    
+    .wallet-balance-staking {
+        padding: 12px 15px;
+    }
+    
+    .balance-amount-staking {
+        font-size: 20px;
     }
     
     .staking-stats-compact {
@@ -4083,6 +4284,15 @@ body {
         padding: 5px !important;
     }
     
+    .visa-real-card {
+        max-width: 260px;
+        height: 164px;
+    }
+    
+    .visa-real-card .card-number {
+        font-size: 14px;
+    }
+    
     .fab-button {
         bottom: 75px;
         width: 48px;
@@ -4090,9 +4300,13 @@ body {
         font-size: 20px;
     }
     
-    .card-number {
+    .wallet-balance-staking {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .balance-amount-staking {
         font-size: 18px;
-        letter-spacing: 2px;
     }
     
     .staking-stats-compact {
