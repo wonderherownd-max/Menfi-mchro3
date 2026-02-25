@@ -1,6 +1,6 @@
 // ============================================
 // VIP Mining Mini App - COMPLETE FINAL VERSION 7.0
-// All features included: Staking, Card Purchase, Flip Card, Airdrop, History
+// All features included: Staking, Card Purchase, Flip Card, Airdrop, History, Locked Bonus
 // Based on original working code with all enhancements
 // ============================================
 
@@ -105,7 +105,7 @@ let stakingData = {
 };
 
 // ============================================
-// 7. CARD DATA - بطاقة MWH Pay
+// 7. CARD DATA - بطاقة MWH Pay مع المكافأة المقفلة
 // ============================================
 let cardData = {
     purchased: false,
@@ -114,7 +114,8 @@ let cardData = {
     airdropAmount: 0,
     totalLocked: 0,
     unlockDate: null,
-    buyerNumber: 0
+    buyerNumber: 0,
+    claimed: false
 };
 
 // ============================================
@@ -124,7 +125,8 @@ let transactionHistory = {
     swaps: [],
     mining: [],
     staking: [],
-    card: []
+    card: [],
+    referral: []
 };
 
 // ============================================
@@ -1187,6 +1189,7 @@ function initStakingPage() {
     updateCardStatus();
     updateAirdropStrip();
     updateActivePlansDisplay();
+    updateLockedBonusDisplay();
 }
 
 function updateStakingBalance() {
@@ -1755,38 +1758,143 @@ function loadStakingData() {
 }
 
 // ============================================
-// 12. CARD SYSTEM - COMPLETE
+// 12. CARD SYSTEM - COMPLETE WITH LOCKED BONUS
 // ============================================
 
 function updateCardStatus() {
-    const cardBadge = document.querySelector('.card-status-badge');
-    const cardStatus = document.getElementById('cardStatus');
+    const cardStatus = document.querySelector('.card-status');
+    const lockedBonusSection = document.getElementById('lockedBonusSection');
+    const lockedBonusSectionBack = document.getElementById('lockedBonusSectionBack');
+    const myCardsSection = document.getElementById('myCardsSection');
     
     if (cardData.purchased) {
-        if (cardBadge) {
-            cardBadge.textContent = '✅ Active';
-            cardBadge.classList.add('active');
-        }
         if (cardStatus) {
             cardStatus.textContent = '✅ Active';
             cardStatus.classList.add('active');
         }
-    } else {
-        if (cardBadge) {
-            cardBadge.textContent = '🔒 Inactive';
-            cardBadge.classList.remove('active');
+        
+        // إظهار المكافأة المقفلة
+        if (lockedBonusSection) {
+            lockedBonusSection.style.display = 'block';
         }
+        if (lockedBonusSectionBack) {
+            lockedBonusSectionBack.style.display = 'block';
+        }
+        
+        // إظهار قسم My Cards
+        if (myCardsSection) {
+            myCardsSection.style.display = 'block';
+        }
+        
+        // تحديث عداد التنازلي
+        updateLockTimer();
+        
+    } else {
         if (cardStatus) {
             cardStatus.textContent = '🔒 Inactive';
             cardStatus.classList.remove('active');
         }
+        
+        if (lockedBonusSection) {
+            lockedBonusSection.style.display = 'none';
+        }
+        if (lockedBonusSectionBack) {
+            lockedBonusSectionBack.style.display = 'none';
+        }
+        if (myCardsSection) {
+            myCardsSection.style.display = 'none';
+        }
     }
 }
 
+function updateLockTimer() {
+    if (!cardData.purchased || !cardData.unlockDate) return;
+    
+    const now = Date.now();
+    const unlockTime = cardData.unlockDate;
+    const timeLeft = unlockTime - now;
+    
+    if (timeLeft <= 0) {
+        // المكافأة أصبحت قابلة للمطالبة
+        document.getElementById('lockTimer').textContent = 'Ready to claim';
+        document.getElementById('lockTimerBack').textContent = 'Ready to claim';
+        document.getElementById('lockProgress').style.width = '100%';
+        
+        const claimBtn = document.getElementById('claimBonusBtn');
+        const claimSmallBtn = document.getElementById('claimSmallBtn1');
+        
+        if (claimBtn) claimBtn.disabled = false;
+        if (claimSmallBtn) claimSmallBtn.disabled = false;
+        
+        return;
+    }
+    
+    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    document.getElementById('lockTimer').textContent = `${days}d ${hours}h`;
+    document.getElementById('lockTimerBack').textContent = `${days}d ${hours}h`;
+    
+    // حساب نسبة التقدم
+    const totalLockTime = CONFIG.CARD_LOCK_MONTHS * 30 * 24 * 60 * 60 * 1000; // تقريباً
+    const progress = ((totalLockTime - timeLeft) / totalLockTime) * 100;
+    document.getElementById('lockProgress').style.width = `${progress}%`;
+    
+    if (document.getElementById('cardProgress1')) {
+        document.getElementById('cardProgress1').style.width = `${progress}%`;
+    }
+}
+
+function claimLockedBonus() {
+    if (!cardData.purchased || cardData.claimed) {
+        showMessage('❌ Bonus already claimed', 'error');
+        return;
+    }
+    
+    const now = Date.now();
+    if (now < cardData.unlockDate) {
+        showMessage('❌ Bonus is still locked', 'error');
+        return;
+    }
+    
+    // إضافة المكافأة إلى الرصيد المتاح
+    walletData.availableMWH += cardData.bonusAmount;
+    walletData.mwhBalance = walletData.availableMWH + walletData.lockedMWH;
+    
+    cardData.claimed = true;
+    cardData.totalLocked = 0;
+    
+    // تسجيل في التاريخ
+    addToCardHistory({
+        type: 'bonus_claimed',
+        amount: cardData.bonusAmount,
+        timestamp: Date.now()
+    });
+    
+    saveCardData();
+    saveWalletData();
+    
+    // إخفاء المكافأة المقفلة
+    document.getElementById('lockedBonusSection').style.display = 'none';
+    document.getElementById('lockedBonusSectionBack').style.display = 'none';
+    
+    updateStakingBalance();
+    updateWalletUI();
+    
+    showMessage(`✅ Bonus claimed! +${cardData.bonusAmount.toLocaleString()} MWH added to your balance`, 'success');
+}
+
 function updateAirdropStrip() {
-    const airdropStrip = document.querySelector('.airdrop-progress');
-    if (airdropStrip) {
-        airdropStrip.textContent = `${CONFIG.CARD_CURRENT_BUYERS.toLocaleString()}/${CONFIG.CARD_MAX_BUYERS.toLocaleString()}`;
+    const airdropProgress = document.querySelector('.airdrop-progress');
+    const airdropLeft = document.getElementById('airdropLeft');
+    
+    if (airdropProgress) {
+        airdropProgress.textContent = `${CONFIG.CARD_CURRENT_BUYERS.toLocaleString()}/${CONFIG.CARD_MAX_BUYERS.toLocaleString()}`;
+    }
+    
+    if (airdropLeft) {
+        const left = CONFIG.CARD_MAX_BUYERS - CONFIG.CARD_CURRENT_BUYERS;
+        airdropLeft.textContent = `${left.toLocaleString()} left`;
     }
 }
 
@@ -1898,6 +2006,7 @@ function purchaseCard() {
     cardData.totalLocked = bonusAmount;
     cardData.unlockDate = unlockDate.getTime();
     cardData.buyerNumber = CONFIG.CARD_CURRENT_BUYERS + 1;
+    cardData.claimed = false;
     
     CONFIG.CARD_CURRENT_BUYERS++;
     
@@ -2006,8 +2115,17 @@ function showCardActivationModal() {
     }
 }
 
+function updateLockedBonusDisplay() {
+    if (cardData.purchased && !cardData.claimed) {
+        updateLockTimer();
+        
+        // تحديث عداد التنازلي كل دقيقة
+        setInterval(updateLockTimer, 60000);
+    }
+}
+
 // ============================================
-// 13. TRANSACTION HISTORY SYSTEM
+// 13. TRANSACTION HISTORY SYSTEM - محسن
 // ============================================
 
 function showTransactionHistory() {
@@ -2063,8 +2181,7 @@ function populatePendingTab() {
                             </div>
                         </div>
                         <div class="history-item-footer">
-                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()}</span>
-                            <span class="history-item-hash">${deposit.transactionHash?.substring(0, 8)}</span>
+                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()} ${date.toLocaleTimeString()}</span>
                         </div>
                     </div>
                 `;
@@ -2101,7 +2218,7 @@ function populatePendingTab() {
                             </div>
                         </div>
                         <div class="history-item-footer">
-                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()}</span>
+                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()} ${date.toLocaleTimeString()}</span>
                         </div>
                     </div>
                 `;
@@ -2137,7 +2254,7 @@ function populateDepositsTab() {
                             </div>
                         </div>
                         <div class="history-item-footer">
-                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()}</span>
+                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()} ${date.toLocaleTimeString()}</span>
                         </div>
                     </div>
                 `;
@@ -2175,7 +2292,7 @@ function populateDepositsTab() {
                             </div>
                         </div>
                         <div class="history-item-footer">
-                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()}</span>
+                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()} ${date.toLocaleTimeString()}</span>
                         </div>
                     </div>
                 `;
@@ -2211,7 +2328,7 @@ function populateWithdrawalsTab() {
                             </div>
                         </div>
                         <div class="history-item-footer">
-                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()}</span>
+                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()} ${date.toLocaleTimeString()}</span>
                         </div>
                     </div>
                 `;
@@ -2249,7 +2366,7 @@ function populateWithdrawalsTab() {
                             </div>
                         </div>
                         <div class="history-item-footer">
-                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()}</span>
+                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()} ${date.toLocaleTimeString()}</span>
                         </div>
                     </div>
                 `;
@@ -2260,171 +2377,160 @@ function populateWithdrawalsTab() {
 }
 
 function populateAllTab() {
-    const swapsList = document.getElementById('swapsList');
-    if (swapsList) {
-        const swaps = transactionHistory.swaps || [];
-        if (swaps.length === 0) {
-            swapsList.innerHTML = '<div class="empty-text">No swap transactions</div>';
-        } else {
-            let html = '';
-            swaps.slice(0, 5).forEach(swap => {
-                const date = new Date(swap.timestamp);
-                html += `
-                    <div class="history-item-card">
-                        <div class="history-item-header">
-                            <div class="history-item-type">
-                                <div class="history-type-icon swap"><i class="fas fa-exchange-alt"></i></div>
-                                <span class="history-type-name">Swap</span>
-                            </div>
-                            <div class="history-item-status completed">Completed</div>
-                        </div>
-                        <div class="history-item-details">
-                            <div class="history-detail-row">
-                                <span class="history-detail-label">From:</span>
-                                <span class="history-detail-value">${swap.fromAmount} ${swap.fromCurrency}</span>
-                            </div>
-                            <div class="history-detail-row">
-                                <span class="history-detail-label">To:</span>
-                                <span class="history-detail-value positive">${swap.toAmount} ${swap.toCurrency}</span>
-                            </div>
-                        </div>
-                        <div class="history-item-footer">
-                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()}</span>
-                        </div>
-                    </div>
-                `;
+    const allList = document.getElementById('allTransactionsList');
+    if (!allList) return;
+    
+    // تجميع جميع المعاملات
+    let allTransactions = [];
+    
+    // إضافة معاملات Swap
+    if (transactionHistory.swaps) {
+        transactionHistory.swaps.forEach(tx => {
+            allTransactions.push({
+                ...tx,
+                type: 'swap',
+                displayType: 'Swap',
+                icon: 'swap',
+                amount: `${tx.fromAmount} ${tx.fromCurrency} → ${tx.toAmount} ${tx.toCurrency}`,
+                status: 'completed'
             });
-            swapsList.innerHTML = html;
-        }
+        });
     }
     
-    const miningList = document.getElementById('miningList');
-    if (miningList) {
-        const mining = transactionHistory.mining || [];
-        if (mining.length === 0) {
-            miningList.innerHTML = '<div class="empty-text">No mining transactions</div>';
-        } else {
-            let html = '';
-            mining.slice(0, 5).forEach(mine => {
-                const date = new Date(mine.timestamp);
-                html += `
-                    <div class="history-item-card">
-                        <div class="history-item-header">
-                            <div class="history-item-type">
-                                <div class="history-type-icon mine"><i class="fas fa-hard-hat"></i></div>
-                                <span class="history-type-name">Mining Reward</span>
-                            </div>
-                            <div class="history-item-status completed">Completed</div>
-                        </div>
-                        <div class="history-item-details">
-                            <div class="history-detail-row">
-                                <span class="history-detail-label">Amount:</span>
-                                <span class="history-detail-value positive">+${mine.amount} MWH</span>
-                            </div>
-                        </div>
-                        <div class="history-item-footer">
-                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()}</span>
-                        </div>
-                    </div>
-                `;
+    // إضافة معاملات Mining
+    if (transactionHistory.mining) {
+        transactionHistory.mining.forEach(tx => {
+            allTransactions.push({
+                ...tx,
+                type: 'mine',
+                displayType: 'Mining Reward',
+                icon: 'mine',
+                amount: `+${tx.amount} MWH`,
+                status: 'completed'
             });
-            miningList.innerHTML = html;
-        }
+        });
     }
     
-    const stakingList = document.getElementById('stakingList');
-    if (stakingList) {
-        const staking = transactionHistory.staking || [];
-        if (staking.length === 0) {
-            stakingList.innerHTML = '<div class="empty-text">No staking transactions</div>';
-        } else {
-            let html = '';
-            staking.slice(0, 5).forEach(stake => {
-                const date = new Date(stake.timestamp);
-                let amountDisplay = '';
-                let statusClass = '';
-                
-                if (stake.type === 'stake_start') {
-                    amountDisplay = `-${stake.amount} MWH`;
-                    statusClass = 'negative';
-                } else if (stake.type === 'stake_claimed') {
-                    amountDisplay = `+${stake.totalReceived} MWH`;
-                    statusClass = 'positive';
-                } else if (stake.type === 'stake_cancelled') {
-                    amountDisplay = `+${stake.received} MWH`;
-                    statusClass = 'negative';
-                }
-                
-                html += `
-                    <div class="history-item-card">
-                        <div class="history-item-header">
-                            <div class="history-item-type">
-                                <div class="history-type-icon stake"><i class="fas fa-chart-line"></i></div>
-                                <span class="history-type-name">${stake.plan || 'Staking'}</span>
-                            </div>
-                            <div class="history-item-status ${stake.status}">${stake.status}</div>
-                        </div>
-                        <div class="history-item-details">
-                            <div class="history-detail-row">
-                                <span class="history-detail-label">Amount:</span>
-                                <span class="history-detail-value ${statusClass}">${amountDisplay}</span>
-                            </div>
-                            <div class="history-detail-row">
-                                <span class="history-detail-label">Type:</span>
-                                <span class="history-detail-value">${stake.type.replace('stake_', '')}</span>
-                            </div>
-                        </div>
-                        <div class="history-item-footer">
-                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()}</span>
-                        </div>
-                    </div>
-                `;
+    // إضافة معاملات Staking
+    if (transactionHistory.staking) {
+        transactionHistory.staking.forEach(tx => {
+            let amountDisplay = '';
+            if (tx.type === 'stake_start') {
+                amountDisplay = `-${tx.amount} MWH (Staked)`;
+            } else if (tx.type === 'stake_claimed') {
+                amountDisplay = `+${tx.totalReceived} MWH (Profit: ${tx.profit} MWH)`;
+            } else if (tx.type === 'stake_cancelled') {
+                amountDisplay = `+${tx.received} MWH (Penalty: ${tx.penalty} MWH)`;
+            }
+            
+            allTransactions.push({
+                ...tx,
+                type: 'stake',
+                displayType: tx.type === 'stake_start' ? 'Stake Started' : 
+                             tx.type === 'stake_claimed' ? 'Stake Claimed' : 'Stake Cancelled',
+                icon: 'stake',
+                amount: amountDisplay,
+                status: tx.status
             });
-            stakingList.innerHTML = html;
-        }
+        });
     }
     
-    const cardList = document.getElementById('cardList');
-    if (cardList) {
-        const card = transactionHistory.card || [];
-        if (card.length === 0) {
-            cardList.innerHTML = '<div class="empty-text">No card transactions</div>';
-        } else {
-            let html = '';
-            card.slice(0, 5).forEach(cardTx => {
-                const date = new Date(cardTx.timestamp);
-                html += `
-                    <div class="history-item-card">
-                        <div class="history-item-header">
-                            <div class="history-item-type">
-                                <div class="history-type-icon card"><i class="fas fa-credit-card"></i></div>
-                                <span class="history-type-name">Card Purchase</span>
-                            </div>
-                            <div class="history-item-status completed">Completed</div>
-                        </div>
-                        <div class="history-item-details">
-                            <div class="history-detail-row">
-                                <span class="history-detail-label">Price:</span>
-                                <span class="history-detail-value negative">-${cardTx.price} BNB</span>
-                            </div>
-                            <div class="history-detail-row">
-                                <span class="history-detail-label">Bonus:</span>
-                                <span class="history-detail-value positive">+${cardTx.instantBonus} MWH</span>
-                            </div>
-                            <div class="history-detail-row">
-                                <span class="history-detail-label">Locked:</span>
-                                <span class="history-detail-value locked">${cardTx.lockedBonus} MWH</span>
-                            </div>
-                        </div>
-                        <div class="history-item-footer">
-                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()}</span>
-                        </div>
-                    </div>
-                `;
-            });
-            cardList.innerHTML = html;
-        }
+    // إضافة معاملات Card
+    if (transactionHistory.card) {
+        transactionHistory.card.forEach(tx => {
+            if (tx.type === 'card_purchase') {
+                allTransactions.push({
+                    ...tx,
+                    type: 'card',
+                    displayType: 'Card Purchase',
+                    icon: 'card',
+                    amount: `-${tx.price} BNB, +${tx.instantBonus} MWH instant, +${tx.lockedBonus} MWH locked`,
+                    status: 'completed'
+                });
+            } else if (tx.type === 'bonus_claimed') {
+                allTransactions.push({
+                    ...tx,
+                    type: 'card',
+                    displayType: 'Bonus Claimed',
+                    icon: 'card',
+                    amount: `+${tx.amount} MWH`,
+                    status: 'completed'
+                });
+            }
+        });
     }
+    
+    // إضافة معاملات Referral
+    if (transactionHistory.referral) {
+        transactionHistory.referral.forEach(tx => {
+            allTransactions.push({
+                ...tx,
+                type: 'referral',
+                displayType: 'Referral Bonus',
+                icon: 'referral',
+                amount: `+${tx.amount} MWH`,
+                status: 'completed'
+            });
+        });
+    }
+    
+    // ترتيب من الأحدث إلى الأقدم
+    allTransactions.sort((a, b) => b.timestamp - a.timestamp);
+    
+    if (allTransactions.length === 0) {
+        allList.innerHTML = '<div class="empty-text">No transactions yet</div>';
+        return;
+    }
+    
+    let html = '';
+    allTransactions.forEach(tx => {
+        const date = new Date(tx.timestamp);
+        const timeAgo = getTimeAgo(tx.timestamp);
+        
+        html += `
+            <div class="history-item-card">
+                <div class="history-item-header">
+                    <div class="history-item-type">
+                        <div class="history-type-icon ${tx.icon}">
+                            <i class="fas ${tx.icon === 'swap' ? 'fa-exchange-alt' : 
+                                         tx.icon === 'mine' ? 'fa-hard-hat' :
+                                         tx.icon === 'stake' ? 'fa-chart-line' :
+                                         tx.icon === 'card' ? 'fa-credit-card' :
+                                         tx.icon === 'referral' ? 'fa-users' : 'fa-clock'}"></i>
+                        </div>
+                        <span class="history-type-name">${tx.displayType}</span>
+                    </div>
+                    <div class="history-item-status ${tx.status}">${tx.status}</div>
+                </div>
+                <div class="history-item-details">
+                    <div class="history-detail-row">
+                        <span class="history-detail-label">Amount:</span>
+                        <span class="history-detail-value ${tx.amount.includes('+') ? 'positive' : 'negative'}">${tx.amount}</span>
+                    </div>
+                </div>
+                <div class="history-item-footer">
+                    <span class="history-item-time"><i class="far fa-clock"></i> ${timeAgo}</span>
+                    <span class="history-item-hash">${date.toLocaleDateString()}</span>
+                </div>
+            </div>
+        `;
+    });
+    
+    allList.innerHTML = html;
+}
+
+function getTimeAgo(timestamp) {
+    const now = Date.now();
+    const diff = now - timestamp;
+    
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    return `${days} day${days > 1 ? 's' : ''} ago`;
 }
 
 function switchHistoryTab(tabName) {
@@ -2435,11 +2541,11 @@ function switchHistoryTab(tabName) {
         content.classList.remove('active');
     });
     
-    const tabId = tabName === 'all' ? 'tabAll' : 
-                  tabName === 'pending' ? 'tabPending' : 
-                  tabName === 'deposits' ? 'tabDeposits' : 'tabWithdrawals';
+    const activeTab = Array.from(document.querySelectorAll('.history-tab')).find(tab => 
+        tab.textContent.toLowerCase().includes(tabName)
+    );
+    if (activeTab) activeTab.classList.add('active');
     
-    document.getElementById(tabId).classList.add('active');
     document.getElementById(tabName + 'TabContent').classList.add('active');
 }
 
@@ -2631,15 +2737,24 @@ function watchAd() {
     const watchAdButton = document.getElementById('watchAdButton');
     if (watchAdButton) {
         watchAdButton.disabled = true;
-        watchAdButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading ad...';
+        watchAdButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Watching ad... (20s)';
     }
     
     try {
         if (typeof show_10539656 === 'function') {
             show_10539656('pop').then(() => {
-                setTimeout(() => {
-                    rewardAdWatched();
-                }, 20000);
+                // بدء العد التنازلي 20 ثانية
+                let secondsLeft = 20;
+                const timer = setInterval(() => {
+                    secondsLeft--;
+                    if (watchAdButton) {
+                        watchAdButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Watching ad... (${secondsLeft}s)`;
+                    }
+                    if (secondsLeft <= 0) {
+                        clearInterval(timer);
+                        rewardAdWatched();
+                    }
+                }, 1000);
             }).catch(() => {
                 if (watchAdButton) {
                     watchAdButton.disabled = false;
@@ -2647,9 +2762,18 @@ function watchAd() {
                 }
             });
         } else {
-            setTimeout(() => {
-                rewardAdWatched();
-            }, 20000);
+            // محاكاة للإختبار
+            let secondsLeft = 20;
+            const timer = setInterval(() => {
+                secondsLeft--;
+                if (watchAdButton) {
+                    watchAdButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Watching ad... (${secondsLeft}s)`;
+                }
+                if (secondsLeft <= 0) {
+                    clearInterval(timer);
+                    rewardAdWatched();
+                }
+            }, 1000);
         }
     } catch (error) {
         console.error("Ad error:", error);
@@ -2740,9 +2864,20 @@ function claimReferralChallenge(challengeIndex) {
     dailyStats.referralEarned += challenge.reward;
     challenge.claimed = true;
     
+    // تسجيل في تاريخ الإحالات
+    if (!transactionHistory.referral) {
+        transactionHistory.referral = [];
+    }
+    transactionHistory.referral.unshift({
+        amount: challenge.reward,
+        bonusBNB: challenge.bonusBNB || 0,
+        timestamp: Date.now()
+    });
+    
     saveUserData();
     saveWalletData();
     saveDailyStats();
+    saveTransactionHistory();
     
     updateUI();
     updateWalletUI();
@@ -3378,7 +3513,7 @@ function checkAndShowNotification() {
 }
 
 // ============================================
-// 18. DEPOSIT MODAL - مع النص الجديد
+// 18. DEPOSIT MODAL - مع النص الجديد والعنوان المحسن
 // ============================================
 
 function openDepositModal(currency) {
@@ -3386,6 +3521,15 @@ function openDepositModal(currency) {
     
     const depositAddress = CONFIG.DEPOSIT_ADDRESS;
     const minDeposit = getMinDeposit(currency);
+    
+    // تقسيم العنوان إذا كان طويلاً
+    let mainAddress = depositAddress;
+    let smallAddress = '';
+    
+    if (depositAddress.length > 30) {
+        mainAddress = depositAddress.substring(0, 30);
+        smallAddress = depositAddress.substring(30);
+    }
     
     const modalHTML = `
         <div class="modal-overlay" id="depositModal">
@@ -3417,9 +3561,8 @@ function openDepositModal(currency) {
                         
                         <div class="address-container-vertical">
                             <div class="address-value-box">
-                                <span>${depositAddress.substring(0, 20)}</span>
-                                <span>${depositAddress.substring(20, 40)}</span>
-                                <span>${depositAddress.substring(40)}</span>
+                                <span class="main-address">${mainAddress}</span>
+                                ${smallAddress ? `<span class="small-address">${smallAddress}</span>` : ''}
                             </div>
                             
                             <button class="copy-address-btn-large" onclick="copyDepositAddress()">
@@ -3478,39 +3621,6 @@ function openDepositModal(currency) {
                         <div class="transaction-status" id="amountStatus" style="display: none;">
                             <div class="status-icon" id="amountIcon"></div>
                             <div class="status-text" id="amountText"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="deposit-instructions">
-                        <div class="instructions-title">
-                            <i class="fas fa-graduation-cap"></i>
-                            <span>How to Deposit ${currency}</span>
-                        </div>
-                        <div class="instructions-steps">
-                            <div class="instruction-step">
-                                <div class="step-number">1</div>
-                                <div class="step-content">Copy the ${currency} address above</div>
-                            </div>
-                            <div class="instruction-step">
-                                <div class="step-number">2</div>
-                                <div class="step-content">Send ${currency} to this address via your wallet (BEP20 network only)</div>
-                            </div>
-                            <div class="instruction-step">
-                                <div class="step-number">3</div>
-                                <div class="step-content">Wait for transaction confirmation on BSC Scan</div>
-                            </div>
-                            <div class="instruction-step">
-                                <div class="step-number">4</div>
-                                <div class="step-content">Copy the Transaction Hash and paste it above</div>
-                            </div>
-                            <div class="instruction-step">
-                                <div class="step-number">5</div>
-                                <div class="step-content">Enter the exact amount you sent</div>
-                            </div>
-                            <div class="instruction-step">
-                                <div class="step-number">6</div>
-                                <div class="step-content">Click "Submit Deposit Request" for manual review</div>
-                            </div>
                         </div>
                     </div>
                     
@@ -3728,7 +3838,7 @@ function validateTransactionHash() {
 }
 
 // ============================================
-// 19. SWAP MODAL
+// 19. SWAP MODAL - تم إصلاحه
 // ============================================
 
 function openSwapModal(currency) {
@@ -3794,6 +3904,7 @@ function openSwapModal(currency) {
                         <div class="swap-amount-section">
                             <div class="amount-header">
                                 <div class="amount-label"><i class="fas fa-arrow-down"></i> You Receive</div>
+                                <div class="amount-balance" id="receiveBalance">0 ${toCurrency}</div>
                             </div>
                             <div class="amount-input-container">
                                 <span class="currency-prefix">${toCurrency}</span>
@@ -3810,6 +3921,14 @@ function openSwapModal(currency) {
                         </div>
                     </div>
                     
+                    <div class="swap-warning-professional" id="swapWarning" style="display: none;">
+                        <div class="warning-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="warning-content">
+                            <div class="warning-title">Cannot Proceed</div>
+                            <div class="warning-text" id="swapWarningText"></div>
+                        </div>
+                    </div>
+                    
                     <div class="swap-actions-professional">
                         <button class="btn-swap-cancel" onclick="closeModal()">Cancel</button>
                         <button class="btn-swap-confirm" id="confirmSwapBtn" onclick="executeSwap('${fromCurrency}', '${toCurrency}')" disabled>Confirm Swap</button>
@@ -3820,8 +3939,11 @@ function openSwapModal(currency) {
     `;
     
     document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
     setTimeout(() => {
-        document.getElementById('swapFromAmount')?.focus();
+        const input = document.getElementById('swapFromAmount');
+        if (input) input.focus();
+        calculateSwap(fromCurrency, toCurrency);
     }, 100);
 }
 
@@ -3846,16 +3968,60 @@ function calculateSwap(fromCurrency, toCurrency) {
         toAmount = fromAmount * CONFIG.BNB_TO_MWH_RATE;
     }
     
-    toAmount -= toAmount * 0.001;
+    const fee = toAmount * 0.001;
+    toAmount -= fee;
     
     const decimals = toCurrency === 'USDT' ? 2 : 0;
     document.getElementById('swapToAmount').value = toAmount.toFixed(decimals);
     document.getElementById('swapReceive').textContent = `${toAmount.toFixed(decimals)} ${toCurrency}`;
+    document.getElementById('receiveBalance').textContent = `${toAmount.toFixed(decimals)} ${toCurrency}`;
     
     const confirmBtn = document.getElementById('confirmSwapBtn');
-    const fromBalance = getBalanceByCurrency(fromCurrency);
+    const warning = document.getElementById('swapWarning');
+    const warningText = document.getElementById('swapWarningText');
     
-    confirmBtn.disabled = fromAmount <= 0 || fromAmount > fromBalance;
+    confirmBtn.disabled = true;
+    warning.style.display = 'none';
+    
+    if (fromAmount <= 0) {
+        warningText.textContent = "Please enter an amount to swap";
+        warning.style.display = 'flex';
+        return;
+    }
+    
+    const fromBalance = getBalanceByCurrency(fromCurrency);
+    let minSwap = 0;
+    
+    if (fromCurrency === 'MWH') {
+        minSwap = CONFIG.MIN_SWAP;
+        if (fromAmount < minSwap) {
+            warningText.textContent = `Minimum swap is ${minSwap.toLocaleString()} MWH`;
+            warning.style.display = 'flex';
+            return;
+        }
+    } else if (fromCurrency === 'BNB') {
+        minSwap = 0.001;
+        if (fromAmount < minSwap) {
+            warningText.textContent = `Minimum swap is ${minSwap} BNB`;
+            warning.style.display = 'flex';
+            return;
+        }
+    } else if (fromCurrency === 'USDT') {
+        minSwap = 0.01;
+        if (fromAmount < minSwap) {
+            warningText.textContent = `Minimum swap is ${minSwap} USDT`;
+            warning.style.display = 'flex';
+            return;
+        }
+    }
+    
+    if (fromAmount > fromBalance) {
+        warningText.textContent = `Insufficient ${fromCurrency} balance`;
+        warning.style.display = 'flex';
+        return;
+    }
+    
+    confirmBtn.disabled = false;
 }
 
 function setMaxSwap(currency) {
@@ -3877,8 +4043,19 @@ function executeSwap(fromCurrency, toCurrency) {
     const fromAmount = parseFloat(document.getElementById('swapFromAmount').value);
     const toAmount = parseFloat(document.getElementById('swapToAmount').value);
     
-    if (fromAmount <= 0 || fromAmount > getBalanceByCurrency(fromCurrency)) {
-        showMessage('❌ Invalid amount', 'error');
+    let minSwap = 0;
+    if (fromCurrency === 'MWH') minSwap = CONFIG.MIN_SWAP;
+    else if (fromCurrency === 'BNB') minSwap = 0.001;
+    else if (fromCurrency === 'USDT') minSwap = 0.01;
+    
+    if (fromAmount < minSwap) {
+        showMessage(`Minimum swap is ${minSwap.toLocaleString()} ${fromCurrency}`, 'error');
+        return;
+    }
+    
+    const fromBalance = getBalanceByCurrency(fromCurrency);
+    if (fromAmount > fromBalance) {
+        showMessage(`Insufficient ${fromCurrency} balance`, 'error');
         return;
     }
     
@@ -3928,7 +4105,7 @@ function executeSwap(fromCurrency, toCurrency) {
 }
 
 // ============================================
-// 20. WITHDRAWAL MODAL
+// 20. WITHDRAWAL MODAL - محسن (من الكود الأصلي)
 // ============================================
 
 function openWithdrawalModal() {
@@ -3946,46 +4123,152 @@ function openWithdrawalModal() {
                 <div class="modal-body">
                     <div class="withdrawal-balance-overview">
                         <div class="balance-card-professional">
-                            <div class="balance-header-professional"><i class="fas fa-coins"></i> Available Balance</div>
-                            <div class="balance-amount-professional">${usdtBalance.toFixed(2)} <span class="balance-currency">USDT</span></div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-section">
-                        <div class="form-section-header"><i class="fas fa-wallet"></i> Wallet Address</div>
-                        <div class="form-group">
-                            <input type="text" id="withdrawalAddress" class="form-input address-input" placeholder="0x..." oninput="validateWithdrawalAddress()">
-                        </div>
-                    </div>
-                    
-                    <div class="form-section">
-                        <div class="form-section-header"><i class="fas fa-money-bill-wave"></i> Amount</div>
-                        <div class="amount-input-with-max">
-                            <input type="number" id="withdrawalAmount" class="form-input amount-input" value="${usdtBalance}" min="0" max="${usdtBalance}" step="0.01" oninput="validateWithdrawalAmount()">
-                            <button class="max-amount-btn" onclick="setMaxWithdrawalAmount()">MAX</button>
-                        </div>
-                    </div>
-                    
-                    <div class="requirements-grid">
-                        <div class="requirement-card ${usdtBalance >= CONFIG.MIN_WITHDRAWAL ? 'requirement-met' : 'requirement-not-met'}">
-                            <div class="requirement-icon"><i class="fas ${usdtBalance >= CONFIG.MIN_WITHDRAWAL ? 'fa-check-circle' : 'fa-times-circle'}"></i></div>
-                            <div class="requirement-content">
-                                <div class="requirement-title">Minimum: ${CONFIG.MIN_WITHDRAWAL} USDT</div>
+                            <div class="balance-header-professional">
+                                <i class="fas fa-coins"></i>
+                                <span>Available Balance</span>
                             </div>
-                        </div>
-                        <div class="requirement-card ${bnbBalance >= CONFIG.WITHDRAWAL_FEE ? 'requirement-met' : 'requirement-not-met'}">
-                            <div class="requirement-icon"><i class="fas ${bnbBalance >= CONFIG.WITHDRAWAL_FEE ? 'fa-check-circle' : 'fa-times-circle'}"></i></div>
-                            <div class="requirement-content">
-                                <div class="requirement-title">Fee: ${CONFIG.WITHDRAWAL_FEE} BNB</div>
+                            <div class="balance-amount-professional">
+                                ${usdtBalance.toFixed(2)} <span class="balance-currency">USDT</span>
+                            </div>
+                            <div class="balance-subtitle">
+                                ≈ $${usdtBalance.toFixed(2)}
                             </div>
                         </div>
                     </div>
                     
-                    <div class="withdrawal-warning" id="withdrawalWarning" style="display: none;"></div>
+                    <div class="withdrawal-form">
+                        <div class="form-section">
+                            <div class="form-section-header">
+                                <i class="fas fa-wallet"></i>
+                                <span>Wallet Address</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">BEP20 USDT Address</label>
+                                <div class="input-with-validation">
+                                    <input type="text" 
+                                           id="withdrawalAddress" 
+                                           class="form-input address-input"
+                                           placeholder="0x..."
+                                           oninput="validateWithdrawalAddress()"
+                                           maxlength="42">
+                                    <div class="input-validation">
+                                        <i class="fas fa-check" id="addressCheck" style="display: none;"></i>
+                                        <i class="fas fa-times" id="addressError" style="display: none;"></i>
+                                    </div>
+                                </div>
+                                <div class="form-hint">
+                                    Your BEP20 USDT wallet address (must start with 0x)
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <div class="form-section-header">
+                                <i class="fas fa-money-bill-wave"></i>
+                                <span>Withdrawal Amount</span>
+                            </div>
+                            <div class="form-group">
+                                <div class="amount-input-container">
+                                    <div class="amount-input-with-max">
+                                        <input type="number" 
+                                               id="withdrawalAmount" 
+                                               class="form-input amount-input"
+                                               value="${usdtBalance > 0 ? usdtBalance.toFixed(2) : '0'}"
+                                               min="0"
+                                               max="${usdtBalance}"
+                                               step="0.01"
+                                               oninput="validateWithdrawalAmount()">
+                                        <button class="max-amount-btn" onclick="setMaxWithdrawalAmount()">
+                                            MAX
+                                        </button>
+                                    </div>
+                                    <div class="amount-slider">
+                                        <input type="range" 
+                                               id="withdrawalSlider" 
+                                               min="0" 
+                                               max="${usdtBalance}" 
+                                               value="${usdtBalance > 0 ? usdtBalance : '0'}"
+                                               step="0.01"
+                                               oninput="updateWithdrawalAmountFromSlider()">
+                                    </div>
+                                    <div class="amount-range-labels">
+                                        <span>0 USDT</span>
+                                        <span>${usdtBalance.toFixed(2)} USDT</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="requirements-section">
+                            <div class="requirements-header">
+                                <i class="fas fa-clipboard-check"></i>
+                                <span>Withdrawal Requirements</span>
+                            </div>
+                            <div class="requirements-grid">
+                                <div class="requirement-card ${usdtBalance >= CONFIG.MIN_WITHDRAWAL ? 'requirement-met' : 'requirement-not-met'}">
+                                    <div class="requirement-icon">
+                                        <i class="fas ${usdtBalance >= CONFIG.MIN_WITHDRAWAL ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                                    </div>
+                                    <div class="requirement-content">
+                                        <div class="requirement-title">Minimum Withdrawal</div>
+                                        <div class="requirement-value">${CONFIG.MIN_WITHDRAWAL} USDT</div>
+                                        <div class="requirement-status">
+                                            ${usdtBalance >= CONFIG.MIN_WITHDRAWAL ? '✓ Requirement met' : '✗ Not met'}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="requirement-card ${bnbBalance >= CONFIG.WITHDRAWAL_FEE ? 'requirement-met' : 'requirement-not-met'}">
+                                    <div class="requirement-icon">
+                                        <i class="fas ${bnbBalance >= CONFIG.WITHDRAWAL_FEE ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                                    </div>
+                                    <div class="requirement-content">
+                                        <div class="requirement-title">Network Fee</div>
+                                        <div class="requirement-value">${CONFIG.WITHDRAWAL_FEE} BNB</div>
+                                        <div class="requirement-status">
+                                            ${bnbBalance >= CONFIG.WITHDRAWAL_FEE ? '✓ Sufficient BNB' : '✗ Insufficient BNB'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="withdrawal-warning" id="withdrawalWarning" style="display: none;">
+                            <div class="warning-header">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>Cannot Proceed</span>
+                            </div>
+                            <div class="warning-text" id="withdrawalWarningText"></div>
+                        </div>
+                        
+                        <div class="summary-section">
+                            <div class="summary-header">
+                                <i class="fas fa-file-invoice-dollar"></i>
+                                <span>Withdrawal Summary</span>
+                            </div>
+                            <div class="summary-details">
+                                <div class="summary-row">
+                                    <span class="summary-label">Withdrawal Amount:</span>
+                                    <span class="summary-value" id="summaryAmount">${usdtBalance > 0 ? usdtBalance.toFixed(2) : '0'} USDT</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="summary-label">Network Fee:</span>
+                                    <span class="summary-value">${CONFIG.WITHDRAWAL_FEE} BNB</span>
+                                </div>
+                                <div class="summary-row total">
+                                    <span class="summary-label">Total Cost:</span>
+                                    <span class="summary-value" id="summaryTotal">${usdtBalance > 0 ? usdtBalance.toFixed(2) : '0'} USDT + ${CONFIG.WITHDRAWAL_FEE} BNB</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
                     <div class="modal-actions">
-                        <button class="btn-secondary-large" onclick="closeModal()">Cancel</button>
-                        <button class="btn-primary-large" id="confirmWithdrawalBtn" onclick="submitWithdrawal()">Withdraw</button>
+                        <button class="btn-secondary-large" onclick="closeModal()">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        <button class="btn-primary-large" id="confirmWithdrawalBtn" onclick="submitWithdrawal()">
+                            <i class="fas fa-paper-plane"></i> Submit Withdrawal Request
+                        </button>
                     </div>
                 </div>
             </div>
@@ -3993,70 +4276,124 @@ function openWithdrawalModal() {
     `;
     
     document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
     validateWithdrawalAmount();
+    
+    setTimeout(() => {
+        const slider = document.getElementById('withdrawalSlider');
+        if (slider) {
+            slider.value = usdtBalance > 0 ? usdtBalance : 0;
+        }
+    }, 100);
 }
 
 function setMaxWithdrawalAmount() {
     const input = document.getElementById('withdrawalAmount');
+    const slider = document.getElementById('withdrawalSlider');
+    
     if (input) {
-        input.value = walletData.usdtBalance;
+        input.value = walletData.usdtBalance.toFixed(2);
+        if (slider) {
+            slider.value = walletData.usdtBalance;
+        }
+        validateWithdrawalAmount();
+    }
+}
+
+function updateWithdrawalAmountFromSlider() {
+    const slider = document.getElementById('withdrawalSlider');
+    const input = document.getElementById('withdrawalAmount');
+    
+    if (slider && input) {
+        input.value = parseFloat(slider.value).toFixed(2);
         validateWithdrawalAmount();
     }
 }
 
 function validateWithdrawalAmount() {
-    const amount = parseFloat(document.getElementById('withdrawalAmount')?.value) || 0;
+    const amountInput = document.getElementById('withdrawalAmount');
+    const amount = parseFloat(amountInput.value) || 0;
+    const slider = document.getElementById('withdrawalSlider');
     const warning = document.getElementById('withdrawalWarning');
+    const warningText = document.getElementById('withdrawalWarningText');
     const btn = document.getElementById('confirmWithdrawalBtn');
+    const summaryAmount = document.getElementById('summaryAmount');
+    const summaryTotal = document.getElementById('summaryTotal');
     
-    if (!warning || !btn) return;
+    if (!warning || !btn || !summaryAmount || !summaryTotal) return;
+    
+    if (slider) {
+        slider.value = amount;
+    }
+    
+    summaryAmount.textContent = amount.toFixed(2) + ' USDT';
+    summaryTotal.textContent = amount.toFixed(2) + ' USDT + ' + CONFIG.WITHDRAWAL_FEE + ' BNB';
+    
+    warning.style.display = 'none';
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Withdrawal Request';
     
     const errors = [];
     
-    if (amount < CONFIG.MIN_WITHDRAWAL) {
+    if (amount > 0 && amount < CONFIG.MIN_WITHDRAWAL) {
         errors.push(`Minimum withdrawal is ${CONFIG.MIN_WITHDRAWAL} USDT`);
     }
     
     if (amount > walletData.usdtBalance) {
-        errors.push(`Insufficient balance`);
+        errors.push(`Insufficient USDT balance (Available: ${walletData.usdtBalance.toFixed(2)} USDT)`);
     }
     
     if (walletData.bnbBalance < CONFIG.WITHDRAWAL_FEE) {
-        errors.push(`Need ${CONFIG.WITHDRAWAL_FEE} BNB for fee`);
+        errors.push(`Insufficient BNB for network fee (Need: ${CONFIG.WITHDRAWAL_FEE} BNB)`);
     }
     
     if (errors.length > 0) {
-        warning.innerHTML = errors.join('<br>');
+        warningText.innerHTML = errors.join('<br>');
         warning.style.display = 'block';
         btn.disabled = true;
-    } else {
-        warning.style.display = 'none';
-        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-ban"></i> Cannot Withdraw';
     }
 }
 
 function validateWithdrawalAddress() {
-    const address = document.getElementById('withdrawalAddress')?.value.trim() || '';
+    const address = document.getElementById('withdrawalAddress').value.trim();
+    const addressCheck = document.getElementById('addressCheck');
+    const addressError = document.getElementById('addressError');
     const warning = document.getElementById('withdrawalWarning');
+    const warningText = document.getElementById('withdrawalWarningText');
     const btn = document.getElementById('confirmWithdrawalBtn');
     
     if (!warning || !btn) return;
     
+    if (addressCheck) addressCheck.style.display = 'none';
+    if (addressError) addressError.style.display = 'none';
+    
     if (!address) {
-        warning.textContent = "Enter your wallet address";
+        if (addressError) addressError.style.display = 'block';
+        warningText.textContent = "Please enter your USDT wallet address";
         warning.style.display = 'block';
         btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-ban"></i> Cannot Withdraw';
         return false;
     }
     
     if (!address.startsWith('0x') || address.length !== 42) {
-        warning.textContent = "Invalid BEP20 address";
+        if (addressError) addressError.style.display = 'block';
+        warningText.textContent = "Please enter a valid BEP20 address (must start with 0x and be 42 characters)";
         warning.style.display = 'block';
         btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-ban"></i> Cannot Withdraw';
         return false;
     }
     
+    if (addressCheck) addressCheck.style.display = 'block';
+    
+    if (warningText.textContent.includes('address')) {
+        warning.style.display = 'none';
+    }
+    
     validateWithdrawalAmount();
+    
     return true;
 }
 
@@ -4066,14 +4403,67 @@ function submitWithdrawal() {
     
     if (!validateWithdrawalAddress()) return;
     
+    const errors = [];
+    
+    if (amount < CONFIG.MIN_WITHDRAWAL) {
+        errors.push(`Minimum withdrawal is ${CONFIG.MIN_WITHDRAWAL} USDT`);
+    }
+    
+    if (amount > walletData.usdtBalance) {
+        errors.push('Insufficient USDT balance');
+    }
+    
+    if (walletData.bnbBalance < CONFIG.WITHDRAWAL_FEE) {
+        errors.push(`Insufficient BNB for network fee`);
+    }
+    
+    if (errors.length > 0) {
+        showMessage(errors.join('. '), 'error');
+        return;
+    }
+    
+    const withdrawalRequest = {
+        id: 'withdrawal_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        userId: userData.userId,
+        username: userData.username,
+        amount: amount,
+        address: address,
+        fee: CONFIG.WITHDRAWAL_FEE,
+        timestamp: Date.now(),
+        status: 'pending',
+        reviewNote: 'Awaiting manual processing'
+    };
+    
     walletData.usdtBalance -= amount;
     walletData.bnbBalance -= CONFIG.WITHDRAWAL_FEE;
+    walletData.pendingWithdrawals.push(withdrawalRequest);
     
     saveWalletData();
     updateWalletUI();
-    closeModal();
     
-    showMessage(`✅ Withdrawal request submitted for ${amount.toFixed(2)} USDT`, 'success');
+    if (db) {
+        saveWithdrawalToFirebase(withdrawalRequest);
+    }
+    
+    closeModal();
+    showMessage(`✅ Withdrawal request submitted for ${amount.toFixed(2)} USDT. Manual processing required.`, 'success');
+}
+
+function saveWithdrawalToFirebase(withdrawalRequest) {
+    if (!db) return;
+    
+    try {
+        db.collection('withdrawals').add({
+            ...withdrawalRequest,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+            console.log("✅ Withdrawal saved to Firebase");
+        }).catch(error => {
+            console.error("❌ Withdrawal save error:", error);
+        });
+    } catch (error) {
+        console.error("❌ Withdrawal Firebase save error:", error);
+    }
 }
 
 // ============================================
@@ -4251,7 +4641,18 @@ async function processReferral(referralCode) {
                 walletData.mwhBalance = walletData.availableMWH + walletData.lockedMWH;
                 userData.balance = walletData.availableMWH;
                 
+                // تسجيل في تاريخ الإحالات
+                if (!transactionHistory.referral) {
+                    transactionHistory.referral = [];
+                }
+                transactionHistory.referral.unshift({
+                    amount: CONFIG.REFERRER_REWARD,
+                    timestamp: Date.now()
+                });
+                
                 saveUserData();
+                saveWalletData();
+                saveTransactionHistory();
                 updateUI();
                 
                 showMessage(`🎉 Referral recorded! Referrer got +${CONFIG.REFERRER_REWARD} MWH`, 'success');
@@ -5150,6 +5551,7 @@ window.purchaseCard = purchaseCard;
 window.flipCard = flipCard;
 window.showCardActivationModal = showCardActivationModal;
 window.updateAirdropStrip = updateAirdropStrip;
+window.claimLockedBonus = claimLockedBonus;
 
 window.switchHistoryTab = switchHistoryTab;
 window.copyReferralLink = copyReferralLink;
@@ -5158,4 +5560,4 @@ window.minePoints = minePoints;
 
 window.switchToPage = window.switchToPage || function(page) {};
 
-console.log("✅ VIP Mining Wallet v7.0 loaded with Advanced Staking System, MWH Pay Card, and Complete Transaction History!");
+console.log("✅ VIP Mining Wallet v7.0 loaded with Advanced Staking System, MWH Pay Card, Locked Bonus, and Complete Transaction History!");
