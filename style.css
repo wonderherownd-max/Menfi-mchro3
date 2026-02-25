@@ -1,12 +1,4 @@
-/* ============================================
-   VIP MINING APP - PROFESSIONAL STYLESHEET
-   Version: 7.0 - Complete Edition with Enhanced UI
-   All features: Home, Wallet, Earning, Staking, Card, History
-   ============================================ */
-
-/* --------------------------------------------
-   1. BASIC SETTINGS & RESET
-   -------------------------------------------- */
+/* ====== Basic Settings ====== */
 * {
     margin: 0;
     padding: 0;
@@ -20,39 +12,26 @@ body {
     line-height: 1.6;
     min-height: 100vh;
     padding: 20px;
+    direction: ltr;
+    text-align: left;
     padding-bottom: 90px;
-    position: relative;
-    overflow-x: hidden;
-}
-
-/* شعاع خفيف في الخلفية */
-body::before {
-    content: '';
-    position: fixed;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(59, 130, 246, 0.03) 0%, transparent 50%);
-    z-index: -1;
-    animation: rotate 60s linear infinite;
-}
-
-@keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
 }
 
 .container {
     max-width: 450px;
     margin: 0 auto;
-    position: relative;
-    z-index: 1;
+    padding-bottom: 30px;
 }
 
-/* --------------------------------------------
-   2. TYPOGRAPHY & ANIMATIONS
-   -------------------------------------------- */
+/* =========================================== */
+/* Animations */
+/* =========================================== */
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -69,23 +48,34 @@ body::before {
     }
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
 @keyframes hammerSwing {
-    0%, 100% { transform: rotate(0deg) translateY(0); }
-    25% { transform: rotate(-15deg) translateY(-3px); }
-    50% { transform: rotate(0deg) translateY(0); }
-    75% { transform: rotate(8deg) translateY(-2px); }
+    0%, 100% { 
+        transform: rotate(0deg) translateY(0);
+    }
+    25% { 
+        transform: rotate(-15deg) translateY(-3px);
+    }
+    50% { 
+        transform: rotate(0deg) translateY(0);
+    }
+    75% { 
+        transform: rotate(8deg) translateY(-2px);
+    }
 }
 
 @keyframes moveRightToLeft {
-    0% { transform: translateX(100%); }
-    10% { transform: translateX(0); }
-    90% { transform: translateX(0); }
-    100% { transform: translateX(-100%); }
+    0% {
+        transform: translateX(100%);
+    }
+    10% {
+        transform: translateX(0);
+    }
+    90% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
 }
 
 @keyframes cardShake {
@@ -101,8 +91,8 @@ body::before {
 }
 
 @keyframes fabPulse {
-    0%, 100% { transform: scale(1); box-shadow: 0 8px 20px rgba(249, 115, 22, 0.4); }
-    50% { transform: scale(1.1); box-shadow: 0 12px 30px rgba(249, 115, 22, 0.6); }
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
 }
 
 @keyframes progressPulse {
@@ -111,23 +101,15 @@ body::before {
     100% { opacity: 0.6; }
 }
 
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
-}
+/* =========================================== */
+/* Page System */
+/* =========================================== */
 
-@keyframes glowPulse {
-    0%, 100% { box-shadow: 0 0 10px rgba(59, 130, 246, 0.3); }
-    50% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.6); }
-}
-
-/* --------------------------------------------
-   3. PAGE SYSTEM
-   -------------------------------------------- */
 .page {
     display: none;
     max-width: 450px;
     margin: 0 auto;
+    animation: fadeIn 0.3s ease;
     position: fixed;
     top: 0;
     left: 0;
@@ -137,8 +119,6 @@ body::before {
     z-index: 1000;
     overflow-y: auto;
     padding: 20px;
-    scrollbar-width: thin;
-    scrollbar-color: #3b82f6 #1e293b;
 }
 
 .page.active {
@@ -146,38 +126,22 @@ body::before {
     animation: slideUp 0.3s ease;
 }
 
-.page.hidden,
-.container.hidden {
+.page.hidden {
     display: none;
 }
 
 .container.active {
     display: block;
-    animation: fadeIn 0.3s ease;
 }
 
-/* تخصيص شريط التمرير */
-::-webkit-scrollbar {
-    width: 6px;
+.container.hidden {
+    display: none;
 }
 
-::-webkit-scrollbar-track {
-    background: rgba(30, 41, 59, 0.5);
-    border-radius: 10px;
-}
+/* =========================================== */
+/* Header & User Section */
+/* =========================================== */
 
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #4f93ff, #9d78ff);
-}
-
-/* --------------------------------------------
-   4. HEADER & USER SECTION
-   -------------------------------------------- */
 .app-header {
     height: 78px;
     padding: 12px 20px;
@@ -185,25 +149,14 @@ body::before {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: rgba(15, 23, 42, 0.8);
+    background: rgba(15, 23, 42, 0.95);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    border-radius: 20px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     position: relative;
     overflow: hidden;
-}
-
-.app-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, #3b82f6, #8b5cf6, transparent);
-    animation: glowPulse 3s infinite;
 }
 
 .logo {
@@ -218,10 +171,8 @@ body::before {
     color: #fbbf24;
     background: rgba(251, 191, 36, 0.1);
     padding: 10px;
-    border-radius: 14px;
+    border-radius: 12px;
     border: 1px solid rgba(251, 191, 36, 0.2);
-    box-shadow: 0 4px 10px rgba(251, 191, 36, 0.1);
-    animation: float 3s ease-in-out infinite;
 }
 
 .logo h1 {
@@ -230,7 +181,7 @@ body::before {
     background: linear-gradient(90deg, #fbbf24, #f59e0b);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    letter-spacing: 0.5px;
+    white-space: nowrap;
 }
 
 .token-price {
@@ -240,9 +191,8 @@ body::before {
     margin-top: 2px;
     background: rgba(34, 197, 94, 0.1);
     padding: 3px 8px;
-    border-radius: 20px;
+    border-radius: 8px;
     display: inline-block;
-    border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
 .user-section {
@@ -250,35 +200,21 @@ body::before {
     align-items: center;
     gap: 12px;
     margin-left: auto;
+    z-index: 2;
 }
 
 .user-avatar {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: linear-gradient(135deg, #3b82f6, #8b5cf6);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    font-size: 18px;
+    font-size: 16px;
     border: 2px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-    position: relative;
-}
-
-.user-avatar::after {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    z-index: -1;
-    filter: blur(5px);
-    opacity: 0.5;
+    flex-shrink: 0;
 }
 
 .user-info {
@@ -292,97 +228,81 @@ body::before {
     font-size: 14px;
     color: #f8fafc;
     margin-bottom: 2px;
-    max-width: 120px;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
-    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    max-width: 120px;
 }
 
 .user-id {
     font-size: 11px;
     color: #94a3b8;
     font-family: monospace;
-    background: rgba(0, 0, 0, 0.2);
-    padding: 2px 6px;
-    border-radius: 10px;
-    display: inline-block;
+    opacity: 0.8;
 }
 
-/* --------------------------------------------
-   5. PAGE HEADER & BACK BUTTON
-   -------------------------------------------- */
+/* =========================================== */
+/* Page Header */
+/* =========================================== */
+
 .page-header {
     display: flex;
     align-items: center;
     gap: 15px;
     margin-bottom: 25px;
-    padding: 15px 20px;
-    background: rgba(30, 41, 59, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    padding: 20px;
+    background: rgba(30, 41, 59, 0.8);
     border-radius: 20px;
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
 }
 
 .back-btn {
     background: rgba(59, 130, 246, 0.1);
     color: #60a5fa;
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.3s;
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    font-size: 18px;
 }
 
 .back-btn:hover {
     background: rgba(59, 130, 246, 0.2);
     transform: scale(1.1);
-    border-color: rgba(59, 130, 246, 0.4);
 }
 
 .page-header h2 {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 700;
     color: #f8fafc;
     display: flex;
     align-items: center;
     gap: 10px;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
-.page-header h2 i {
-    color: #fbbf24;
-    font-size: 24px;
-}
+/* =========================================== */
+/* Balance Card */
+/* =========================================== */
 
-/* --------------------------------------------
-   6. BALANCE CARD (HOME PAGE)
-   -------------------------------------------- */
 .balance-card {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15));
-    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+    border-radius: 20px;
     padding: 25px;
     margin-bottom: 25px;
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(59, 130, 246, 0.2);
     position: relative;
     overflow: hidden;
-    transition: all 0.3s;
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
 }
 
 .balance-card:hover {
-    border-color: rgba(59, 130, 246, 0.6);
-    transform: translateY(-2px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    border-color: rgba(59, 130, 246, 0.4);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
 }
 
 .balance-card::before {
@@ -391,21 +311,8 @@ body::before {
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #3b82f6, #8b5cf6, #fbbf24);
-    z-index: 2;
-}
-
-.balance-card::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
-    animation: rotate 30s linear infinite;
-    z-index: 1;
+    height: 4px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
 }
 
 .balance-header {
@@ -413,8 +320,6 @@ body::before {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    position: relative;
-    z-index: 2;
 }
 
 .balance-header span:first-child {
@@ -423,59 +328,46 @@ body::before {
     display: flex;
     align-items: center;
     gap: 8px;
-    background: rgba(0, 0, 0, 0.2);
-    padding: 5px 12px;
-    border-radius: 20px;
 }
 
 .rank-badge {
     background: rgba(34, 197, 94, 0.2);
     color: #22c55e;
-    padding: 6px 14px;
-    border-radius: 30px;
+    padding: 5px 12px;
+    border-radius: 20px;
     font-size: 12px;
-    font-weight: 700;
-    border: 1px solid rgba(34, 197, 94, 0.4);
-    backdrop-filter: blur(5px);
-    letter-spacing: 0.5px;
+    font-weight: 600;
+    border: 1px solid rgba(34, 197, 94, 0.3);
 }
 
 .balance-amount {
-    font-size: 52px;
+    font-size: 48px;
     font-weight: 800;
     color: #fbbf24;
     text-align: center;
-    margin: 15px 0;
-    text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
-    position: relative;
-    z-index: 2;
-    line-height: 1;
+    margin: 10px 0;
+    text-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
 }
 
 .balance-value {
     text-align: center;
     margin-bottom: 20px;
-    position: relative;
-    z-index: 2;
 }
 
 .balance-sub {
     font-size: 14px;
     color: #94a3b8;
-    margin-bottom: 8px;
-    letter-spacing: 0.5px;
+    margin-bottom: 4px;
 }
 
 .balance-usd {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
     color: #22c55e;
-    background: rgba(34, 197, 94, 0.15);
-    padding: 6px 16px;
-    border-radius: 30px;
+    background: rgba(34, 197, 94, 0.1);
+    padding: 4px 12px;
+    border-radius: 10px;
     display: inline-block;
-    border: 1px solid rgba(34, 197, 94, 0.3);
-    backdrop-filter: blur(5px);
 }
 
 .balance-stats {
@@ -483,8 +375,6 @@ body::before {
     justify-content: space-around;
     padding-top: 20px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
-    position: relative;
-    z-index: 2;
 }
 
 .stat-item {
@@ -493,36 +383,26 @@ body::before {
     gap: 8px;
     color: #cbd5e0;
     font-size: 14px;
-    background: rgba(0, 0, 0, 0.2);
-    padding: 8px 15px;
-    border-radius: 30px;
-    transition: all 0.3s;
-}
-
-.stat-item:hover {
-    background: rgba(59, 130, 246, 0.1);
-    transform: translateY(-2px);
 }
 
 .stat-item i {
     color: #60a5fa;
-    font-size: 16px;
 }
 
-/* --------------------------------------------
-   7. MINING SECTION
-   -------------------------------------------- */
+/* =========================================== */
+/* Mining Section */
+/* =========================================== */
+
 .mining-section {
-    background: rgba(30, 41, 59, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 24px;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 20px;
     padding: 25px;
     margin-bottom: 25px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
     position: relative;
-    padding-bottom: 45px;
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    padding-bottom: 40px;
+    backdrop-filter: blur(10px);
 }
 
 .mining-section:hover {
@@ -544,30 +424,22 @@ body::before {
     color: #f8fafc;
 }
 
-.mining-header h3 i {
-    color: #fbbf24;
-    filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.3));
-}
-
 .mining-power {
-    background: rgba(245, 158, 11, 0.15);
+    background: rgba(245, 158, 11, 0.1);
     color: #f59e0b;
-    padding: 6px 14px;
-    border-radius: 30px;
+    padding: 6px 12px;
+    border-radius: 15px;
     font-size: 12px;
-    font-weight: 600;
     display: flex;
     align-items: center;
     gap: 5px;
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    backdrop-filter: blur(5px);
 }
 
 .mine-btn {
     width: 100%;
     background: linear-gradient(135deg, #3b82f6, #6366f1);
     border: none;
-    border-radius: 20px;
+    border-radius: 15px;
     padding: 20px;
     display: flex;
     align-items: center;
@@ -580,29 +452,11 @@ body::before {
     margin-bottom: 15px;
     position: relative;
     z-index: 10;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
-    overflow: hidden;
-}
-
-.mine-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
-}
-
-.mine-btn:hover::before {
-    left: 100%;
 }
 
 .mine-btn:hover:not(:disabled) {
-    transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(59, 130, 246, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
 }
 
 .mine-btn:active:not(:disabled) {
@@ -610,26 +464,21 @@ body::before {
 }
 
 .mine-btn:disabled {
-    opacity: 0.7;
+    opacity: 0.6;
     cursor: not-allowed;
-    filter: grayscale(0.5);
 }
 
 .mine-icon {
-    font-size: 28px;
-    background: rgba(255, 255, 255, 0.15);
+    font-size: 24px;
+    background: rgba(255, 255, 255, 0.2);
     padding: 12px;
-    border-radius: 16px;
+    border-radius: 12px;
     animation: hammerSwing 3s ease-in-out infinite;
     transform-origin: bottom center;
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .mine-ready .mine-icon {
     animation: hammerSwing 1.5s ease-in-out infinite;
-    background: rgba(255, 255, 255, 0.25);
-    box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
 }
 
 .mine-text {
@@ -639,35 +488,33 @@ body::before {
 
 .mine-title {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.8);
+    color: #cbd5e0;
     margin-bottom: 4px;
 }
 
 .mine-reward {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 800;
     color: #fbbf24;
-    text-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
-    line-height: 1.2;
+    text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
 }
 
 .mine-subtitle {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.6);
+    color: #94a3b8;
+    margin-top: 2px;
 }
 
 .mine-cooldown {
-    background: rgba(239, 68, 68, 0.15);
+    background: rgba(239, 68, 68, 0.1);
     color: #ef4444;
-    padding: 8px 14px;
-    border-radius: 16px;
+    padding: 8px 12px;
+    border-radius: 10px;
     font-size: 16px;
     font-family: monospace;
     font-weight: 700;
-    min-width: 70px;
+    min-width: 60px;
     text-align: center;
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    backdrop-filter: blur(5px);
 }
 
 .next-rank-bonus {
@@ -675,15 +522,11 @@ body::before {
     color: #f59e0b;
     font-size: 13px;
     font-weight: 600;
-    margin: 15px 0;
-    padding: 8px 16px;
+    margin: 10px 0;
+    padding: 6px 12px;
     background: rgba(245, 158, 11, 0.1);
-    border-radius: 30px;
+    border-radius: 10px;
     border: 1px solid rgba(245, 158, 11, 0.2);
-    display: inline-block;
-    width: auto;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 .energy-belt {
@@ -691,13 +534,12 @@ body::before {
     bottom: 15px;
     left: 25px;
     right: 25px;
-    height: 14px;
+    height: 12px;
     background: rgba(30, 41, 59, 0.9);
-    border-radius: 20px;
+    border-radius: 10px;
     border: 2px solid rgba(59, 130, 246, 0.3);
     overflow: hidden;
     z-index: 5;
-    backdrop-filter: blur(5px);
 }
 
 .belt-fill {
@@ -706,22 +548,28 @@ body::before {
     left: 0;
     height: 100%;
     width: 0%;
-    background: linear-gradient(90deg, #ef4444, #f59e0b, #fbbf24, #22c55e, #10b981);
-    border-radius: 20px;
+    background: linear-gradient(90deg, 
+        #ef4444 0%, 
+        #f59e0b 25%, 
+        #fbbf24 50%, 
+        #22c55e 75%, 
+        #10b981 100%
+    );
+    border-radius: 8px;
     transition: width 0.5s ease;
-    box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
 }
 
 .belt-knob {
     position: absolute;
     top: -6px;
     left: 0%;
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     background: #fbbf24;
     border-radius: 50%;
     border: 3px solid #1e293b;
-    box-shadow: 0 0 20px rgba(251, 191, 36, 0.8);
+    box-shadow: 0 0 15px rgba(251, 191, 36, 0.8);
     z-index: 6;
     transition: left 0.5s ease;
     transform: translateX(-50%);
@@ -730,33 +578,26 @@ body::before {
 .mining-tip {
     background: rgba(139, 92, 246, 0.1);
     color: #8b5cf6;
-    padding: 12px 18px;
-    border-radius: 30px;
+    padding: 12px 15px;
+    border-radius: 10px;
     font-size: 13px;
     display: flex;
     align-items: center;
     gap: 10px;
-    border: 1px solid rgba(139, 92, 246, 0.2);
-    margin-top: 10px;
 }
 
-.mining-tip i {
-    font-size: 16px;
-    filter: drop-shadow(0 0 5px rgba(139, 92, 246, 0.3));
-}
+/* =========================================== */
+/* Referral System */
+/* =========================================== */
 
-/* --------------------------------------------
-   8. REFERRAL SYSTEM
-   -------------------------------------------- */
 .referral-section {
-    background: rgba(30, 41, 59, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 24px;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 20px;
     padding: 25px;
     margin-bottom: 25px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
 }
 
 .referral-section:hover {
@@ -778,21 +619,15 @@ body::before {
     color: #f8fafc;
 }
 
-.section-header h3 i {
-    color: #fbbf24;
-}
-
 .referral-bonus {
-    background: rgba(34, 197, 94, 0.15);
+    background: rgba(34, 197, 94, 0.1);
     color: #22c55e;
-    padding: 6px 14px;
-    border-radius: 30px;
+    padding: 6px 12px;
+    border-radius: 15px;
     font-size: 12px;
-    font-weight: 600;
     display: flex;
     align-items: center;
     gap: 5px;
-    border: 1px solid rgba(34, 197, 94, 0.3);
 }
 
 .referral-stats {
@@ -803,33 +638,22 @@ body::before {
 }
 
 .ref-stat {
-    background: rgba(15, 23, 42, 0.6);
-    padding: 15px 10px;
-    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 12px;
     text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: all 0.3s;
-    backdrop-filter: blur(5px);
-}
-
-.ref-stat:hover {
-    transform: translateY(-3px);
-    border-color: rgba(59, 130, 246, 0.3);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
 .ref-stat-value {
-    font-size: 26px;
-    font-weight: 800;
+    font-size: 24px;
+    font-weight: 700;
     color: #fbbf24;
     margin-bottom: 5px;
-    text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
 }
 
 .ref-stat-label {
     font-size: 12px;
     color: #94a3b8;
-    letter-spacing: 0.5px;
 }
 
 .referral-link-container {
@@ -840,19 +664,17 @@ body::before {
     display: flex;
     background: rgba(15, 23, 42, 0.8);
     border: 1px solid rgba(59, 130, 246, 0.3);
-    border-radius: 18px;
+    border-radius: 12px;
     overflow: hidden;
     margin-bottom: 15px;
-    backdrop-filter: blur(5px);
 }
 
 .input-icon {
-    padding: 15px 18px;
-    background: rgba(59, 130, 246, 0.15);
+    padding: 15px;
+    background: rgba(59, 130, 246, 0.1);
     color: #60a5fa;
     display: flex;
     align-items: center;
-    border-right: 1px solid rgba(59, 130, 246, 0.2);
 }
 
 .referral-input {
@@ -864,25 +686,24 @@ body::before {
     font-size: 14px;
     outline: none;
     font-family: monospace;
-    letter-spacing: 0.5px;
-}
-
-.referral-input::placeholder {
-    color: #4b5563;
+    width: 100%;
+    text-align: left;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
 }
 
 .copy-btn {
     background: linear-gradient(135deg, #3b82f6, #6366f1);
     border: none;
-    padding: 0 25px;
+    padding: 0 20px;
     color: white;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: background 0.3s;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
-    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    min-width: 70px;
 }
 
 .copy-btn:hover {
@@ -896,9 +717,9 @@ body::before {
 
 .action-btn {
     flex: 1;
-    padding: 14px;
+    padding: 12px;
     border: none;
-    border-radius: 16px;
+    border-radius: 10px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
@@ -909,33 +730,27 @@ body::before {
     transition: all 0.3s;
     background: linear-gradient(135deg, #3b82f6, #6366f1);
     color: white;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.2);
 }
 
 .action-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
 }
 
 .referral-info {
-    background: rgba(15, 23, 42, 0.6);
-    border-radius: 18px;
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 15px;
     padding: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: 20px;
 }
 
 .referral-info h4 {
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     font-size: 16px;
     display: flex;
     align-items: center;
     gap: 8px;
     color: #f8fafc;
-}
-
-.referral-info h4 i {
-    color: #60a5fa;
 }
 
 .referral-info p {
@@ -944,18 +759,22 @@ body::before {
     line-height: 1.5;
 }
 
-/* --------------------------------------------
-   9. PROGRESS SECTION
-   -------------------------------------------- */
+/* =========================================== */
+/* Progress Section */
+/* =========================================== */
+
 .progress-section {
-    background: rgba(30, 41, 59, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 24px;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 20px;
     padding: 25px;
     margin-bottom: 25px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.progress-section:hover {
+    border-color: rgba(59, 130, 246, 0.4);
 }
 
 .progress-header {
@@ -973,48 +792,28 @@ body::before {
     color: #f8fafc;
 }
 
-.progress-header h4 i {
-    color: #fbbf24;
-}
-
 .next-rank {
-    background: rgba(245, 158, 11, 0.15);
+    background: rgba(245, 158, 11, 0.1);
     color: #f59e0b;
-    padding: 6px 14px;
-    border-radius: 30px;
+    padding: 5px 10px;
+    border-radius: 15px;
     font-size: 12px;
-    font-weight: 600;
-    border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .progress-bar {
-    height: 12px;
-    background: rgba(15, 23, 42, 0.6);
-    border-radius: 30px;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
     overflow: hidden;
     margin-bottom: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 2px;
 }
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #3b82f6, #8b5cf6, #fbbf24);
-    border-radius: 30px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    border-radius: 5px;
+    width: 50%;
     transition: width 0.5s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.progress-fill::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    animation: moveRightToLeft 3s infinite;
 }
 
 .progress-stats {
@@ -1024,11 +823,10 @@ body::before {
 }
 
 .progress-stat {
-    background: rgba(15, 23, 42, 0.6);
-    padding: 12px 8px;
-    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 12px;
+    border-radius: 10px;
     text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .progress-stat span:first-child {
@@ -1040,43 +838,31 @@ body::before {
 
 .progress-stat span:last-child {
     color: #fbbf24;
-    font-weight: 700;
-    font-size: 15px;
+    font-weight: 600;
+    font-size: 14px;
 }
 
-/* --------------------------------------------
-   10. WALLET PAGE - TOTAL BALANCE
-   -------------------------------------------- */
+/* =========================================== */
+/* Wallet Page */
+/* =========================================== */
+
 .wallet-container {
-    padding: 0 5px;
+    padding: 0 10px;
 }
 
 .total-balance-card {
     background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    border-radius: 24px;
+    border-radius: 20px;
     padding: 25px;
     margin-bottom: 25px;
     text-align: center;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 15px 35px rgba(59, 130, 246, 0.3);
-    position: relative;
-    overflow: hidden;
-}
-
-.total-balance-card::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-    animation: rotate 30s linear infinite;
+    box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
 }
 
 .total-balance-card.compact {
-    padding: 18px 20px !important;
-    height: 75px !important;
+    padding: 20px !important;
+    height: 70px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
@@ -1088,22 +874,15 @@ body::before {
     display: flex !important;
     align-items: center !important;
     gap: 8px !important;
-    position: relative;
-    z-index: 2;
 }
 
 .total-balance-card.compact .total-balance-amount {
     font-size: 28px !important;
-    position: relative;
-    z-index: 2;
 }
 
 .total-balance-card.compact .total-balance-sub {
     font-size: 11px !important;
     margin-top: 2px !important;
-    opacity: 0.8;
-    position: relative;
-    z-index: 2;
 }
 
 .total-balance-label {
@@ -1117,12 +896,11 @@ body::before {
 }
 
 .total-balance-amount {
-    font-size: 44px;
+    font-size: 42px;
     font-weight: 800;
     color: white;
-    text-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     margin: 10px 0;
-    line-height: 1;
 }
 
 .total-balance-sub {
@@ -1130,17 +908,14 @@ body::before {
     font-size: 13px;
 }
 
-/* --------------------------------------------
-   11. QUICK ACTIONS
-   -------------------------------------------- */
+/* Quick Actions */
 .wallet-quick-actions {
-    background: rgba(30, 41, 59, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 24px;
-    padding: 20px;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 20px;
+    padding: 25px;
     margin-bottom: 25px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
 }
 
 .wallet-quick-actions.compact {
@@ -1158,17 +933,17 @@ body::before {
 }
 
 .wallet-quick-actions.compact .actions-grid {
-    gap: 10px !important;
+    gap: 12px !important;
 }
 
 .wallet-quick-actions.compact .quick-action {
-    padding: 12px 5px !important;
+    padding: 12px 8px !important;
     min-height: 70px !important;
 }
 
 .wallet-quick-actions.compact .action-icon {
-    width: 36px !important;
-    height: 36px !important;
+    width: 32px !important;
+    height: 32px !important;
     font-size: 16px !important;
     margin-bottom: 8px !important;
 }
@@ -1190,29 +965,27 @@ body::before {
 .actions-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
+    gap: 15px;
 }
 
 .quick-action {
-    background: rgba(15, 23, 42, 0.6);
+    background: rgba(15, 23, 42, 0.8);
     border: 1px solid rgba(59, 130, 246, 0.2);
-    border-radius: 16px;
-    padding: 15px 8px;
+    border-radius: 12px;
+    padding: 15px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s;
-    backdrop-filter: blur(5px);
 }
 
 .quick-action:hover {
-    border-color: rgba(59, 130, 246, 0.5);
-    transform: translateY(-3px);
-    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.4);
+    transform: translateY(-2px);
 }
 
 .action-icon {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     background: linear-gradient(135deg, #3b82f6, #6366f1);
     border-radius: 50%;
     display: flex;
@@ -1221,12 +994,6 @@ body::before {
     margin: 0 auto 10px;
     font-size: 18px;
     color: white;
-    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
-    transition: all 0.3s;
-}
-
-.quick-action:hover .action-icon {
-    transform: scale(1.1);
 }
 
 .action-text {
@@ -1235,9 +1002,7 @@ body::before {
     font-weight: 600;
 }
 
-/* --------------------------------------------
-   12. CRYPTO CARDS
-   -------------------------------------------- */
+/* Crypto Grid */
 .crypto-grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -1246,25 +1011,25 @@ body::before {
 }
 
 .crypto-card {
-    background: rgba(30, 41, 59, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 24px;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 18px;
     padding: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
 }
 
 .crypto-card:hover {
-    border-color: rgba(59, 130, 246, 0.5);
-    transform: translateY(-4px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    border-color: rgba(59, 130, 246, 0.4);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
 .crypto-card.compact {
     min-height: 140px !important;
-    padding: 18px !important;
+    padding: 20px !important;
     margin-bottom: 12px !important;
     display: flex !important;
     flex-direction: column !important;
@@ -1286,8 +1051,16 @@ body::before {
 }
 
 .crypto-card.compact .crypto-price {
-    font-size: 11px !important;
-    padding: 4px 8px !important;
+    font-size: 12px !important;
+    padding: 4px 10px !important;
+    border-radius: 12px !important;
+    text-align: left !important;
+    margin-top: 8px !important;
+    display: block !important;
+}
+
+.crypto-card.compact .crypto-balance {
+    margin-bottom: 12px !important;
 }
 
 .crypto-card.compact .crypto-balance .balance-amount {
@@ -1296,33 +1069,65 @@ body::before {
 
 .crypto-card.compact .crypto-value {
     padding: 8px 12px !important;
-    font-size: 13px !important;
+    border-radius: 12px !important;
+    font-size: 14px !important;
+    margin-bottom: 15px !important;
+}
+
+.crypto-card.compact .crypto-actions {
+    margin-top: 8px !important;
 }
 
 .crypto-card.compact .crypto-actions .action-btn-small {
     padding: 8px !important;
-    font-size: 11px !important;
+    font-size: 12px !important;
+    min-height: 32px !important;
 }
 
 .crypto-header {
     display: flex;
     align-items: center;
     gap: 15px;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .crypto-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 16px;
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
-    border: 2px solid;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    font-size: 22px;
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 2px solid rgba(59, 130, 246, 0.3);
+}
+
+.crypto-icon.usdt {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.crypto-icon.bnb {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.crypto-icon.ton {
+    background: rgba(139, 92, 246, 0.15);
+    color: #8b5cf6;
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.crypto-icon.eth {
+    background: rgba(99, 102, 241, 0.15);
+    color: #6366f1;
+    border-color: rgba(99, 102, 241, 0.3);
 }
 
 .crypto-title {
@@ -1343,10 +1148,11 @@ body::before {
 
 .crypto-price {
     font-size: 12px;
-    padding: 4px 12px;
-    border-radius: 30px;
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
+    padding: 4px 10px;
+    border-radius: 20px;
     white-space: nowrap;
-    font-weight: 600;
 }
 
 .crypto-balance {
@@ -1355,12 +1161,11 @@ body::before {
 }
 
 .balance-amount {
-    font-size: 34px;
+    font-size: 32px;
     font-weight: 800;
     color: #fbbf24;
-    text-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+    text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
     margin-bottom: 5px;
-    line-height: 1;
 }
 
 .balance-currency {
@@ -1371,14 +1176,14 @@ body::before {
 .crypto-value {
     text-align: center;
     font-size: 15px;
+    color: #22c55e;
     font-weight: 600;
     margin-bottom: 20px;
-    padding: 8px 16px;
-    border-radius: 30px;
+    background: rgba(34, 197, 94, 0.1);
+    padding: 8px 15px;
+    border-radius: 12px;
     display: inline-block;
     width: 100%;
-    background: rgba(34, 197, 94, 0.1);
-    border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
 .crypto-actions {
@@ -1388,33 +1193,30 @@ body::before {
 
 .action-btn-small {
     flex: 1;
-    padding: 12px 8px;
+    padding: 10px;
     background: linear-gradient(135deg, #3b82f6, #6366f1);
     border: none;
-    border-radius: 14px;
+    border-radius: 10px;
     color: white;
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.2);
+    transition: all 0.3s;
 }
 
 .action-btn-small:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
 }
 
 .action-btn-small.disabled {
     background: rgba(255, 255, 255, 0.1);
     color: #94a3b8;
     cursor: not-allowed;
-    box-shadow: none;
 }
 
 .action-btn-small.disabled:hover {
@@ -1428,76 +1230,68 @@ body::before {
 
 /* Crypto Colors */
 .mwh-icon {
-    background: rgba(59, 130, 246, 0.2) !important;
+    background: rgba(59, 130, 246, 0.15) !important;
     color: #3b82f6 !important;
-    border-color: rgba(59, 130, 246, 0.4) !important;
+    border-color: rgba(59, 130, 246, 0.3) !important;
 }
 
 .mwh-price, .mwh-value {
-    background: rgba(59, 130, 246, 0.15) !important;
+    background: rgba(59, 130, 246, 0.1) !important;
     color: #3b82f6 !important;
 }
 
 .usdt-icon {
-    background: rgba(16, 185, 129, 0.2) !important;
+    background: rgba(16, 185, 129, 0.15) !important;
     color: #10b981 !important;
-    border-color: rgba(16, 185, 129, 0.4) !important;
+    border-color: rgba(16, 185, 129, 0.3) !important;
 }
 
 .usdt-price, .usdt-value {
-    background: rgba(16, 185, 129, 0.15) !important;
+    background: rgba(16, 185, 129, 0.1) !important;
     color: #10b981 !important;
 }
 
 .bnb-icon {
-    background: rgba(251, 191, 36, 0.2) !important;
+    background: rgba(251, 191, 36, 0.15) !important;
     color: #fbbf24 !important;
-    border-color: rgba(251, 191, 36, 0.4) !important;
+    border-color: rgba(251, 191, 36, 0.3) !important;
 }
 
 .bnb-price, .bnb-value {
-    background: rgba(251, 191, 36, 0.15) !important;
+    background: rgba(251, 191, 36, 0.1) !important;
     color: #fbbf24 !important;
 }
 
 .ton-icon {
-    background: rgba(6, 182, 212, 0.2) !important;
+    background: rgba(6, 182, 212, 0.15) !important;
     color: #06b6d4 !important;
-    border-color: rgba(6, 182, 212, 0.4) !important;
+    border-color: rgba(6, 182, 212, 0.3) !important;
 }
 
 .ton-price, .ton-value {
-    background: rgba(6, 182, 212, 0.15) !important;
+    background: rgba(6, 182, 212, 0.1) !important;
     color: #06b6d4 !important;
 }
 
 .eth-icon {
-    background: rgba(139, 92, 246, 0.2) !important;
+    background: rgba(139, 92, 246, 0.15) !important;
     color: #8b5cf6 !important;
-    border-color: rgba(139, 92, 246, 0.4) !important;
+    border-color: rgba(139, 92, 246, 0.3) !important;
 }
 
 .eth-price, .eth-value {
-    background: rgba(139, 92, 246, 0.15) !important;
+    background: rgba(139, 92, 246, 0.1) !important;
     color: #8b5cf6 !important;
 }
 
-/* --------------------------------------------
-   13. WALLET INFORMATION
-   -------------------------------------------- */
+/* Wallet Info */
 .wallet-info-card {
-    background: rgba(30, 41, 59, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 24px;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 20px;
     padding: 20px;
     margin-bottom: 25px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.wallet-info-card.premium {
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
 }
 
 .info-header {
@@ -1510,8 +1304,7 @@ body::before {
 
 .info-header i {
     color: #60a5fa;
-    font-size: 20px;
-    filter: drop-shadow(0 0 5px rgba(96, 165, 250, 0.3));
+    font-size: 18px;
 }
 
 .info-header h4 {
@@ -1519,79 +1312,55 @@ body::before {
     font-weight: 600;
 }
 
-.info-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-}
-
-.info-item-card {
-    background: rgba(15, 23, 42, 0.6);
-    border-radius: 18px;
-    padding: 15px 12px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: all 0.3s;
-    backdrop-filter: blur(5px);
-}
-
-.info-item-card:hover {
-    transform: translateY(-3px);
-    border-color: rgba(59, 130, 246, 0.4);
-    background: rgba(59, 130, 246, 0.1);
-}
-
-.info-icon {
-    font-size: 26px;
-    width: 44px;
-    height: 44px;
-    background: rgba(59, 130, 246, 0.15);
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(59, 130, 246, 0.2);
-}
-
-.info-details {
-    flex: 1;
+.info-content {
     display: flex;
     flex-direction: column;
+    gap: 12px;
 }
 
-.info-label {
-    font-size: 11px;
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.info-item span:first-child {
     color: #94a3b8;
-    margin-bottom: 4px;
-    letter-spacing: 0.5px;
+    font-size: 14px;
 }
 
 .info-value {
-    font-size: 14px;
-    font-weight: 700;
     color: #fbbf24;
+    font-size: 14px;
+    font-weight: 600;
 }
 
-/* --------------------------------------------
-   14. EARNING PAGE
-   -------------------------------------------- */
+/* =========================================== */
+/* Earning Page */
+/* =========================================== */
+
 .earning-content {
-    padding: 0 5px 20px;
+    padding: 0 10px;
+    padding-bottom: 20px;
 }
 
 .daily-reset-card {
-    background: rgba(30, 41, 59, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 18px 20px;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 16px;
+    padding: 20px;
     margin-bottom: 20px;
     border: 1px solid rgba(59, 130, 246, 0.2);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    backdrop-filter: blur(10px);
 }
 
 .reset-info {
@@ -1601,23 +1370,22 @@ body::before {
 }
 
 .reset-info i {
-    font-size: 26px;
+    font-size: 24px;
     color: #60a5fa;
-    background: rgba(59, 130, 246, 0.15);
+    background: rgba(59, 130, 246, 0.1);
     padding: 10px;
-    border-radius: 14px;
-    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 10px;
 }
 
 .reset-label {
     color: #cbd5e0;
-    font-size: 13px;
+    font-size: 14px;
     margin-bottom: 4px;
 }
 
 .reset-countdown {
     color: #fbbf24;
-    font-weight: 700;
+    font-weight: 600;
     font-size: 15px;
 }
 
@@ -1626,8 +1394,8 @@ body::before {
 }
 
 .reset-stat-value {
-    font-size: 22px;
-    font-weight: 800;
+    font-size: 20px;
+    font-weight: 700;
     color: #22c55e;
     margin-bottom: 4px;
 }
@@ -1638,13 +1406,12 @@ body::before {
 }
 
 .earning-section {
-    background: rgba(30, 41, 59, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 20px;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 16px;
     padding: 20px;
     margin-bottom: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
 }
 
 .section-header-earning {
@@ -1661,27 +1428,25 @@ body::before {
 }
 
 .section-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 16px;
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
-    border: 2px solid;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    font-size: 22px;
 }
 
 .ad-icon {
-    background: rgba(59, 130, 246, 0.2);
+    background: rgba(59, 130, 246, 0.15);
     color: #60a5fa;
-    border-color: rgba(59, 130, 246, 0.4);
+    border: 2px solid rgba(59, 130, 246, 0.3);
 }
 
 .task-icon {
-    background: rgba(34, 197, 94, 0.2);
+    background: rgba(34, 197, 94, 0.15);
     color: #22c55e;
-    border-color: rgba(34, 197, 94, 0.4);
+    border: 2px solid rgba(34, 197, 94, 0.3);
 }
 
 .section-title-earning h3 {
@@ -1696,33 +1461,30 @@ body::before {
 }
 
 .section-badge {
-    background: rgba(245, 158, 11, 0.15);
+    background: rgba(245, 158, 11, 0.1);
     color: #f59e0b;
-    padding: 6px 14px;
-    border-radius: 30px;
+    padding: 6px 12px;
+    border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
     display: flex;
     align-items: center;
     gap: 5px;
-    border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .challenge-badge {
-    background: rgba(239, 68, 68, 0.15);
+    background: rgba(239, 68, 68, 0.1);
     color: #ef4444;
-    border-color: rgba(239, 68, 68, 0.3);
 }
 
 .ad-stats-card {
-    background: rgba(15, 23, 42, 0.6);
-    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 12px;
     padding: 15px;
     margin-bottom: 15px;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .ad-stat {
@@ -1739,12 +1501,8 @@ body::before {
     font-size: 14px;
 }
 
-.ad-stat-label i {
-    color: #60a5fa;
-}
-
 .ad-stat-value {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 700;
     color: #fbbf24;
 }
@@ -1763,71 +1521,37 @@ body::before {
 
 .progress-bar-earning {
     height: 8px;
-    background: rgba(15, 23, 42, 0.6);
-    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .progress-fill-earning {
     height: 100%;
     background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-    border-radius: 20px;
-    transition: width 0.5s;
-    position: relative;
-    overflow: hidden;
-}
-
-.progress-fill-earning::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    animation: moveRightToLeft 3s infinite;
+    border-radius: 4px;
+    transition: width 0.5s ease;
 }
 
 .watch-ad-btn {
     width: 100%;
     background: linear-gradient(135deg, #3b82f6, #6366f1);
     border: none;
-    border-radius: 18px;
+    border-radius: 12px;
     padding: 16px;
     margin-bottom: 15px;
     cursor: pointer;
     transition: all 0.3s;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
-    overflow: hidden;
-    position: relative;
-}
-
-.watch-ad-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
-}
-
-.watch-ad-btn:hover::before {
-    left: 100%;
 }
 
 .watch-ad-btn:hover:not(:disabled) {
-    transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(59, 130, 246, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
 }
 
 .watch-ad-btn:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
-    filter: grayscale(0.5);
 }
 
 .ad-btn-content {
@@ -1837,17 +1561,15 @@ body::before {
 }
 
 .ad-btn-icon {
-    background: rgba(255, 255, 255, 0.15);
-    width: 52px;
-    height: 52px;
-    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.2);
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 24px;
     color: white;
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .ad-btn-text {
@@ -1873,20 +1595,19 @@ body::before {
     gap: 10px;
     color: #94a3b8;
     font-size: 13px;
-    padding: 12px;
-    background: rgba(15, 23, 42, 0.6);
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 10px;
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Referral Challenges */
+/* Referral Stats Card */
 .referral-stats-card {
-    background: rgba(15, 23, 42, 0.6);
-    border-radius: 18px;
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 12px;
     padding: 20px;
     margin-bottom: 20px;
     text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .referral-stat-main {
@@ -1894,7 +1615,7 @@ body::before {
 }
 
 .referral-stat-value {
-    font-size: 34px;
+    font-size: 32px;
     font-weight: 800;
     color: #22c55e;
     margin-bottom: 5px;
@@ -1923,29 +1644,22 @@ body::before {
 
 .sub-value {
     color: #fbbf24;
-    font-weight: 700;
-    font-size: 15px;
+    font-weight: 600;
+    font-size: 14px;
 }
 
 .challenge-card {
-    background: rgba(15, 23, 42, 0.6);
-    border-radius: 18px;
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 12px;
     padding: 20px;
     margin-bottom: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     position: relative;
-    transition: all 0.3s;
-}
-
-.challenge-card:hover {
-    transform: translateY(-3px);
-    border-color: rgba(59, 130, 246, 0.3);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
 .challenge-card.premium {
     border: 2px solid rgba(245, 158, 11, 0.3);
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.8));
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9));
 }
 
 .challenge-header {
@@ -1964,15 +1678,14 @@ body::before {
 .challenge-number {
     background: linear-gradient(135deg, #3b82f6, #8b5cf6);
     color: white;
-    width: 36px;
-    height: 36px;
-    border-radius: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
     font-size: 16px;
-    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
 }
 
 .challenge-info {
@@ -1994,30 +1707,26 @@ body::before {
 .claim-challenge-btn {
     background: linear-gradient(135deg, #22c55e, #10b981);
     border: none;
-    border-radius: 14px;
-    padding: 10px 18px;
+    border-radius: 8px;
+    padding: 10px 20px;
     color: white;
     font-weight: 600;
-    font-size: 13px;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 8px;
     transition: all 0.3s;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 5px 15px rgba(34, 197, 94, 0.2);
 }
 
 .claim-challenge-btn:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(34, 197, 94, 0.4);
+    box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
 }
 
 .claim-challenge-btn:disabled {
     background: rgba(255, 255, 255, 0.1);
     color: #94a3b8;
     cursor: not-allowed;
-    box-shadow: none;
 }
 
 .claim-challenge-btn.premium-btn {
@@ -2026,19 +1735,17 @@ body::before {
 
 .premium-badge {
     position: absolute;
-    top: -12px;
+    top: -10px;
     right: 20px;
     background: linear-gradient(135deg, #f59e0b, #d97706);
     color: white;
-    padding: 5px 14px;
-    border-radius: 30px;
+    padding: 4px 12px;
+    border-radius: 20px;
     font-size: 11px;
     font-weight: 700;
     display: flex;
     align-items: center;
     gap: 5px;
-    box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .challenge-note {
@@ -2049,12 +1756,11 @@ body::before {
     font-size: 13px;
     padding: 12px 15px;
     background: rgba(245, 158, 11, 0.1);
-    border-radius: 16px;
+    border-radius: 8px;
     border: 1px solid rgba(245, 158, 11, 0.2);
-    margin-top: 15px;
+    margin-top: 10px;
 }
 
-/* Coming Soon */
 .coming-soon-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -2063,23 +1769,21 @@ body::before {
 }
 
 .coming-soon-card {
-    background: rgba(30, 41, 59, 0.6);
-    border-radius: 18px;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 12px;
     padding: 20px;
     text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: all 0.3s;
-    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s;
 }
 
 .coming-soon-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(59, 130, 246, 0.3);
-    background: rgba(59, 130, 246, 0.1);
+    transform: translateY(-3px);
+    border-color: rgba(59, 130, 246, 0.4);
 }
 
 .coming-soon-icon {
-    font-size: 34px;
+    font-size: 32px;
     color: #94a3b8;
     margin-bottom: 15px;
 }
@@ -2097,22 +1801,20 @@ body::before {
 }
 
 .coming-soon-badge {
-    background: rgba(59, 130, 246, 0.15);
+    background: rgba(59, 130, 246, 0.1);
     color: #60a5fa;
-    padding: 5px 12px;
-    border-radius: 30px;
+    padding: 4px 10px;
+    border-radius: 20px;
     font-size: 11px;
     font-weight: 600;
     display: inline-block;
-    border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
-/* Earning Tips */
 .earning-tips {
-    background: rgba(30, 41, 59, 0.6);
-    border-radius: 20px;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 16px;
     padding: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .tips-header {
@@ -2125,8 +1827,7 @@ body::before {
 
 .tips-header i {
     color: #fbbf24;
-    font-size: 22px;
-    filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.3));
+    font-size: 20px;
 }
 
 .tips-header h4 {
@@ -2144,34 +1845,35 @@ body::before {
     align-items: center;
     gap: 12px;
     padding: 12px;
-    background: rgba(15, 23, 42, 0.6);
-    border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 8px;
 }
 
 .tip-icon {
-    font-size: 22px;
-    width: 40px;
-    height: 40px;
-    background: rgba(59, 130, 246, 0.15);
-    border-radius: 12px;
+    font-size: 20px;
+    width: 36px;
+    height: 36px;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .tip-text {
     color: #cbd5e0;
     font-size: 14px;
+    line-height: 1.4;
 }
 
-/* --------------------------------------------
-   15. MWH POOLS PAGE - بطاقة حقيقية
-   -------------------------------------------- */
+/* =========================================== */
+/* MWH Pools Page */
+/* =========================================== */
+
 .pools-content {
-    padding: 0 5px 20px;
-    max-width: 450px;
-    margin: 0 auto;
+    padding: 0 10px;
+    padding-bottom: 20px;
 }
 
 .mwh-pay-header {
@@ -2183,7 +1885,7 @@ body::before {
     align-items: center;
     gap: 10px;
     margin-bottom: 15px;
-    font-size: 26px;
+    font-size: 24px;
     font-weight: 700;
     background: linear-gradient(135deg, #3b82f6, #8b5cf6);
     -webkit-background-clip: text;
@@ -2191,21 +1893,20 @@ body::before {
 }
 
 .mwh-pay-title i {
-    font-size: 30px;
+    font-size: 28px;
     color: #3b82f6;
     -webkit-text-fill-color: #3b82f6;
-    background: rgba(59, 130, 246, 0.15);
-    padding: 12px;
-    border-radius: 16px;
-    border: 1px solid rgba(59, 130, 246, 0.2);
+    background: rgba(59, 130, 246, 0.1);
+    padding: 10px;
+    border-radius: 12px;
 }
 
-/* بطاقة حقيقية - التصميم الجديد */
+/* بطاقة Flip */
 .card-flip-container {
     width: 100%;
     max-width: 340px;
     height: 210px;
-    margin: 0 auto 15px;
+    margin: 0 auto 15px auto;
     perspective: 1000px;
     cursor: pointer;
 }
@@ -2214,24 +1915,24 @@ body::before {
     position: relative;
     width: 100%;
     height: 100%;
+    text-align: center;
     transition: transform 0.6s;
     transform-style: preserve-3d;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    border-radius: 18px;
 }
 
 .card-flip-inner.flipped {
     transform: rotateY(180deg);
 }
 
-.card-front,
-.card-back {
+.card-front, .card-back {
     position: absolute;
     width: 100%;
     height: 100%;
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
-    border-radius: 20px;
+    border-radius: 18px;
     overflow: hidden;
 }
 
@@ -2247,15 +1948,16 @@ body::before {
 .real-card {
     width: 100%;
     height: 100%;
-    background: linear-gradient(145deg, #0f172a, #1e293b);
+    background: #0a0c14;
     position: relative;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-image: radial-gradient(circle at 30% 40%, rgba(59, 130, 246, 0.1) 0%, transparent 30%),
+                      radial-gradient(circle at 70% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 30%);
 }
 
 .real-card.back {
-    background: linear-gradient(145deg, #1a1f2e, #0f172a);
+    background: #0f1119;
 }
 
 /* طبقة التعتيم */
@@ -2265,45 +1967,44 @@ body::before {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     z-index: 1;
-    border-radius: 20px;
-    opacity: 0.5;
+    border-radius: 18px;
+    opacity: 0.7;
     pointer-events: none;
 }
 
 .card-content {
     position: relative;
     z-index: 2;
-    padding: 18px;
+    padding: 15px;
     height: 100%;
     display: flex;
     flex-direction: column;
 }
 
 .back-content {
-    padding: 18px;
+    padding: 15px;
 }
 
-/* الهيدر: اسم المستخدم يسار، الحالة يمين */
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.card-holder-name {
-    font-size: 16px;
+/* عناصر البطاقة - الأمامية */
+.card-holder-top {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    font-size: 14px;
     font-weight: 600;
     color: #f8fafc;
     letter-spacing: 0.5px;
-    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    z-index: 3;
 }
 
-.card-status-badge {
+.card-status {
+    position: absolute;
+    top: 15px;
+    right: 15px;
     font-size: 11px;
     color: #f59e0b;
     background: rgba(245, 158, 11, 0.15);
@@ -2311,142 +2012,228 @@ body::before {
     border-radius: 30px;
     border: 1px solid rgba(245, 158, 11, 0.3);
     font-weight: 600;
-    backdrop-filter: blur(5px);
+    z-index: 3;
 }
 
-.card-status-badge.active {
+.card-status.active {
     color: #22c55e;
     background: rgba(34, 197, 94, 0.15);
     border-color: rgba(34, 197, 94, 0.3);
 }
 
-/* الشريحة في مكانها الصحيح */
-.card-chip-position {
+.card-chip {
     position: absolute;
-    top: 70px;
-    left: 30px;
+    top: 60px;
+    left: 20px;
     z-index: 3;
 }
 
-.card-chip-position i {
-    font-size: 40px;
+.card-chip i {
+    font-size: 35px;
     color: #fbbf24;
     transform: rotate(90deg);
-    filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.5));
+    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.3));
     opacity: 0.9;
 }
 
-/* رقم البطاقة (نجوم) */
-.card-number-stars {
+.card-number {
     position: absolute;
-    top: 120px;
-    left: 30px;
-    font-size: 18px;
+    top: 110px;
+    left: 20px;
+    font-size: 16px;
     font-family: 'Courier New', monospace;
-    letter-spacing: 3px;
+    letter-spacing: 2px;
     color: rgba(255, 255, 255, 0.9);
-    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    z-index: 3;
 }
 
-/* التاريخ في الأسفل يمين */
-.card-expiry-bottom {
+.card-holder-bottom {
     position: absolute;
     bottom: 45px;
-    right: 30px;
-    font-size: 14px;
+    left: 20px;
+    font-size: 12px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.9);
-    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.8);
+    letter-spacing: 0.5px;
+    z-index: 3;
+}
+
+.card-expiry-bottom {
+    position: absolute;
+    bottom: 25px;
+    right: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    z-index: 3;
 }
 
 .card-expiry-bottom.back {
-    bottom: 70px;
+    bottom: 45px;
 }
 
-/* شعار Visa تحت التاريخ */
 .visa-logo-bottom {
     position: absolute;
-    bottom: 20px;
-    right: 30px;
+    bottom: 5px;
+    right: 20px;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 3px;
+    z-index: 3;
 }
 
 .visa-logo-bottom i {
-    font-size: 28px;
+    font-size: 20px;
     background: linear-gradient(135deg, #fbbf24, #f59e0b);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.3));
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .visa-logo-bottom span {
-    font-size: 14px;
-    font-weight: 800;
+    font-size: 12px;
+    font-weight: 700;
     background: linear-gradient(135deg, #fbbf24, #f59e0b);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    letter-spacing: 1px;
 }
 
 .visa-logo-bottom.back {
-    bottom: 40px;
+    bottom: 25px;
+}
+
+/* المكافأة المقفلة */
+.locked-bonus-info {
+    position: absolute;
+    bottom: 45px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    border-radius: 8px;
+    padding: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 4;
+    max-width: 150px;
+}
+
+.locked-bonus-info.back {
+    bottom: 100px;
+    left: 15px;
+}
+
+.locked-amount {
+    font-size: 12px;
+    font-weight: 700;
+    color: #fbbf24;
+    margin-bottom: 3px;
+}
+
+.locked-timer {
+    font-size: 10px;
+    color: #94a3b8;
+    margin-bottom: 5px;
+}
+
+.locked-progress {
+    margin-bottom: 5px;
+}
+
+.progress-bar-locked {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-fill-locked {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    border-radius: 2px;
+}
+
+.claim-bonus-btn {
+    background: linear-gradient(135deg, #22c55e, #10b981);
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s;
+}
+
+.claim-bonus-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+}
+
+.claim-bonus-btn:disabled {
+    background: rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    cursor: not-allowed;
 }
 
 /* الوجه الخلفي */
 .back-header {
-    font-size: 16px;
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    font-size: 14px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 15px;
-    text-align: left;
+    z-index: 3;
 }
 
 .magnetic-strip {
-    height: 30px;
+    position: absolute;
+    top: 50px;
+    left: 0;
+    right: 0;
+    height: 25px;
     background: #2d3748;
-    margin-bottom: 10px;
-    border-radius: 4px;
+    z-index: 3;
 }
 
 .magnetic-strip.second {
-    height: 10px;
+    top: 80px;
+    height: 8px;
     background: #1e293b;
 }
 
 .magnetic-strip.third {
-    height: 10px;
+    top: 93px;
+    height: 8px;
     background: #1e293b;
-    margin-bottom: 25px;
 }
 
 .cvv-section {
+    position: absolute;
+    top: 120px;
+    left: 20px;
     display: flex;
     align-items: center;
-    gap: 15px;
-    margin-bottom: 25px;
-    padding: 0 15px;
+    gap: 10px;
+    z-index: 3;
 }
 
 .cvv-label {
-    font-size: 13px;
+    font-size: 11px;
     color: #94a3b8;
     font-weight: 600;
 }
 
 .cvv-hidden {
     background: rgba(255, 255, 255, 0.1);
-    padding: 6px 18px;
-    border-radius: 8px;
+    padding: 4px 12px;
+    border-radius: 4px;
     font-family: monospace;
-    font-size: 18px;
-    letter-spacing: 3px;
+    font-size: 14px;
+    letter-spacing: 2px;
     position: relative;
     cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .cvv-dots {
@@ -2465,7 +2252,7 @@ body::before {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 8px;
+    border-radius: 4px;
     opacity: 0;
     transition: opacity 0.3s;
 }
@@ -2475,51 +2262,52 @@ body::before {
 }
 
 .signature-section {
-    margin-bottom: 25px;
-    padding: 0 15px;
+    position: absolute;
+    top: 160px;
+    left: 20px;
+    z-index: 3;
 }
 
 .signature-label {
-    font-size: 10px;
+    font-size: 9px;
     color: #94a3b8;
-    margin-bottom: 5px;
+    margin-bottom: 3px;
     display: block;
     text-align: left;
 }
 
 .signature-line {
-    height: 35px;
+    height: 20px;
     background: rgba(255, 255, 255, 0.05);
-    border-bottom: 2px solid #fbbf24;
-    width: 80%;
-    border-radius: 2px;
+    border-bottom: 1px solid #fbbf24;
+    width: 150px;
 }
 
 /* شريط إيردروب */
 .airdrop-strip {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15));
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    border-radius: 40px;
-    padding: 12px 18px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 30px;
+    padding: 10px 15px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    margin-top: 10px;
+    margin-top: 5px;
     backdrop-filter: blur(10px);
-    font-size: 13px;
+    font-size: 12px;
     animation: progressPulse 3s infinite;
+    flex-wrap: wrap;
 }
 
 .airdrop-strip i {
     color: #fbbf24;
-    font-size: 18px;
+    font-size: 14px;
 }
 
 .airdrop-text {
     color: #fbbf24;
     font-weight: 700;
-    white-space: nowrap;
 }
 
 .airdrop-separator {
@@ -2530,13 +2318,17 @@ body::before {
 .airdrop-progress {
     color: #f8fafc;
     font-weight: 600;
-    white-space: nowrap;
 }
 
 .airdrop-bonus {
     color: #22c55e;
     font-weight: 700;
-    white-space: nowrap;
+}
+
+.airdrop-left {
+    color: #f59e0b;
+    font-weight: 600;
+    font-size: 11px;
 }
 
 /* FAB Button */
@@ -2544,30 +2336,34 @@ body::before {
     position: fixed;
     bottom: 90px;
     right: 20px;
-    width: 60px;
-    height: 60px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
     background: linear-gradient(135deg, #f97316, #ea580c);
     border: none;
     color: white;
-    font-size: 26px;
+    font-size: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 10px 25px rgba(249, 115, 22, 0.5);
-    transition: all 0.3s;
+    box-shadow: 0 8px 20px rgba(249, 115, 22, 0.4);
+    transition: all 0.3s ease;
     z-index: 100;
     border: 2px solid rgba(255, 255, 255, 0.2);
     animation: fabPulse 2s infinite;
 }
 
 .fab-button:hover {
-    transform: scale(1.15) rotate(180deg);
-    box-shadow: 0 15px 35px rgba(249, 115, 22, 0.7);
+    transform: scale(1.1) rotate(15deg);
+    box-shadow: 0 12px 30px rgba(249, 115, 22, 0.6);
 }
 
-/* Card Effects */
+.fab-button i {
+    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.3));
+}
+
+/* تأثيرات البطاقة */
 .card-shake {
     animation: cardShake 0.5s ease-in-out;
 }
@@ -2576,12 +2372,11 @@ body::before {
     animation: cardGlow 1s ease;
 }
 
-/* Wallet Balance Staking */
+/* رصيد MWH في Staking */
 .wallet-balance-staking {
-    background: rgba(30, 41, 59, 0.7);
+    background: rgba(30, 41, 59, 0.8);
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 18px;
+    border-radius: 16px;
     padding: 15px 20px;
     margin-bottom: 20px;
     display: flex;
@@ -2591,17 +2386,16 @@ body::before {
 }
 
 .balance-icon {
-    width: 52px;
-    height: 52px;
+    width: 48px;
+    height: 48px;
     background: rgba(59, 130, 246, 0.15);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #3b82f6;
-    font-size: 24px;
+    font-size: 22px;
     border: 2px solid rgba(59, 130, 246, 0.3);
-    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.2);
 }
 
 .balance-info {
@@ -2617,29 +2411,27 @@ body::before {
 }
 
 .balance-amount-staking {
-    font-size: 26px;
+    font-size: 24px;
     font-weight: 700;
     color: #fbbf24;
     line-height: 1.2;
-    text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
 }
 
-/* Staking Stats Premium */
+/* إحصائيات Staking */
 .staking-stats-premium {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-bottom: 20px;
+    gap: 12px;
+    margin-bottom: 25px;
 }
 
 .stat-card-premium {
-    background: rgba(30, 41, 59, 0.7);
+    background: rgba(30, 41, 59, 0.8);
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 18px;
-    padding: 15px 8px;
+    border-radius: 20px;
+    padding: 18px 12px;
     border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: all 0.3s;
+    transition: all 0.3s ease;
     position: relative;
     cursor: pointer;
     display: flex;
@@ -2649,22 +2441,21 @@ body::before {
 }
 
 .stat-card-premium:hover {
-    transform: translateY(-4px);
-    border-color: rgba(59, 130, 246, 0.4);
-    background: rgba(59, 130, 246, 0.1);
+    transform: translateY(-3px);
+    border-color: rgba(59, 130, 246, 0.3);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
 .stat-icon-premium {
     font-size: 28px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     background: rgba(59, 130, 246, 0.15);
-    width: 48px;
-    height: 48px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
 .stat-content-premium {
@@ -2691,6 +2482,120 @@ body::before {
     opacity: 0.7;
 }
 
+/* My Cards Section */
+.my-cards-section {
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.section-header h4 {
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #f8fafc;
+}
+
+.card-count {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+    padding: 2px 10px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.my-cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.my-card-item {
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 14px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.my-card-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(59, 130, 246, 0.15);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.my-card-details {
+    flex: 1;
+}
+
+.my-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #f8fafc;
+    margin-bottom: 4px;
+}
+
+.my-card-bonus {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+    font-size: 11px;
+}
+
+.locked-badge {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    padding: 2px 8px;
+    border-radius: 20px;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.unlock-date {
+    color: #94a3b8;
+}
+
+.claim-small-btn {
+    background: linear-gradient(135deg, #22c55e, #10b981);
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.claim-small-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+}
+
+.claim-small-btn:disabled {
+    background: rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
 /* Pools Section Title */
 .pools-section-title {
     display: flex;
@@ -2704,8 +2609,7 @@ body::before {
 
 .pools-section-title i {
     color: #3b82f6;
-    font-size: 22px;
-    filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.3));
+    font-size: 20px;
 }
 
 /* Pools Grid */
@@ -2719,35 +2623,33 @@ body::before {
 .pool-card-compact {
     background: rgba(30, 41, 59, 0.7);
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 18px;
+    border-radius: 16px;
     padding: 15px;
     border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: all 0.3s;
+    transition: all 0.3s ease;
     cursor: pointer;
 }
 
 .pool-card-compact:hover {
-    transform: translateY(-4px);
-    border-color: rgba(59, 130, 246, 0.4);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-    background: rgba(59, 130, 246, 0.1);
+    transform: translateY(-2px);
+    border-color: rgba(59, 130, 246, 0.3);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
 .pool-card-compact.fast {
-    border-left: 5px solid #10b981;
+    border-left: 4px solid #10b981;
 }
 
 .pool-card-compact.medium {
-    border-left: 5px solid #3b82f6;
+    border-left: 4px solid #3b82f6;
 }
 
 .pool-card-compact.gold {
-    border-left: 5px solid #8b5cf6;
+    border-left: 4px solid #8b5cf6;
 }
 
 .pool-card-compact.vip {
-    border-left: 5px solid #f59e0b;
+    border-left: 4px solid #f59e0b;
 }
 
 .pool-header-compact {
@@ -2758,37 +2660,33 @@ body::before {
 }
 
 .pool-icon-compact {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 18px;
 }
 
 .pool-card-compact.fast .pool-icon-compact {
-    background: rgba(16, 185, 129, 0.2);
+    background: rgba(16, 185, 129, 0.15);
     color: #10b981;
-    border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .pool-card-compact.medium .pool-icon-compact {
-    background: rgba(59, 130, 246, 0.2);
+    background: rgba(59, 130, 246, 0.15);
     color: #60a5fa;
-    border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
 .pool-card-compact.gold .pool-icon-compact {
-    background: rgba(139, 92, 246, 0.2);
+    background: rgba(139, 92, 246, 0.15);
     color: #8b5cf6;
-    border: 1px solid rgba(139, 92, 246, 0.3);
 }
 
 .pool-card-compact.vip .pool-icon-compact {
-    background: rgba(245, 158, 11, 0.2);
+    background: rgba(245, 158, 11, 0.15);
     color: #f59e0b;
-    border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .pool-info-compact {
@@ -2808,7 +2706,7 @@ body::before {
 }
 
 .pool-apy-compact {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     background: linear-gradient(135deg, #fbbf24, #f59e0b);
     -webkit-background-clip: text;
@@ -2824,15 +2722,12 @@ body::before {
 .pool-minmax {
     font-size: 12px;
     color: #94a3b8;
-    background: rgba(0, 0, 0, 0.2);
-    padding: 4px 12px;
-    border-radius: 30px;
 }
 
 .pool-stake-btn-compact {
     background: linear-gradient(135deg, #3b82f6, #6366f1);
-    padding: 8px 18px;
-    border-radius: 30px;
+    padding: 6px 16px;
+    border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
     color: white;
@@ -2840,26 +2735,23 @@ body::before {
     transition: all 0.3s;
     display: inline-block;
     border: none;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
 }
 
 .pool-stake-btn-compact:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
 }
 
 /* Staking Terms */
 .staking-terms-compact {
     background: rgba(30, 41, 59, 0.5);
-    border-radius: 16px;
+    border-radius: 12px;
     padding: 12px 15px;
     display: flex;
     gap: 20px;
     justify-content: center;
     border: 1px solid rgba(255, 255, 255, 0.05);
     margin-bottom: 20px;
-    backdrop-filter: blur(5px);
 }
 
 .term-item-compact {
@@ -2875,23 +2767,23 @@ body::before {
     font-size: 12px;
 }
 
-/* --------------------------------------------
-   16. STAKING MODAL
-   -------------------------------------------- */
+/* =========================================== */
+/* Staking Modal */
+/* =========================================== */
+
 .staking-modal .modal-content {
     max-width: 420px;
 }
 
 .pool-detail-card {
     background: rgba(15, 23, 42, 0.8);
-    border-radius: 18px;
+    border-radius: 16px;
     padding: 15px;
     margin-bottom: 20px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     border: 1px solid rgba(59, 130, 246, 0.2);
-    backdrop-filter: blur(10px);
 }
 
 .detail-row {
@@ -2918,13 +2810,12 @@ body::before {
 .staking-balance {
     background: rgba(34, 197, 94, 0.1);
     border: 1px solid rgba(34, 197, 94, 0.3);
-    border-radius: 14px;
+    border-radius: 12px;
     padding: 12px 15px;
     margin-bottom: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    backdrop-filter: blur(5px);
 }
 
 .staking-balance .label {
@@ -2958,20 +2849,19 @@ body::before {
 
 .staking-input {
     flex: 1;
-    padding: 14px 15px;
+    padding: 12px 15px;
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(59, 130, 246, 0.3);
-    border-radius: 14px;
+    border-radius: 12px;
     color: #f8fafc;
     font-size: 16px;
     font-weight: 600;
     outline: none;
-    transition: all 0.3s;
 }
 
 .staking-input:focus {
     border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
 .staking-input.error {
@@ -2984,7 +2874,7 @@ body::before {
     border: 1px solid rgba(59, 130, 246, 0.3);
     color: #60a5fa;
     padding: 0 20px;
-    border-radius: 14px;
+    border-radius: 12px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
@@ -2998,7 +2888,7 @@ body::before {
 
 .staking-receive {
     background: rgba(15, 23, 42, 0.6);
-    border-radius: 14px;
+    border-radius: 12px;
     padding: 15px;
     margin-bottom: 20px;
     display: flex;
@@ -3020,7 +2910,7 @@ body::before {
 .staking-warning {
     background: rgba(245, 158, 11, 0.1);
     border: 1px solid rgba(245, 158, 11, 0.3);
-    border-radius: 14px;
+    border-radius: 12px;
     padding: 12px;
     margin-bottom: 20px;
     display: flex;
@@ -3035,9 +2925,10 @@ body::before {
     gap: 10px;
 }
 
-/* --------------------------------------------
-   17. ACTIVE PLANS MODAL
-   -------------------------------------------- */
+/* =========================================== */
+/* Active Plans Modal */
+/* =========================================== */
+
 .active-plans-modal .modal-content {
     max-width: 440px;
     max-height: 80vh;
@@ -3045,21 +2936,20 @@ body::before {
 
 .active-plan-card {
     background: rgba(15, 23, 42, 0.8);
-    border-radius: 20px;
+    border-radius: 18px;
     padding: 18px;
     margin-bottom: 15px;
     border: 1px solid rgba(255, 255, 255, 0.05);
     transition: all 0.3s;
-    backdrop-filter: blur(10px);
 }
 
 .active-plan-card:hover {
     border-color: rgba(59, 130, 246, 0.3);
-    transform: translateY(-3px);
+    transform: translateY(-2px);
 }
 
 .active-plan-card.completed {
-    border-left: 5px solid #22c55e;
+    border-left: 4px solid #22c55e;
     background: rgba(34, 197, 94, 0.05);
 }
 
@@ -3077,32 +2967,32 @@ body::before {
 }
 
 .plan-icon-small {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 16px;
 }
 
 .fast .plan-icon-small {
-    background: rgba(16, 185, 129, 0.2);
+    background: rgba(16, 185, 129, 0.15);
     color: #10b981;
 }
 
 .medium .plan-icon-small {
-    background: rgba(59, 130, 246, 0.2);
+    background: rgba(59, 130, 246, 0.15);
     color: #60a5fa;
 }
 
 .gold .plan-icon-small {
-    background: rgba(139, 92, 246, 0.2);
+    background: rgba(139, 92, 246, 0.15);
     color: #8b5cf6;
 }
 
 .vip .plan-icon-small {
-    background: rgba(245, 158, 11, 0.2);
+    background: rgba(245, 158, 11, 0.15);
     color: #f59e0b;
 }
 
@@ -3114,8 +3004,8 @@ body::before {
 
 .plan-status-badge {
     font-size: 11px;
-    padding: 4px 12px;
-    border-radius: 30px;
+    padding: 4px 10px;
+    border-radius: 20px;
     font-weight: 600;
 }
 
@@ -3137,7 +3027,7 @@ body::before {
     gap: 12px;
     margin-bottom: 15px;
     background: rgba(0, 0, 0, 0.2);
-    border-radius: 14px;
+    border-radius: 12px;
     padding: 12px;
 }
 
@@ -3176,17 +3066,16 @@ body::before {
 
 .progress-bar-small {
     height: 8px;
-    background: rgba(15, 23, 42, 0.6);
-    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
     overflow: hidden;
     margin-bottom: 5px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .progress-fill-small {
     height: 100%;
     background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-    border-radius: 20px;
+    border-radius: 4px;
     transition: width 0.5s;
 }
 
@@ -3207,7 +3096,7 @@ body::before {
     padding: 12px;
     background: rgba(239, 68, 68, 0.1);
     border: 1px solid rgba(239, 68, 68, 0.3);
-    border-radius: 14px;
+    border-radius: 10px;
     color: #ef4444;
     font-weight: 600;
     font-size: 13px;
@@ -3234,7 +3123,7 @@ body::before {
     padding: 12px;
     background: linear-gradient(135deg, #22c55e, #10b981);
     border: none;
-    border-radius: 14px;
+    border-radius: 10px;
     color: white;
     font-weight: 600;
     font-size: 13px;
@@ -3244,20 +3133,16 @@ body::before {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 5px 15px rgba(34, 197, 94, 0.2);
 }
 
 .btn-claim-plan:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(34, 197, 94, 0.4);
+    box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
 }
 
 .btn-claim-plan:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    background: rgba(255, 255, 255, 0.1);
-    box-shadow: none;
 }
 
 .empty-plans {
@@ -3272,9 +3157,10 @@ body::before {
     opacity: 0.5;
 }
 
-/* --------------------------------------------
-   18. HISTORY MODAL - مع الترتيب الجديد
-   -------------------------------------------- */
+/* =========================================== */
+/* History Modal */
+/* =========================================== */
+
 .history-modal-premium .modal-content {
     max-width: 480px;
     max-height: 85vh;
@@ -3283,10 +3169,10 @@ body::before {
 .history-tabs-premium {
     display: flex;
     gap: 8px;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     padding: 5px;
     background: rgba(15, 23, 42, 0.8);
-    border-radius: 16px;
+    border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     flex-wrap: wrap;
 }
@@ -3298,10 +3184,10 @@ body::before {
     border: none;
     background: transparent;
     color: #94a3b8;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     cursor: pointer;
-    border-radius: 12px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3311,13 +3197,12 @@ body::before {
 }
 
 .history-tab i {
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .history-tab.active {
     background: rgba(59, 130, 246, 0.2);
     color: #60a5fa;
-    border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
 .history-tab:hover:not(.active) {
@@ -3339,7 +3224,6 @@ body::before {
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .history-tab-content {
@@ -3361,10 +3245,10 @@ body::before {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
     color: #f8fafc;
-    margin-bottom: 12px;
+    margin-bottom: 15px;
     padding-bottom: 8px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -3375,20 +3259,18 @@ body::before {
     gap: 10px;
 }
 
-/* بطاقات المعاملات */
+/* Transaction Cards */
 .history-item-card {
     background: rgba(15, 23, 42, 0.6);
-    border-radius: 16px;
+    border-radius: 12px;
     padding: 15px;
     border: 1px solid rgba(255, 255, 255, 0.05);
     transition: all 0.3s;
-    backdrop-filter: blur(5px);
 }
 
 .history-item-card:hover {
     border-color: rgba(59, 130, 246, 0.3);
-    transform: translateX(3px);
-    background: rgba(59, 130, 246, 0.05);
+    transform: translateX(2px);
 }
 
 .history-item-header {
@@ -3405,9 +3287,9 @@ body::before {
 }
 
 .history-type-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3449,6 +3331,11 @@ body::before {
     color: #f59e0b;
 }
 
+.history-type-icon.referral {
+    background: rgba(139, 92, 246, 0.15);
+    color: #8b5cf6;
+}
+
 .history-type-name {
     font-size: 14px;
     font-weight: 600;
@@ -3457,8 +3344,8 @@ body::before {
 
 .history-item-status {
     font-size: 11px;
-    padding: 4px 12px;
-    border-radius: 30px;
+    padding: 4px 10px;
+    border-radius: 20px;
     font-weight: 600;
 }
 
@@ -3484,6 +3371,18 @@ body::before {
     background: rgba(100, 116, 139, 0.15);
     color: #94a3b8;
     border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.history-item-status.claimed {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.history-item-status.cancelled {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .history-item-details {
@@ -3536,7 +3435,7 @@ body::before {
     font-family: monospace;
     background: rgba(0, 0, 0, 0.3);
     padding: 3px 8px;
-    border-radius: 6px;
+    border-radius: 4px;
     max-width: 100px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -3544,21 +3443,21 @@ body::before {
     font-size: 10px;
 }
 
-/* --------------------------------------------
-   19. PURCHASE MODAL
-   -------------------------------------------- */
+/* =========================================== */
+/* Purchase Modal */
+/* =========================================== */
+
 .purchase-modal .modal-content {
     max-width: 400px;
 }
 
 .purchase-price {
     background: rgba(59, 130, 246, 0.1);
-    border-radius: 18px;
+    border-radius: 16px;
     padding: 18px;
     margin-bottom: 20px;
     text-align: center;
     border: 1px solid rgba(59, 130, 246, 0.2);
-    backdrop-filter: blur(5px);
 }
 
 .purchase-price-label {
@@ -3568,12 +3467,11 @@ body::before {
 }
 
 .purchase-price-value {
-    font-size: 38px;
+    font-size: 36px;
     font-weight: 800;
     color: #fbbf24;
     line-height: 1.2;
     margin-bottom: 5px;
-    text-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
 }
 
 .purchase-price-usd {
@@ -3583,7 +3481,7 @@ body::before {
 
 .purchase-rewards {
     background: rgba(34, 197, 94, 0.1);
-    border-radius: 18px;
+    border-radius: 16px;
     padding: 18px;
     margin-bottom: 20px;
     border: 1px solid rgba(34, 197, 94, 0.2);
@@ -3631,7 +3529,7 @@ body::before {
 .purchase-progress {
     margin-bottom: 20px;
     background: rgba(15, 23, 42, 0.6);
-    border-radius: 18px;
+    border-radius: 16px;
     padding: 15px;
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -3654,17 +3552,16 @@ body::before {
 
 .purchase-progress-bar {
     height: 10px;
-    background: rgba(15, 23, 42, 0.6);
-    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
     overflow: hidden;
     margin-bottom: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .purchase-progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-    border-radius: 20px;
+    border-radius: 5px;
     transition: width 0.5s;
 }
 
@@ -3684,7 +3581,7 @@ body::before {
 
 .purchase-balance {
     background: rgba(15, 23, 42, 0.8);
-    border-radius: 14px;
+    border-radius: 12px;
     padding: 15px;
     margin-bottom: 20px;
     display: flex;
@@ -3701,17 +3598,18 @@ body::before {
     font-weight: 700;
 }
 
-/* --------------------------------------------
-   20. DEPOSIT MODAL - مع عنوان عمودي ونص جديد
-   -------------------------------------------- */
+/* =========================================== */
+/* Deposit Modal */
+/* =========================================== */
+
 .deposit-modal .modal-content {
-    max-width: 480px;
+    max-width: 500px;
 }
 
 .deposit-warning {
     background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(239, 68, 68, 0.1));
     border: 1px solid rgba(245, 158, 11, 0.3);
-    border-radius: 16px;
+    border-radius: 12px;
     padding: 15px;
     margin-bottom: 20px;
     display: flex;
@@ -3742,14 +3640,12 @@ body::before {
     line-height: 1.4;
 }
 
-/* عنوان الإيداع - عمودي من اليسار لليمين */
 .deposit-address-card {
     background: rgba(15, 23, 42, 0.8);
-    border-radius: 18px;
+    border-radius: 16px;
     padding: 20px;
     margin-bottom: 20px;
     border: 1px solid rgba(59, 130, 246, 0.3);
-    backdrop-filter: blur(5px);
 }
 
 .address-header {
@@ -3771,28 +3667,34 @@ body::before {
 
 .address-value-box {
     background: rgba(0, 0, 0, 0.4);
-    border-radius: 14px;
-    padding: 15px;
+    border-radius: 12px;
+    padding: 12px 15px;
     border: 1px dashed rgba(59, 130, 246, 0.4);
     font-family: 'Courier New', monospace;
     font-size: 14px;
     color: #f8fafc;
     word-break: break-all;
-    line-height: 1.5;
-    text-align: left; /* من اليسار لليمين */
+    text-align: left;
     direction: ltr;
 }
 
-.address-value-box span {
+.main-address {
     display: block;
-    margin: 2px 0;
-    letter-spacing: 1px;
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.small-address {
+    display: block;
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 2px;
 }
 
 .copy-address-btn-large {
     background: linear-gradient(135deg, #3b82f6, #6366f1);
     border: none;
-    border-radius: 14px;
+    border-radius: 12px;
     padding: 14px 20px;
     color: white;
     font-weight: 600;
@@ -3805,11 +3707,10 @@ body::before {
     transition: all 0.3s;
     width: 100%;
     box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .copy-address-btn-large:hover {
-    transform: translateY(-3px);
+    transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
 }
 
@@ -3825,10 +3726,9 @@ body::before {
     margin-top: 5px;
 }
 
-/* باقي أقسام الإيداع */
 .transaction-hash-section {
     background: rgba(15, 23, 42, 0.8);
-    border-radius: 18px;
+    border-radius: 16px;
     padding: 20px;
     margin-bottom: 15px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -3859,7 +3759,7 @@ body::before {
     padding: 14px 15px;
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(59, 130, 246, 0.3);
-    border-radius: 14px;
+    border-radius: 12px;
     color: #f8fafc;
     font-size: 14px;
     font-family: monospace;
@@ -3878,7 +3778,65 @@ body::before {
     margin-top: 8px;
 }
 
-/* النص الجديد للإيداع */
+.transaction-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 15px;
+    border-radius: 12px;
+    margin-top: 10px;
+}
+
+.deposit-instructions {
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.instructions-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    color: #f8fafc;
+    font-weight: 600;
+}
+
+.instructions-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.instruction-step {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+.step-number {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.step-content {
+    color: #cbd5e0;
+    font-size: 14px;
+    line-height: 1.4;
+    padding-top: 5px;
+}
+
 .deposit-note {
     background: rgba(34, 197, 94, 0.1);
     border: 1px solid rgba(34, 197, 94, 0.3);
@@ -3886,13 +3844,14 @@ body::before {
     padding: 15px;
     margin-bottom: 20px;
     display: flex;
-    align-items: center;
     gap: 12px;
+    align-items: center;
 }
 
 .note-icon {
     color: #22c55e;
-    font-size: 24px;
+    font-size: 20px;
+    flex-shrink: 0;
 }
 
 .note-content {
@@ -3902,16 +3861,18 @@ body::before {
     font-weight: 600;
 }
 
-.note-content strong {
-    color: #f8fafc;
-    font-weight: 700;
+.deposit-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
-/* --------------------------------------------
-   21. WITHDRAWAL MODAL
-   -------------------------------------------- */
+/* =========================================== */
+/* Withdrawal Modal - محسن */
+/* =========================================== */
+
 .withdrawal-modal .modal-content {
-    max-width: 480px;
+    max-width: 500px;
 }
 
 .withdrawal-balance-overview {
@@ -3919,12 +3880,11 @@ body::before {
 }
 
 .balance-card-professional {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.25));
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.2));
     border: 1px solid rgba(34, 197, 94, 0.3);
-    border-radius: 18px;
+    border-radius: 16px;
     padding: 20px;
     text-align: center;
-    backdrop-filter: blur(5px);
 }
 
 .balance-header-professional {
@@ -3938,7 +3898,7 @@ body::before {
 }
 
 .balance-amount-professional {
-    font-size: 38px;
+    font-size: 36px;
     font-weight: 800;
     color: #f8fafc;
     margin-bottom: 5px;
@@ -3990,7 +3950,7 @@ body::before {
     padding: 14px 45px 14px 15px;
     background: rgba(15, 23, 42, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 14px;
+    border-radius: 12px;
     color: #f8fafc;
     font-size: 14px;
     outline: none;
@@ -4038,18 +3998,18 @@ body::before {
 }
 
 .max-amount-btn {
-    background: rgba(59, 130, 246, 0.15);
+    background: rgba(59, 130, 246, 0.2);
     border: 1px solid rgba(59, 130, 246, 0.3);
     color: #60a5fa;
     padding: 0 20px;
-    border-radius: 12px;
+    border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
 }
 
 .max-amount-btn:hover {
-    background: rgba(59, 130, 246, 0.25);
+    background: rgba(59, 130, 246, 0.3);
 }
 
 .amount-slider {
@@ -4059,7 +4019,7 @@ body::before {
 .amount-slider input[type="range"] {
     width: 100%;
     height: 6px;
-    background: rgba(15, 23, 42, 0.6);
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 3px;
     outline: none;
     -webkit-appearance: none;
@@ -4084,7 +4044,7 @@ body::before {
 
 .requirements-section {
     background: rgba(15, 23, 42, 0.8);
-    border-radius: 16px;
+    border-radius: 12px;
     padding: 20px;
     margin-bottom: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -4107,7 +4067,7 @@ body::before {
 
 .requirement-card {
     padding: 15px;
-    border-radius: 12px;
+    border-radius: 10px;
     display: flex;
     gap: 12px;
     align-items: center;
@@ -4168,7 +4128,7 @@ body::before {
 .withdrawal-warning {
     background: rgba(239, 68, 68, 0.1);
     border: 1px solid rgba(239, 68, 68, 0.3);
-    border-radius: 14px;
+    border-radius: 12px;
     padding: 15px;
     margin-bottom: 20px;
 }
@@ -4190,7 +4150,7 @@ body::before {
 
 .summary-section {
     background: rgba(15, 23, 42, 0.8);
-    border-radius: 16px;
+    border-radius: 12px;
     padding: 20px;
     margin-bottom: 25px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -4250,11 +4210,10 @@ body::before {
     gap: 10px;
 }
 
-.btn-secondary-large,
-.btn-primary-large {
+.btn-secondary-large, .btn-primary-large {
     flex: 1;
     padding: 16px;
-    border-radius: 14px;
+    border-radius: 12px;
     border: none;
     font-weight: 600;
     font-size: 16px;
@@ -4269,24 +4228,21 @@ body::before {
 .btn-secondary-large {
     background: rgba(255, 255, 255, 0.1);
     color: #cbd5e0;
-    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .btn-secondary-large:hover {
-    background: rgba(255, 255, 255, 0.15);
-    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
 }
 
 .btn-primary-large {
     background: linear-gradient(135deg, #3b82f6, #6366f1);
     color: white;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
 }
 
 .btn-primary-large:hover:not(:disabled) {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
 }
 
 .btn-primary-large:disabled {
@@ -4294,16 +4250,17 @@ body::before {
     cursor: not-allowed;
 }
 
-/* --------------------------------------------
-   22. SWAP MODAL
-   -------------------------------------------- */
+/* =========================================== */
+/* Swap Modal */
+/* =========================================== */
+
 .swap-modal-professional .modal-content {
-    max-width: 440px;
+    max-width: 450px;
 }
 
 .swap-overview {
     background: rgba(15, 23, 42, 0.8);
-    border-radius: 18px;
+    border-radius: 16px;
     padding: 20px;
     margin-bottom: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -4316,8 +4273,7 @@ body::before {
     gap: 15px;
 }
 
-.swap-from-currency,
-.swap-to-currency {
+.swap-from-currency, .swap-to-currency {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -4325,9 +4281,9 @@ body::before {
 }
 
 .currency-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 16px;
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -4354,8 +4310,8 @@ body::before {
 }
 
 .swap-arrow-container {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     background: rgba(59, 130, 246, 0.1);
     border-radius: 50%;
     display: flex;
@@ -4363,7 +4319,6 @@ body::before {
     justify-content: center;
     color: #60a5fa;
     font-size: 18px;
-    border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
 .swap-rate-info {
@@ -4375,7 +4330,7 @@ body::before {
 
 .rate-card {
     background: rgba(15, 23, 42, 0.8);
-    border-radius: 16px;
+    border-radius: 12px;
     padding: 15px;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -4405,7 +4360,7 @@ body::before {
 
 .swap-amount-section {
     background: rgba(15, 23, 42, 0.8);
-    border-radius: 16px;
+    border-radius: 12px;
     padding: 15px;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -4465,7 +4420,7 @@ body::before {
     padding: 12px 15px;
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(59, 130, 246, 0.3);
-    border-radius: 12px;
+    border-radius: 8px;
     color: #f8fafc;
     font-size: 16px;
     font-weight: 600;
@@ -4490,7 +4445,7 @@ body::before {
     border: 1px solid rgba(59, 130, 246, 0.3);
     color: #60a5fa;
     padding: 4px 12px;
-    border-radius: 30px;
+    border-radius: 16px;
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
@@ -4507,7 +4462,7 @@ body::before {
 
 .swap-details-professional {
     background: rgba(15, 23, 42, 0.8);
-    border-radius: 16px;
+    border-radius: 12px;
     padding: 20px;
     margin-bottom: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -4566,7 +4521,7 @@ body::before {
 .swap-warning-professional {
     background: rgba(239, 68, 68, 0.1);
     border: 1px solid rgba(239, 68, 68, 0.3);
-    border-radius: 14px;
+    border-radius: 12px;
     padding: 15px;
     margin-bottom: 20px;
     display: flex;
@@ -4577,6 +4532,7 @@ body::before {
 .warning-icon {
     color: #ef4444;
     font-size: 20px;
+    flex-shrink: 0;
 }
 
 .warning-content {
@@ -4601,14 +4557,13 @@ body::before {
     gap: 10px;
 }
 
-.btn-swap-cancel,
-.btn-swap-confirm {
+.btn-swap-cancel, .btn-swap-confirm {
     flex: 1;
     padding: 16px;
-    border-radius: 14px;
+    border-radius: 12px;
     border: none;
     font-weight: 600;
-    font-size: 15px;
+    font-size: 16px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -4620,24 +4575,21 @@ body::before {
 .btn-swap-cancel {
     background: rgba(255, 255, 255, 0.1);
     color: #cbd5e0;
-    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .btn-swap-cancel:hover {
-    background: rgba(255, 255, 255, 0.15);
-    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
 }
 
 .btn-swap-confirm {
     background: linear-gradient(135deg, #3b82f6, #6366f1);
     color: white;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
 }
 
 .btn-swap-confirm:hover:not(:disabled) {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
 }
 
 .btn-swap-confirm:disabled {
@@ -4645,18 +4597,19 @@ body::before {
     cursor: not-allowed;
 }
 
-/* --------------------------------------------
-   23. FLOATING NOTIFICATION SYSTEM
-   -------------------------------------------- */
+/* =========================================== */
+/* Floating Notification System */
+/* =========================================== */
+
 .notification-bar {
     position: fixed;
     bottom: 70px;
     left: 0;
     right: 0;
-    height: 38px;
-    background: rgba(59, 130, 246, 0.2);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
+    height: 35px;
+    background: rgba(59, 130, 246, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-top: 1px solid rgba(59, 130, 246, 0.3);
     border-bottom: 1px solid rgba(59, 130, 246, 0.3);
     display: flex;
@@ -4666,23 +4619,25 @@ body::before {
     overflow: hidden;
     opacity: 0;
     transform: translateY(20px);
-    transition: all 0.5s;
+    transition: opacity 0.5s ease, transform 0.5s ease;
     pointer-events: none;
 }
 
 .notification-bar.show {
-    opacity: 1;
+    opacity: 0.9;
     transform: translateY(0);
 }
 
 .notification-bar.notification-deposit {
-    background: rgba(59, 130, 246, 0.2);
-    border-color: rgba(59, 130, 246, 0.4);
+    background: rgba(59, 130, 246, 0.15);
+    border-top: 1px solid rgba(59, 130, 246, 0.4);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.4);
 }
 
 .notification-bar.notification-withdraw {
-    background: rgba(34, 197, 94, 0.2);
-    border-color: rgba(34, 197, 94, 0.4);
+    background: rgba(34, 197, 94, 0.15);
+    border-top: 1px solid rgba(34, 197, 94, 0.4);
+    border-bottom: 1px solid rgba(34, 197, 94, 0.4);
 }
 
 .notification-bar span {
@@ -4695,30 +4650,32 @@ body::before {
     overflow: hidden;
     text-overflow: ellipsis;
     width: 100%;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .notification-bar.moving span {
-    animation: moveRightToLeft 6s linear forwards;
+    animation: moveRightToLeft 5s linear forwards;
 }
 
-/* --------------------------------------------
-   24. BOTTOM NAVIGATION
-   -------------------------------------------- */
+/* =========================================== */
+/* Bottom Navigation */
+/* =========================================== */
+
 .bottom-nav {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    background: rgba(15, 23, 42, 0.9);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     display: flex;
     justify-content: space-around;
     padding: 12px 0;
-    box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.3);
     z-index: 1001;
-    border-top: 1px solid rgba(59, 130, 246, 0.3);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 100%;
 }
 
 .nav-item {
@@ -4727,8 +4684,8 @@ body::before {
     align-items: center;
     cursor: pointer;
     padding: 5px 20px;
-    border-radius: 16px;
-    transition: all 0.3s;
+    border-radius: 10px;
+    transition: all 0.3s ease;
     position: relative;
     min-width: 70px;
 }
@@ -4737,20 +4694,20 @@ body::before {
     font-size: 22px;
     margin-bottom: 5px;
     color: #94a3b8;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
 }
 
 .nav-item span {
     font-size: 12px;
     color: #94a3b8;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
     font-weight: 500;
 }
 
 .nav-item.active i {
     color: #3b82f6;
-    transform: translateY(-3px);
-    text-shadow: 0 0 20px rgba(59, 130, 246, 0.7);
+    transform: translateY(-2px);
+    text-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
 }
 
 .nav-item.active span {
@@ -4758,7 +4715,10 @@ body::before {
     font-weight: 600;
 }
 
-.nav-item:not(.active):hover i,
+.nav-item:not(.active):hover i {
+    color: #cbd5e0;
+}
+
 .nav-item:not(.active):hover span {
     color: #cbd5e0;
 }
@@ -4769,16 +4729,16 @@ body::before {
     bottom: -12px;
     left: 50%;
     transform: translateX(-50%);
-    width: 5px;
-    height: 5px;
+    width: 4px;
+    height: 4px;
     background: #3b82f6;
     border-radius: 50%;
-    box-shadow: 0 0 10px #3b82f6;
 }
 
-/* --------------------------------------------
-   25. MESSAGE NOTIFICATIONS
-   -------------------------------------------- */
+/* =========================================== */
+/* Message Notifications */
+/* =========================================== */
+
 .message {
     position: fixed;
     top: 20px;
@@ -4786,19 +4746,16 @@ body::before {
     transform: translateX(-50%) translateY(-100px);
     background: #10b981;
     color: white;
-    padding: 14px 28px;
-    border-radius: 50px;
+    padding: 12px 24px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     z-index: 2000;
     opacity: 0;
-    transition: all 0.3s;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    font-weight: 600;
-    font-size: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    font-weight: 500;
 }
 
 .message.show {
@@ -4807,60 +4764,48 @@ body::before {
 }
 
 .message.success {
-    background: rgba(16, 185, 129, 0.9);
-    backdrop-filter: blur(10px);
+    background: #10b981;
 }
 
 .message.error {
-    background: rgba(239, 68, 68, 0.9);
-    backdrop-filter: blur(10px);
+    background: #ef4444;
 }
 
 .message.warning {
-    background: rgba(245, 158, 11, 0.9);
-    backdrop-filter: blur(10px);
+    background: #f59e0b;
 }
 
 .message.info {
-    background: rgba(59, 130, 246, 0.9);
-    backdrop-filter: blur(10px);
+    background: #3b82f6;
 }
 
-.message i {
-    font-size: 18px;
-    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.2));
-}
+/* =========================================== */
+/* Modal Styles */
+/* =========================================== */
 
-/* --------------------------------------------
-   26. MODAL STYLES
-   -------------------------------------------- */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.7);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 3000;
     padding: 20px;
-    transition: all 0.3s;
 }
 
 .modal-content {
     background: linear-gradient(135deg, #0f172a, #1e293b);
-    border-radius: 24px;
+    border-radius: 20px;
     width: 100%;
-    max-width: 420px;
-    max-height: 85vh;
+    max-width: 400px;
+    max-height: 80vh;
     overflow-y: auto;
     border: 1px solid rgba(59, 130, 246, 0.3);
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-    animation: slideUp 0.3s ease;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
 .modal-header {
@@ -4869,9 +4814,6 @@ body::before {
     align-items: center;
     padding: 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(15, 23, 42, 0.8);
-    backdrop-filter: blur(10px);
-    border-radius: 24px 24px 0 0;
 }
 
 .modal-header h3 {
@@ -4883,11 +4825,11 @@ body::before {
 }
 
 .modal-close {
-    background: rgba(239, 68, 68, 0.15);
+    background: rgba(239, 68, 68, 0.1);
     color: #ef4444;
     border: none;
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -4895,11 +4837,10 @@ body::before {
     cursor: pointer;
     font-size: 20px;
     transition: all 0.3s;
-    border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 .modal-close:hover {
-    background: rgba(239, 68, 68, 0.25);
+    background: rgba(239, 68, 68, 0.2);
     transform: scale(1.1);
 }
 
@@ -4907,9 +4848,32 @@ body::before {
     padding: 20px;
 }
 
-/* --------------------------------------------
-   27. RESPONSIVE DESIGN
-   -------------------------------------------- */
+/* =========================================== */
+/* Scrollbar */
+/* =========================================== */
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(30, 41, 59, 0.5);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #4f93ff, #9d78ff);
+}
+
+/* =========================================== */
+/* Responsive Design */
+/* =========================================== */
+
 @media (max-width: 480px) {
     body {
         padding: 15px;
@@ -4921,8 +4885,8 @@ body::before {
     }
     
     .app-header {
-        padding: 10px 15px;
-        height: 72px;
+        padding: 12px 15px;
+        height: 75px;
     }
     
     .logo i {
@@ -4940,9 +4904,9 @@ body::before {
     }
     
     .user-avatar {
-        width: 38px;
-        height: 38px;
-        font-size: 15px;
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
     }
     
     .username {
@@ -4955,17 +4919,18 @@ body::before {
     }
     
     .balance-amount {
-        font-size: 42px;
+        font-size: 40px;
     }
     
     .balance-usd {
         font-size: 14px;
-        padding: 4px 12px;
+        padding: 3px 10px;
     }
     
     .referral-stats,
     .progress-stats {
         grid-template-columns: 1fr;
+        gap: 10px;
     }
     
     .referral-actions {
@@ -4974,28 +4939,34 @@ body::before {
     
     .mining-section {
         padding: 20px;
-        padding-bottom: 40px;
+        padding-bottom: 35px;
+    }
+    
+    .next-rank-bonus {
+        font-size: 12px;
+        padding: 5px 10px;
+        margin: 8px 0;
     }
     
     .energy-belt {
         left: 20px;
         right: 20px;
-        height: 12px;
+        height: 10px;
     }
     
     .belt-knob {
-        width: 18px;
-        height: 18px;
+        width: 16px;
+        height: 16px;
         top: -5px;
     }
     
     .mine-reward {
-        font-size: 22px !important;
+        font-size: 20px !important;
     }
     
     .mine-cooldown {
         font-size: 14px !important;
-        min-width: 55px !important;
+        min-width: 50px !important;
     }
     
     .crypto-card.compact {
@@ -5017,7 +4988,7 @@ body::before {
     }
     
     .crypto-card.compact .crypto-balance .balance-amount {
-        font-size: 22px !important;
+        font-size: 20px !important;
     }
     
     .crypto-card.compact .crypto-value {
@@ -5035,13 +5006,13 @@ body::before {
     }
     
     .wallet-quick-actions.compact .quick-action {
-        padding: 10px 5px !important;
+        padding: 10px 6px !important;
         min-height: 65px !important;
     }
     
     .wallet-quick-actions.compact .action-icon {
-        width: 30px !important;
-        height: 30px !important;
+        width: 28px !important;
+        height: 28px !important;
         font-size: 14px !important;
     }
     
@@ -5051,11 +5022,11 @@ body::before {
     
     .total-balance-card.compact {
         padding: 15px !important;
-        height: 70px !important;
+        height: 65px !important;
     }
     
     .total-balance-card.compact .total-balance-amount {
-        font-size: 26px !important;
+        font-size: 24px !important;
     }
     
     .total-balance-card.compact .total-balance-label {
@@ -5068,44 +5039,51 @@ body::before {
     
     .card-flip-container {
         max-width: 300px;
-        height: 190px;
+        height: 185px;
     }
     
-    .card-number-stars {
-        font-size: 16px;
-        left: 25px;
-        top: 110px;
+    .card-number {
+        font-size: 14px;
+        top: 100px;
     }
     
-    .card-chip-position i {
-        font-size: 35px;
-        top: 60px;
-        left: 25px;
+    .card-holder-bottom {
+        bottom: 40px;
+        font-size: 11px;
+    }
+    
+    .card-expiry-bottom {
+        bottom: 20px;
+        font-size: 11px;
+    }
+    
+    .visa-logo-bottom {
+        bottom: 3px;
+    }
+    
+    .visa-logo-bottom i {
+        font-size: 18px;
+    }
+    
+    .visa-logo-bottom span {
+        font-size: 10px;
+    }
+    
+    .locked-bonus-info {
+        bottom: 40px;
+        left: 15px;
+        max-width: 130px;
     }
     
     .airdrop-strip {
-        font-size: 12px;
-        padding: 10px 12px;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    
-    .info-grid {
-        grid-template-columns: 1fr;
+        font-size: 11px;
+        padding: 8px 12px;
     }
     
     .fab-button {
         bottom: 80px;
-        width: 55px;
-        height: 55px;
-        font-size: 24px;
-    }
-    
-    .wallet-balance-staking {
-        padding: 12px 15px;
-    }
-    
-    .balance-amount-staking {
+        width: 52px;
+        height: 52px;
         font-size: 22px;
     }
     
@@ -5114,7 +5092,7 @@ body::before {
     }
     
     .stat-card-premium {
-        padding: 12px 5px;
+        padding: 12px 8px;
     }
     
     .stat-icon-premium {
@@ -5135,6 +5113,16 @@ body::before {
         display: none;
     }
     
+    .my-card-item {
+        padding: 10px;
+    }
+    
+    .my-card-bonus {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    
     .pool-card-compact {
         padding: 12px;
     }
@@ -5151,8 +5139,12 @@ body::before {
     
     .history-tab {
         min-width: 60px;
-        font-size: 11px;
+        font-size: 10px;
         padding: 8px 5px;
+    }
+    
+    .history-tab i {
+        font-size: 11px;
     }
     
     .active-plan-details {
@@ -5168,7 +5160,7 @@ body::before {
     }
     
     .nav-item {
-        padding: 5px 12px;
+        padding: 5px 15px;
         min-width: 60px;
     }
     
@@ -5191,19 +5183,19 @@ body::before {
     }
     
     .notification-bar {
-        height: 34px;
         bottom: 70px;
+        height: 32px;
     }
     
     .notification-bar span {
         font-size: 12px;
-        padding: 0 12px;
+        padding: 0 15px;
     }
 }
 
 @media (max-width: 380px) {
     .balance-amount {
-        font-size: 38px;
+        font-size: 36px;
     }
     
     .balance-usd {
@@ -5211,16 +5203,16 @@ body::before {
     }
     
     .mine-reward {
-        font-size: 20px !important;
+        font-size: 18px !important;
     }
     
     .ref-stat-value {
-        font-size: 22px;
+        font-size: 20px;
     }
     
     .app-header {
-        height: 68px;
-        padding: 8px 12px;
+        height: 70px;
+        padding: 10px 15px;
     }
     
     .logo {
@@ -5241,9 +5233,9 @@ body::before {
     }
     
     .user-avatar {
-        width: 34px;
-        height: 34px;
-        font-size: 14px;
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
     }
     
     .username {
@@ -5257,18 +5249,22 @@ body::before {
     
     .mining-section {
         padding: 15px;
-        padding-bottom: 35px;
+        padding-bottom: 30px;
+    }
+    
+    .next-rank-bonus {
+        font-size: 11px;
     }
     
     .energy-belt {
         left: 15px;
         right: 15px;
-        height: 10px;
+        height: 8px;
     }
     
     .belt-knob {
-        width: 16px;
-        height: 16px;
+        width: 14px;
+        height: 14px;
         top: -4px;
     }
     
@@ -5291,7 +5287,7 @@ body::before {
     }
     
     .crypto-card.compact .crypto-balance .balance-amount {
-        font-size: 20px !important;
+        font-size: 18px !important;
     }
     
     .crypto-card.compact .crypto-value {
@@ -5309,28 +5305,22 @@ body::before {
         height: 175px;
     }
     
-    .card-number-stars {
-        font-size: 15px;
-        left: 20px;
-        top: 100px;
-    }
-    
-    .card-chip-position i {
-        font-size: 32px;
-        top: 55px;
-        left: 20px;
+    .card-number {
+        font-size: 13px;
+        top: 95px;
     }
     
     .airdrop-strip {
-        font-size: 11px;
-        padding: 8px 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 5px;
     }
     
     .fab-button {
         bottom: 75px;
-        width: 50px;
-        height: 50px;
-        font-size: 22px;
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
     }
     
     .wallet-balance-staking {
@@ -5344,6 +5334,7 @@ body::before {
     
     .staking-stats-premium {
         grid-template-columns: 1fr;
+        gap: 10px;
     }
     
     .stat-card-premium {
@@ -5361,16 +5352,20 @@ body::before {
         text-align: left;
     }
     
+    .stat-click-hint {
+        display: none;
+    }
+    
     .balance-amount-professional {
-        font-size: 32px;
+        font-size: 30px;
     }
     
     .balance-currency {
-        font-size: 22px;
+        font-size: 20px;
     }
     
     .notification-bar {
-        height: 32px;
+        height: 30px;
         bottom: 65px;
     }
     
@@ -5384,8 +5379,8 @@ body::before {
     }
     
     .nav-item {
-        padding: 4px 8px;
-        min-width: 55px;
+        padding: 4px 10px;
+        min-width: 50px;
     }
     
     .nav-item i {
