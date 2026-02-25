@@ -1,7 +1,7 @@
 // ============================================
-// VIP Mining Mini App - COMPLETE FULL VERSION 7.0
+// VIP Mining Mini App - COMPLETE VERSION 7.0
 // All features included: Staking Modal, Card Purchase, Flip Card, Airdrop
-// Total Lines: ~5200 lines - NO SHORTCUTS
+// Total Lines: ~6000 lines - NO SHORTCUTS
 // ============================================
 
 // ============================================
@@ -63,20 +63,28 @@ let userData = {
 };
 
 // ============================================
-// 4. PROFESSIONAL WALLET DATA - COMPLETE
+// 4. PROFESSIONAL WALLET DATA - COMPLETE مع الإضافات الجديدة
 // ============================================
 let walletData = {
+    // الرصيد الإجمالي (قديم)
     mwhBalance: 275,
     usdtBalance: 0,
     bnbBalance: 0.05,
     tonBalance: 0,
     ethBalance: 0,
     totalWithdrawn: 0,
+    
+    // بيانات الإيداع والسحب (قديمة)
     pendingWithdrawals: [],
     pendingDeposits: [],
     depositHistory: [],
     withdrawalHistory: [],
     usedTransactions: [],
+    
+    // حقول جديدة للحجز (نضيفها مع الحفاظ على القديم)
+    availableMWH: 275,      // الرصيد المتاح للرهن
+    lockedMWH: 0,           // الرصيد المحجوز في الرهون
+    
     lastUpdate: Date.now()
 };
 
@@ -92,12 +100,13 @@ let dailyStats = {
 };
 
 // ============================================
-// 6. STAKING DATA
+// 6. STAKING DATA - محدث مع دعم الحجز
 // ============================================
 let stakingData = {
     activeStakes: [],
     totalStaked: 0,
     totalRewards: 0,
+    history: [], // للرهون المكتملة أو الملغاة
     lastUpdate: Date.now()
 };
 
@@ -115,7 +124,17 @@ let cardData = {
 };
 
 // ============================================
-// 8. CONFIGURATION - COMPLETE WITH ALL SETTINGS
+// 8. TRANSACTION HISTORY - جديد لكل المعاملات
+// ============================================
+let transactionHistory = {
+    swaps: [],      // معاملات Swap
+    mining: [],     // معاملات التعدين
+    staking: [],    // معاملات الرهن (بداية، إلغاء، مطالبة)
+    card: []        // معاملات البطاقة
+};
+
+// ============================================
+// 9. CONFIGURATION - COMPLETE WITH ALL SETTINGS
 // ============================================
 const CONFIG = {
     MINE_COOLDOWN: 14400000,
@@ -213,7 +232,7 @@ const CONFIG = {
 };
 
 // ============================================
-// 9. ADMIN PANEL SYSTEM - COMPLETE WITH ALL FUNCTIONS
+// 10. ADMIN PANEL SYSTEM - COMPLETE WITH ALL FUNCTIONS
 // ============================================
 let adminAccess = false;
 let gemClickCount = 0;
@@ -694,7 +713,7 @@ async function loadAdminPendingRequests() {
                                     <span class="detail-value">${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                                 </div>
                             </div>
-                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <div style="display: flex; gap- 10px; margin-top: 10px;">
                                 <button onclick="approveWithdrawalRequest('${item.firebaseId}')" 
                                         style="flex: 1; padding: 8px; background: linear-gradient(135deg, #22c55e, #10b981); color: white; border: none; border-radius: 6px; font-weight: 600;">
                                     <i class="fas fa-check"></i> Approve
@@ -1160,7 +1179,7 @@ async function searchUserById() {
 }
 
 // ============================================
-// 10. STAKING SYSTEM - COMPLETE WITH ALL FUNCTIONS
+// 11. STAKING SYSTEM - COMPLETE WITH ALL FUNCTIONS (محدث)
 // ============================================
 
 function initStakingPage() {
@@ -1170,19 +1189,21 @@ function initStakingPage() {
     checkCompletedStakes();
     updateCardStatus();
     updateAirdropStrip();
+    updateActivePlansDisplay();
 }
 
 function updateStakingBalance() {
     const balanceEl = document.getElementById('stakingMWHBalance');
     if (balanceEl) {
-        balanceEl.textContent = formatNumber(walletData.mwhBalance) + ' MWH';
+        // نعرض الرصيد المتاح فقط (available) وليس الإجمالي
+        balanceEl.textContent = formatNumber(walletData.availableMWH) + ' MWH';
     }
 }
 
 function updateStakingStats() {
     const totalStakedEl = document.getElementById('totalStaked');
     const expectedReturnsEl = document.getElementById('expectedReturns');
-    const activePlansEl = document.getElementById('activePlans');
+    const activePlansEl = document.getElementById('activePlansCount');
     
     if (totalStakedEl) {
         totalStakedEl.textContent = formatNumber(stakingData.totalStaked);
@@ -1197,7 +1218,15 @@ function updateStakingStats() {
     }
 }
 
-// نافذة Staking الاحترافية
+function updateActivePlansDisplay() {
+    // تحديث عرض عدد الخطط النشطة في الإحصائيات
+    const activePlansEl = document.getElementById('activePlansCount');
+    if (activePlansEl) {
+        activePlansEl.textContent = stakingData.activeStakes.length;
+    }
+}
+
+// نافذة Staking الاحترافية (محدثة مع إدخال يدوي)
 function openStakingModal(planIndex) {
     const plan = CONFIG.STAKING_PLANS[planIndex];
     if (!plan) return;
@@ -1231,13 +1260,13 @@ function openStakingModal(planIndex) {
                         </div>
                     </div>
                     
-                    <!-- رصيد المستخدم -->
+                    <!-- رصيد المستخدم (المتاح فقط) -->
                     <div class="staking-balance">
-                        <span class="label">Your MWH Balance</span>
-                        <span class="value" id="modalBalance">${formatNumber(walletData.mwhBalance)} MWH</span>
+                        <span class="label">Available MWH Balance</span>
+                        <span class="value" id="modalBalance">${formatNumber(walletData.availableMWH)} MWH</span>
                     </div>
                     
-                    <!-- إدخال المبلغ -->
+                    <!-- إدخال المبلغ - يدوي حر -->
                     <div class="staking-input-section">
                         <div class="staking-input-label">
                             <span>Amount to Stake</span>
@@ -1247,14 +1276,15 @@ function openStakingModal(planIndex) {
                             <input type="number" 
                                    id="stakingAmount" 
                                    class="staking-input" 
-                                   placeholder="0"
+                                   placeholder="Enter amount"
                                    min="${plan.minAmount}"
-                                   max="${Math.min(plan.maxAmount, walletData.mwhBalance)}"
-                                   step="1000"
+                                   max="${Math.min(plan.maxAmount, walletData.availableMWH)}"
+                                   step="1"
                                    value="${plan.minAmount}"
-                                   oninput="calculateStakingReturn(${planIndex})">
+                                   oninput="validateStakingAmount(${planIndex})">
                             <button class="staking-max-btn" onclick="setMaxStakingAmount(${planIndex})">MAX</button>
                         </div>
+                        <div id="stakingAmountError" style="color: #ef4444; font-size: 12px; margin-top: 5px; display: none;"></div>
                     </div>
                     
                     <!-- العائد المتوقع -->
@@ -1282,46 +1312,75 @@ function openStakingModal(planIndex) {
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 }
 
-// حساب العائد في النافذة
-function calculateStakingReturn(planIndex) {
+// التحقق من صحة المبلغ المدخل يدوياً
+function validateStakingAmount(planIndex) {
     const plan = CONFIG.STAKING_PLANS[planIndex];
     const amountInput = document.getElementById('stakingAmount');
+    const errorDiv = document.getElementById('stakingAmountError');
     const returnEl = document.getElementById('stakingReturn');
+    const confirmBtn = document.getElementById('confirmStakeBtn');
     
-    if (!amountInput || !returnEl) return;
+    if (!amountInput || !returnEl || !confirmBtn) return;
     
     let amount = parseFloat(amountInput.value) || 0;
+    let isValid = true;
+    let errorMessage = '';
     
-    // التأكد من أن المبلغ ضمن الحدود
+    // التحقق من الحد الأدنى
     if (amount < plan.minAmount) {
+        isValid = false;
+        errorMessage = `Minimum amount is ${plan.minAmount.toLocaleString()} MWH`;
         amount = plan.minAmount;
-        amountInput.value = amount;
-    } else if (amount > plan.maxAmount) {
+    }
+    
+    // التحقق من الحد الأقصى
+    if (amount > plan.maxAmount) {
+        isValid = false;
+        errorMessage = `Maximum amount is ${plan.maxAmount.toLocaleString()} MWH`;
         amount = plan.maxAmount;
-        amountInput.value = amount;
-    } else if (amount > walletData.mwhBalance) {
-        amount = walletData.mwhBalance;
+    }
+    
+    // التحقق من الرصيد المتاح
+    if (amount > walletData.availableMWH) {
+        isValid = false;
+        errorMessage = `Insufficient balance. Available: ${walletData.availableMWH.toLocaleString()} MWH`;
+        amount = walletData.availableMWH;
+    }
+    
+    // عرض الخطأ إذا وجد
+    if (!isValid && errorMessage) {
+        errorDiv.textContent = errorMessage;
+        errorDiv.style.display = 'block';
+        amountInput.classList.add('error');
+        confirmBtn.disabled = true;
+    } else {
+        errorDiv.style.display = 'none';
+        amountInput.classList.remove('error');
+        confirmBtn.disabled = false;
+    }
+    
+    // تحديث قيمة الحقل إذا تم تعديلها تلقائياً
+    if (amount !== parseFloat(amountInput.value)) {
         amountInput.value = amount;
     }
     
+    // حساب العائد
     const totalReturn = amount * (1 + plan.return / 100);
     returnEl.textContent = formatNumber(totalReturn) + ' MWH';
 }
 
-// تعيين الحد الأقصى
+// تعيين الحد الأقصى (المتاح فقط)
 function setMaxStakingAmount(planIndex) {
     const plan = CONFIG.STAKING_PLANS[planIndex];
     const amountInput = document.getElementById('stakingAmount');
-    
     if (!amountInput) return;
     
-    const maxAmount = Math.min(plan.maxAmount, walletData.mwhBalance);
+    const maxAmount = Math.min(plan.maxAmount, walletData.availableMWH);
     amountInput.value = maxAmount;
-    
-    calculateStakingReturn(planIndex);
+    validateStakingAmount(planIndex);
 }
 
-// تأكيد عملية الرهن
+// تأكيد عملية الرهن (محدث مع الحجز)
 function confirmStake(planIndex) {
     const plan = CONFIG.STAKING_PLANS[planIndex];
     const amountInput = document.getElementById('stakingAmount');
@@ -1330,7 +1389,7 @@ function confirmStake(planIndex) {
     
     const amount = parseFloat(amountInput.value) || 0;
     
-    // التحقق من صحة المبلغ
+    // التحقق النهائي
     if (amount < plan.minAmount) {
         showMessage(`❌ Minimum stake is ${plan.minAmount.toLocaleString()} MWH`, 'error');
         return;
@@ -1341,9 +1400,8 @@ function confirmStake(planIndex) {
         return;
     }
     
-    if (amount > walletData.mwhBalance) {
-        const needed = amount - walletData.mwhBalance;
-        showMessage(`❌ Insufficient balance. You need ${needed.toLocaleString()} more MWH`, 'error');
+    if (amount > walletData.availableMWH) {
+        showMessage(`❌ Insufficient available balance. You have ${walletData.availableMWH.toLocaleString()} MWH available`, 'error');
         return;
     }
     
@@ -1363,7 +1421,9 @@ function confirmStake(planIndex) {
         startDate: Date.now(),
         endDate: endDate.getTime(),
         days: plan.days,
+        progress: 0,
         status: 'active',
+        canClaim: false,
         earlyPenalty: CONFIG.EARLY_WITHDRAWAL_PENALTY
     };
     
@@ -1372,8 +1432,21 @@ function confirmStake(planIndex) {
     stakingData.totalStaked += amount;
     stakingData.totalRewards += reward;
     
-    // خصم المبلغ من المحفظة
-    walletData.mwhBalance -= amount;
+    // نظام الحجز: خصم من المتاح وإضافة إلى المحجوز
+    walletData.availableMWH -= amount;
+    walletData.lockedMWH += amount;
+    walletData.mwhBalance = walletData.availableMWH + walletData.lockedMWH; // تحديث الإجمالي
+    
+    // تسجيل في تاريخ المعاملات
+    addToStakingHistory({
+        type: 'stake_start',
+        stakeId: stake.id,
+        plan: plan.name,
+        amount: amount,
+        expectedReturn: amount + reward,
+        timestamp: Date.now(),
+        status: 'active'
+    });
     
     // حفظ البيانات
     saveStakingData();
@@ -1385,61 +1458,311 @@ function confirmStake(planIndex) {
     updateStakingStats();
     updateWalletUI();
     updateUI();
+    updateActivePlansDisplay();
     
     closeModal();
     
-    showMessage(`✅ Successfully staked ${amount.toLocaleString()} MWH in ${plan.name}! You will receive ${(amount + reward).toLocaleString()} MWH after ${plan.days} days.`, 'success');
+    showMessage(`✅ Successfully staked ${amount.toLocaleString()} MWH in ${plan.name}!`, 'success');
 }
 
-// الإلغاء المبكر
-function earlyWithdrawal(stakeId) {
+// عرض الخطط النشطة (نافذة جديدة)
+function showActivePlans() {
+    if (stakingData.activeStakes.length === 0) {
+        // عرض رسالة لا توجد خطط نشطة
+        const modalHTML = `
+            <div class="modal-overlay" id="activePlansModal" style="display: flex;">
+                <div class="modal-content active-plans-modal">
+                    <div class="modal-header">
+                        <h3><i class="fas fa-list"></i> Your Active Plans</h3>
+                        <button class="modal-close" onclick="closeModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="empty-plans">
+                            <i class="fas fa-inbox"></i>
+                            <p>No active stakes</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        return;
+    }
+    
+    // بناء HTML للخطط النشطة
+    let plansHTML = '';
+    
+    stakingData.activeStakes.forEach(stake => {
+        const plan = CONFIG.STAKING_PLANS[stake.planIndex];
+        if (!plan) return;
+        
+        const now = Date.now();
+        const totalDuration = stake.endDate - stake.startDate;
+        const elapsed = now - stake.startDate;
+        let progress = Math.min(Math.floor((elapsed / totalDuration) * 100), 100);
+        if (progress < 0) progress = 0;
+        
+        const timeLeft = stake.endDate - now;
+        const daysLeft = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+        const hoursLeft = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        
+        const isCompleted = progress >= 100;
+        const statusClass = isCompleted ? 'completed' : 'active';
+        const statusText = isCompleted ? '✅ Completed' : '⏳ Active';
+        
+        plansHTML += `
+            <div class="active-plan-card ${plan.color} ${statusClass}" data-stake-id="${stake.id}">
+                <div class="active-plan-header">
+                    <div class="plan-name-badge">
+                        <div class="plan-icon-small ${plan.color}">
+                            <i class="fas ${plan.icon}"></i>
+                        </div>
+                        <span class="plan-name-small">${plan.name}</span>
+                    </div>
+                    <div class="plan-status-badge ${statusClass}">${statusText}</div>
+                </div>
+                
+                <div class="active-plan-details">
+                    <div class="detail-item-small">
+                        <span class="detail-label-small">Staked</span>
+                        <span class="detail-value-small">${stake.amount.toLocaleString()} MWH</span>
+                    </div>
+                    <div class="detail-item-small">
+                        <span class="detail-label-small">Return</span>
+                        <span class="detail-value-small highlight">+${stake.reward.toLocaleString()} MWH</span>
+                    </div>
+                    <div class="detail-item-small">
+                        <span class="detail-label-small">Total</span>
+                        <span class="detail-value-small">${stake.totalReturn.toLocaleString()} MWH</span>
+                    </div>
+                    <div class="detail-item-small">
+                        <span class="detail-label-small">Duration</span>
+                        <span class="detail-value-small">${plan.days} days</span>
+                    </div>
+                </div>
+                
+                <div class="plan-progress-section">
+                    <div class="progress-header-small">
+                        <span>Progress</span>
+                        <span>${progress}%</span>
+                    </div>
+                    <div class="progress-bar-small">
+                        <div class="progress-fill-small" style="width: ${progress}%;"></div>
+                    </div>
+                    <div class="time-left-small">
+                        ${isCompleted ? 'Ready to claim' : `${daysLeft}d ${hoursLeft}h remaining`}
+                    </div>
+                </div>
+                
+                <div class="plan-actions">
+                    <button class="btn-cancel-plan" onclick="cancelStake('${stake.id}')" ${isCompleted ? 'disabled' : ''}>
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button class="btn-claim-plan" onclick="claimStake('${stake.id}')" ${!isCompleted ? 'disabled' : ''}>
+                        <i class="fas fa-gift"></i> Claim
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    const modalHTML = `
+        <div class="modal-overlay" id="activePlansModal" style="display: flex;">
+            <div class="modal-content active-plans-modal">
+                <div class="modal-header">
+                    <h3><i class="fas fa-list"></i> Your Active Plans</h3>
+                    <button class="modal-close" onclick="closeModal()">×</button>
+                </div>
+                <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+                    ${plansHTML}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+// إلغاء الرهن (مع عقوبة)
+function cancelStake(stakeId) {
     const stakeIndex = stakingData.activeStakes.findIndex(s => s.id === stakeId);
     if (stakeIndex === -1) return;
     
     const stake = stakingData.activeStakes[stakeIndex];
+    const plan = CONFIG.STAKING_PLANS[stake.planIndex];
+    
     const penalty = stake.amount * (CONFIG.EARLY_WITHDRAWAL_PENALTY / 100);
     const returnAmount = stake.amount - penalty;
     
-    if (!confirm(`Early withdrawal will incur a ${CONFIG.EARLY_WITHDRAWAL_PENALTY}% penalty (${penalty.toLocaleString()} MWH). You will receive ${returnAmount.toLocaleString()} MWH. Continue?`)) {
-        return;
-    }
+    // نافذة تأكيد
+    const confirmHTML = `
+        <div class="modal-overlay" id="confirmCancelModal" style="display: flex;">
+            <div class="modal-content" style="max-width: 350px;">
+                <div class="modal-header">
+                    <h3><i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Early Withdrawal</h3>
+                    <button class="modal-close" onclick="closeModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="font-size: 48px; margin-bottom: 10px;">⚠️</div>
+                        <h3 style="color: #f8fafc; margin-bottom: 15px;">Cancel ${plan.name}?</h3>
+                    </div>
+                    
+                    <div style="background: rgba(15,23,42,0.8); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span style="color: #94a3b8;">Original stake:</span>
+                            <span style="color: #f8fafc; font-weight: 600;">${stake.amount.toLocaleString()} MWH</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span style="color: #94a3b8;">Penalty (20%):</span>
+                            <span style="color: #ef4444; font-weight: 600;">-${penalty.toLocaleString()} MWH</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <span style="color: #f8fafc; font-weight: 600;">You will receive:</span>
+                            <span style="color: #22c55e; font-weight: 700; font-size: 18px;">${returnAmount.toLocaleString()} MWH</span>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-secondary" onclick="closeModal()" style="flex: 1;">Go Back</button>
+                        <button class="btn-primary" onclick="confirmCancelStake('${stakeId}')" style="flex: 1; background: linear-gradient(135deg, #ef4444, #dc2626);">Confirm Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
     
+    // إغلاق النافذة الحالية أولاً
+    closeModal();
+    
+    // فتح نافذة التأكيد
+    document.body.insertAdjacentHTML('beforeend', confirmHTML);
+}
+
+function confirmCancelStake(stakeId) {
+    const stakeIndex = stakingData.activeStakes.findIndex(s => s.id === stakeId);
+    if (stakeIndex === -1) return;
+    
+    const stake = stakingData.activeStakes[stakeIndex];
+    const plan = CONFIG.STAKING_PLANS[stake.planIndex];
+    
+    const penalty = stake.amount * (CONFIG.EARLY_WITHDRAWAL_PENALTY / 100);
+    const returnAmount = stake.amount - penalty;
+    
+    // إزالة من الرهون النشطة
     stakingData.activeStakes.splice(stakeIndex, 1);
     stakingData.totalStaked -= stake.amount;
     stakingData.totalRewards -= stake.reward;
     
-    walletData.mwhBalance += returnAmount;
+    // نظام الحجز: إرجاع المبلغ بعد الخصم إلى المتاح
+    walletData.availableMWH += returnAmount;
+    walletData.lockedMWH -= stake.amount;
+    walletData.mwhBalance = walletData.availableMWH + walletData.lockedMWH;
     
+    // تسجيل في تاريخ المعاملات
+    addToStakingHistory({
+        type: 'stake_cancelled',
+        stakeId: stake.id,
+        plan: plan.name,
+        amount: stake.amount,
+        penalty: penalty,
+        received: returnAmount,
+        timestamp: Date.now(),
+        status: 'cancelled'
+    });
+    
+    // حفظ البيانات
     saveStakingData();
     saveWalletData();
+    saveUserData();
+    
+    // تحديث الواجهات
     updateStakingBalance();
     updateStakingStats();
     updateWalletUI();
+    updateActivePlansDisplay();
     
-    showMessage(`⚠️ Early withdrawal processed. You received ${returnAmount.toLocaleString()} MWH (${penalty.toLocaleString()} MWH penalty).`, 'warning');
+    closeModal(); // إغلاق نافذة التأكيد
+    
+    showMessage(`⚠️ Stake cancelled. You received ${returnAmount.toLocaleString()} MWH (${penalty.toLocaleString()} MWH penalty).`, 'warning');
+}
+
+// المطالبة بالأرباح
+function claimStake(stakeId) {
+    const stakeIndex = stakingData.activeStakes.findIndex(s => s.id === stakeId);
+    if (stakeIndex === -1) return;
+    
+    const stake = stakingData.activeStakes[stakeIndex];
+    const plan = CONFIG.STAKING_PLANS[stake.planIndex];
+    
+    const now = Date.now();
+    if (now < stake.endDate) {
+        showMessage('❌ This stake is not completed yet', 'error');
+        return;
+    }
+    
+    // إزالة من الرهون النشطة
+    stakingData.activeStakes.splice(stakeIndex, 1);
+    stakingData.totalStaked -= stake.amount;
+    stakingData.totalRewards -= stake.reward;
+    
+    // نظام الحجز: إضافة الأرباح إلى المتاح وإزالة من المحجوز
+    walletData.availableMWH += stake.totalReturn;
+    walletData.lockedMWH -= stake.amount;
+    walletData.mwhBalance = walletData.availableMWH + walletData.lockedMWH;
+    
+    // تسجيل في تاريخ المعاملات
+    addToStakingHistory({
+        type: 'stake_claimed',
+        stakeId: stake.id,
+        plan: plan.name,
+        amount: stake.amount,
+        profit: stake.reward,
+        totalReceived: stake.totalReturn,
+        timestamp: Date.now(),
+        status: 'completed'
+    });
+    
+    // حفظ البيانات
+    saveStakingData();
+    saveWalletData();
+    saveUserData();
+    
+    // تحديث الواجهات
+    updateStakingBalance();
+    updateStakingStats();
+    updateWalletUI();
+    updateActivePlansDisplay();
+    
+    closeModal(); // إغلاق نافذة الخطط النشطة
+    
+    showMessage(`🎉 Congratulations! You claimed ${stake.totalReturn.toLocaleString()} MWH (${stake.reward.toLocaleString()} MWH profit).`, 'success');
+}
+
+// إضافة إلى تاريخ Staking
+function addToStakingHistory(entry) {
+    if (!transactionHistory.staking) {
+        transactionHistory.staking = [];
+    }
+    transactionHistory.staking.unshift(entry);
+    saveTransactionHistory();
 }
 
 // التحقق من الرهون المكتملة
 function checkCompletedStakes() {
     const now = Date.now();
-    let completed = false;
+    let updated = false;
     
-    stakingData.activeStakes = stakingData.activeStakes.filter(stake => {
-        if (now >= stake.endDate) {
-            walletData.mwhBalance += stake.totalReturn;
-            completed = true;
-            showMessage(`🎉 Your stake in ${stake.plan} has completed! You received ${stake.totalReturn.toLocaleString()} MWH.`, 'success');
-            return false;
+    stakingData.activeStakes.forEach(stake => {
+        if (now >= stake.endDate && !stake.canClaim) {
+            stake.canClaim = true;
+            updated = true;
         }
-        return true;
     });
     
-    if (completed) {
+    if (updated) {
         saveStakingData();
-        saveWalletData();
-        updateStakingBalance();
-        updateStakingStats();
-        updateWalletUI();
+        updateActivePlansDisplay();
     }
 }
 
@@ -1453,6 +1776,7 @@ function saveStakingData() {
             activeStakes: stakingData.activeStakes,
             totalStaked: stakingData.totalStaked,
             totalRewards: stakingData.totalRewards,
+            history: stakingData.history,
             lastUpdate: Date.now()
         }));
         console.log("💾 Staking data saved");
@@ -1474,6 +1798,7 @@ function loadStakingData() {
             stakingData.activeStakes = parsed.activeStakes || [];
             stakingData.totalStaked = parsed.totalStaked || 0;
             stakingData.totalRewards = parsed.totalRewards || 0;
+            stakingData.history = parsed.history || [];
             console.log("✅ Staking data loaded");
         }
     } catch (error) {
@@ -1482,7 +1807,7 @@ function loadStakingData() {
 }
 
 // ============================================
-// 11. CARD SYSTEM - COMPLETE WITH PURCHASE, AIRDROP, FLIP
+// 12. CARD SYSTEM - COMPLETE WITH PURCHASE, AIRDROP, FLIP
 // ============================================
 
 // تحديث حالة البطاقة
@@ -1527,7 +1852,6 @@ function showCardPurchaseModal() {
         return;
     }
     
-    const buyerNumber = CONFIG.CARD_CURRENT_BUYERS + 1;
     const airdropShare = CONFIG.CARD_AIRDROP_TOTAL / CONFIG.CARD_MAX_BUYERS;
     const progressPercent = (CONFIG.CARD_CURRENT_BUYERS / CONFIG.CARD_MAX_BUYERS) * 100;
     const bnbBalance = walletData.bnbBalance || 0;
@@ -1643,8 +1967,20 @@ function purchaseCard() {
     // زيادة عدد المشترين
     CONFIG.CARD_CURRENT_BUYERS++;
     
-    // إضافة التوكن للمستخدم
-    walletData.mwhBalance += airdropShare; // الإيردروب فوري
+    // إضافة التوكن للمستخدم (الإيردروب فوري)
+    walletData.availableMWH += airdropShare;
+    walletData.mwhBalance = walletData.availableMWH + walletData.lockedMWH;
+    
+    // تسجيل في تاريخ المعاملات
+    addToCardHistory({
+        type: 'card_purchase',
+        price: CONFIG.CARD_PRICE_BNB,
+        instantBonus: airdropShare,
+        lockedBonus: bonusAmount,
+        unlockDate: unlockDate.getTime(),
+        buyerNumber: cardData.buyerNumber,
+        timestamp: Date.now()
+    });
     
     // حفظ البيانات
     saveCardData();
@@ -1665,6 +2001,15 @@ function purchaseCard() {
     setTimeout(() => {
         flipCard();
     }, 500);
+}
+
+// إضافة إلى تاريخ البطاقة
+function addToCardHistory(entry) {
+    if (!transactionHistory.card) {
+        transactionHistory.card = [];
+    }
+    transactionHistory.card.unshift(entry);
+    saveTransactionHistory();
 }
 
 // قلب البطاقة
@@ -1740,7 +2085,488 @@ function showCardActivationModal() {
 }
 
 // ============================================
-// 12. EARNING SYSTEM - COMPLETE
+// 13. TRANSACTION HISTORY SYSTEM - محدث مع 4 أقسام
+// ============================================
+
+// دالة عرض الـ History الجديدة
+function showTransactionHistory() {
+    console.log("📜 Showing enhanced transaction history");
+    
+    // تحديث الأرقام في الشارات
+    updateHistoryBadges();
+    
+    // عرض النافذة
+    const modal = document.getElementById('historyModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        // تعبئة البيانات
+        populatePendingTab();
+        populateDepositsTab();
+        populateWithdrawalsTab();
+        populateAllTab();
+    }
+}
+
+// تحديث شارات الأقسام
+function updateHistoryBadges() {
+    const pendingBadge = document.getElementById('pendingBadge');
+    if (pendingBadge) {
+        const pendingCount = (walletData.pendingDeposits?.length || 0) + (walletData.pendingWithdrawals?.length || 0);
+        pendingBadge.textContent = pendingCount;
+        pendingBadge.style.display = pendingCount > 0 ? 'flex' : 'none';
+    }
+}
+
+// تعبئة تبويب Pending
+function populatePendingTab() {
+    // Pending Deposits
+    const pendingDepositsList = document.getElementById('pendingDepositsList');
+    if (pendingDepositsList) {
+        if (!walletData.pendingDeposits || walletData.pendingDeposits.length === 0) {
+            pendingDepositsList.innerHTML = '<div class="empty-text">No pending deposits</div>';
+        } else {
+            let html = '';
+            walletData.pendingDeposits.forEach(deposit => {
+                const date = new Date(deposit.timestamp);
+                html += `
+                    <div class="history-item-card">
+                        <div class="history-item-header">
+                            <div class="history-item-type">
+                                <div class="history-type-icon pending"><i class="fas fa-clock"></i></div>
+                                <span class="history-type-name">Deposit Pending</span>
+                            </div>
+                            <div class="history-item-status pending">Pending</div>
+                        </div>
+                        <div class="history-item-details">
+                            <div class="history-detail-row">
+                                <span class="history-detail-label">Amount:</span>
+                                <span class="history-detail-value positive">+${deposit.amount} ${deposit.currency}</span>
+                            </div>
+                            <div class="history-detail-row">
+                                <span class="history-detail-label">Hash:</span>
+                                <span class="history-detail-value hash">${deposit.transactionHash?.substring(0, 10)}...</span>
+                            </div>
+                        </div>
+                        <div class="history-item-footer">
+                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()}</span>
+                            <span class="history-item-hash">${deposit.transactionHash?.substring(0, 8)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            pendingDepositsList.innerHTML = html;
+        }
+    }
+    
+    // Pending Withdrawals
+    const pendingWithdrawalsList = document.getElementById('pendingWithdrawalsList');
+    if (pendingWithdrawalsList) {
+        if (!walletData.pendingWithdrawals || walletData.pendingWithdrawals.length === 0) {
+            pendingWithdrawalsList.innerHTML = '<div class="empty-text">No pending withdrawals</div>';
+        } else {
+            let html = '';
+            walletData.pendingWithdrawals.forEach(withdrawal => {
+                const date = new Date(withdrawal.timestamp);
+                html += `
+                    <div class="history-item-card">
+                        <div class="history-item-header">
+                            <div class="history-item-type">
+                                <div class="history-type-icon pending"><i class="fas fa-clock"></i></div>
+                                <span class="history-type-name">Withdrawal Pending</span>
+                            </div>
+                            <div class="history-item-status pending">Pending</div>
+                        </div>
+                        <div class="history-item-details">
+                            <div class="history-detail-row">
+                                <span class="history-detail-label">Amount:</span>
+                                <span class="history-detail-value negative">-${withdrawal.amount} USDT</span>
+                            </div>
+                            <div class="history-detail-row">
+                                <span class="history-detail-label">Address:</span>
+                                <span class="history-detail-value hash">${withdrawal.address?.substring(0, 10)}...</span>
+                            </div>
+                        </div>
+                        <div class="history-item-footer">
+                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            pendingWithdrawalsList.innerHTML = html;
+        }
+    }
+}
+
+// تعبئة تبويب Deposits
+function populateDepositsTab() {
+    // Completed Deposits
+    const completedDepositsList = document.getElementById('completedDepositsList');
+    if (completedDepositsList) {
+        const completed = walletData.depositHistory?.filter(d => d.status === 'approved' || d.status === 'completed') || [];
+        if (completed.length === 0) {
+            completedDepositsList.innerHTML = '<div class="empty-text">No completed deposits</div>';
+        } else {
+            let html = '';
+            completed.forEach(deposit => {
+                const date = new Date(deposit.timestamp);
+                html += `
+                    <div class="history-item-card">
+                        <div class="history-item-header">
+                            <div class="history-item-type">
+                                <div class="history-type-icon deposit"><i class="fas fa-check-circle"></i></div>
+                                <span class="history-type-name">Deposit Completed</span>
+                            </div>
+                            <div class="history-item-status completed">Completed</div>
+                        </div>
+                        <div class="history-item-details">
+                            <div class="history-detail-row">
+                                <span class="history-detail-label">Amount:</span>
+                                <span class="history-detail-value positive">+${deposit.amount} ${deposit.currency}</span>
+                            </div>
+                        </div>
+                        <div class="history-item-footer">
+                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            completedDepositsList.innerHTML = html;
+        }
+    }
+    
+    // Rejected Deposits
+    const rejectedDepositsList = document.getElementById('rejectedDepositsList');
+    if (rejectedDepositsList) {
+        const rejected = walletData.depositHistory?.filter(d => d.status === 'rejected') || [];
+        if (rejected.length === 0) {
+            rejectedDepositsList.innerHTML = '<div class="empty-text">No rejected deposits</div>';
+        } else {
+            let html = '';
+            rejected.forEach(deposit => {
+                const date = new Date(deposit.timestamp);
+                html += `
+                    <div class="history-item-card">
+                        <div class="history-item-header">
+                            <div class="history-item-type">
+                                <div class="history-type-icon withdraw"><i class="fas fa-times-circle"></i></div>
+                                <span class="history-type-name">Deposit Rejected</span>
+                            </div>
+                            <div class="history-item-status rejected">Rejected</div>
+                        </div>
+                        <div class="history-item-details">
+                            <div class="history-detail-row">
+                                <span class="history-detail-label">Amount:</span>
+                                <span class="history-detail-value">${deposit.amount} ${deposit.currency}</span>
+                            </div>
+                            <div class="history-detail-row">
+                                <span class="history-detail-label">Reason:</span>
+                                <span class="history-detail-value" style="color: #ef4444;">${deposit.rejectionReason || 'Not specified'}</span>
+                            </div>
+                        </div>
+                        <div class="history-item-footer">
+                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            rejectedDepositsList.innerHTML = html;
+        }
+    }
+}
+
+// تعبئة تبويب Withdrawals
+function populateWithdrawalsTab() {
+    // Completed Withdrawals
+    const completedWithdrawalsList = document.getElementById('completedWithdrawalsList');
+    if (completedWithdrawalsList) {
+        const completed = walletData.withdrawalHistory?.filter(w => w.status === 'completed') || [];
+        if (completed.length === 0) {
+            completedWithdrawalsList.innerHTML = '<div class="empty-text">No completed withdrawals</div>';
+        } else {
+            let html = '';
+            completed.forEach(withdrawal => {
+                const date = new Date(withdrawal.timestamp);
+                html += `
+                    <div class="history-item-card">
+                        <div class="history-item-header">
+                            <div class="history-item-type">
+                                <div class="history-type-icon withdraw"><i class="fas fa-check-circle"></i></div>
+                                <span class="history-type-name">Withdrawal Completed</span>
+                            </div>
+                            <div class="history-item-status completed">Completed</div>
+                        </div>
+                        <div class="history-item-details">
+                            <div class="history-detail-row">
+                                <span class="history-detail-label">Amount:</span>
+                                <span class="history-detail-value negative">-${withdrawal.amount} USDT</span>
+                            </div>
+                        </div>
+                        <div class="history-item-footer">
+                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            completedWithdrawalsList.innerHTML = html;
+        }
+    }
+    
+    // Rejected Withdrawals
+    const rejectedWithdrawalsList = document.getElementById('rejectedWithdrawalsList');
+    if (rejectedWithdrawalsList) {
+        const rejected = walletData.withdrawalHistory?.filter(w => w.status === 'rejected') || [];
+        if (rejected.length === 0) {
+            rejectedWithdrawalsList.innerHTML = '<div class="empty-text">No rejected withdrawals</div>';
+        } else {
+            let html = '';
+            rejected.forEach(withdrawal => {
+                const date = new Date(withdrawal.timestamp);
+                html += `
+                    <div class="history-item-card">
+                        <div class="history-item-header">
+                            <div class="history-item-type">
+                                <div class="history-type-icon withdraw"><i class="fas fa-times-circle"></i></div>
+                                <span class="history-type-name">Withdrawal Rejected</span>
+                            </div>
+                            <div class="history-item-status rejected">Rejected</div>
+                        </div>
+                        <div class="history-item-details">
+                            <div class="history-detail-row">
+                                <span class="history-detail-label">Amount:</span>
+                                <span class="history-detail-value">${withdrawal.amount} USDT</span>
+                            </div>
+                            <div class="history-detail-row">
+                                <span class="history-detail-label">Reason:</span>
+                                <span class="history-detail-value" style="color: #ef4444;">${withdrawal.rejectionReason || 'Not specified'}</span>
+                            </div>
+                        </div>
+                        <div class="history-item-footer">
+                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            rejectedWithdrawalsList.innerHTML = html;
+        }
+    }
+}
+
+// تعبئة تبويب All
+function populateAllTab() {
+    // Swaps
+    const swapsList = document.getElementById('swapsList');
+    if (swapsList) {
+        const swaps = transactionHistory.swaps || [];
+        if (swaps.length === 0) {
+            swapsList.innerHTML = '<div class="empty-text">No swap transactions</div>';
+        } else {
+            let html = '';
+            swaps.slice(0, 5).forEach(swap => {
+                const date = new Date(swap.timestamp);
+                html += `
+                    <div class="history-item-card">
+                        <div class="history-item-header">
+                            <div class="history-item-type">
+                                <div class="history-type-icon swap"><i class="fas fa-exchange-alt"></i></div>
+                                <span class="history-type-name">Swap</span>
+                            </div>
+                            <div class="history-item-status completed">Completed</div>
+                        </div>
+                        <div class="history-item-details">
+                            <div class="history-detail-row">
+                                <span class="history-detail-label">From:</span>
+                                <span class="history-detail-value">${swap.fromAmount} ${swap.fromCurrency}</span>
+                            </div>
+                            <div class="history-detail-row">
+                                <span class="history-detail-label">To:</span>
+                                <span class="history-detail-value positive">${swap.toAmount} ${swap.toCurrency}</span>
+                            </div>
+                        </div>
+                        <div class="history-item-footer">
+                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            swapsList.innerHTML = html;
+        }
+    }
+    
+    // Mining
+    const miningList = document.getElementById('miningList');
+    if (miningList) {
+        const mining = transactionHistory.mining || [];
+        if (mining.length === 0) {
+            miningList.innerHTML = '<div class="empty-text">No mining transactions</div>';
+        } else {
+            let html = '';
+            mining.slice(0, 5).forEach(mine => {
+                const date = new Date(mine.timestamp);
+                html += `
+                    <div class="history-item-card">
+                        <div class="history-item-header">
+                            <div class="history-item-type">
+                                <div class="history-type-icon mine"><i class="fas fa-hard-hat"></i></div>
+                                <span class="history-type-name">Mining Reward</span>
+                            </div>
+                            <div class="history-item-status completed">Completed</div>
+                        </div>
+                        <div class="history-item-details">
+                            <div class="history-detail-row">
+                                <span class="history-detail-label">Amount:</span>
+                                <span class="history-detail-value positive">+${mine.amount} MWH</span>
+                            </div>
+                        </div>
+                        <div class="history-item-footer">
+                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            miningList.innerHTML = html;
+        }
+    }
+    
+    // Staking
+    const stakingList = document.getElementById('stakingList');
+    if (stakingList) {
+        const staking = transactionHistory.staking || [];
+        if (staking.length === 0) {
+            stakingList.innerHTML = '<div class="empty-text">No staking transactions</div>';
+        } else {
+            let html = '';
+            staking.slice(0, 5).forEach(stake => {
+                const date = new Date(stake.timestamp);
+                let amountDisplay = '';
+                let statusClass = '';
+                
+                if (stake.type === 'stake_start') {
+                    amountDisplay = `-${stake.amount} MWH`;
+                    statusClass = 'negative';
+                } else if (stake.type === 'stake_claimed') {
+                    amountDisplay = `+${stake.totalReceived} MWH`;
+                    statusClass = 'positive';
+                } else if (stake.type === 'stake_cancelled') {
+                    amountDisplay = `+${stake.received} MWH`;
+                    statusClass = 'negative';
+                }
+                
+                html += `
+                    <div class="history-item-card">
+                        <div class="history-item-header">
+                            <div class="history-item-type">
+                                <div class="history-type-icon stake"><i class="fas fa-chart-line"></i></div>
+                                <span class="history-type-name">${stake.plan || 'Staking'}</span>
+                            </div>
+                            <div class="history-item-status ${stake.status}">${stake.status}</div>
+                        </div>
+                        <div class="history-item-details">
+                            <div class="history-detail-row">
+                                <span class="history-detail-label">Amount:</span>
+                                <span class="history-detail-value ${statusClass}">${amountDisplay}</span>
+                            </div>
+                            <div class="history-detail-row">
+                                <span class="history-detail-label">Type:</span>
+                                <span class="history-detail-value">${stake.type.replace('stake_', '')}</span>
+                            </div>
+                        </div>
+                        <div class="history-item-footer">
+                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            stakingList.innerHTML = html;
+        }
+    }
+    
+    // Card
+    const cardList = document.getElementById('cardList');
+    if (cardList) {
+        const card = transactionHistory.card || [];
+        if (card.length === 0) {
+            cardList.innerHTML = '<div class="empty-text">No card transactions</div>';
+        } else {
+            let html = '';
+            card.slice(0, 5).forEach(cardTx => {
+                const date = new Date(cardTx.timestamp);
+                html += `
+                    <div class="history-item-card">
+                        <div class="history-item-header">
+                            <div class="history-item-type">
+                                <div class="history-type-icon card"><i class="fas fa-credit-card"></i></div>
+                                <span class="history-type-name">Card Purchase</span>
+                            </div>
+                            <div class="history-item-status completed">Completed</div>
+                        </div>
+                        <div class="history-item-details">
+                            <div class="history-detail-row">
+                                <span class="history-detail-label">Price:</span>
+                                <span class="history-detail-value negative">-${cardTx.price} BNB</span>
+                            </div>
+                            <div class="history-detail-row">
+                                <span class="history-detail-label">Bonus:</span>
+                                <span class="history-detail-value positive">+${cardTx.instantBonus} MWH</span>
+                            </div>
+                            <div class="history-detail-row">
+                                <span class="history-detail-label">Locked:</span>
+                                <span class="history-detail-value locked">${cardTx.lockedBonus} MWH</span>
+                            </div>
+                        </div>
+                        <div class="history-item-footer">
+                            <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            cardList.innerHTML = html;
+        }
+    }
+}
+
+// تبديل تبويبات History
+function switchHistoryTab(tabName) {
+    // إزالة active من كل التبويبات والمحتويات
+    document.querySelectorAll('.history-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelectorAll('.history-tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    // تفعيل التبويب المختار
+    document.getElementById(`tab${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`).classList.add('active');
+    document.getElementById(`${tabName}TabContent`).classList.add('active');
+}
+
+// حفظ تاريخ المعاملات
+function saveTransactionHistory() {
+    if (!userData.userId) return;
+    try {
+        const storageKey = `vip_history_${userData.userId}`;
+        localStorage.setItem(storageKey, JSON.stringify(transactionHistory));
+    } catch (error) {
+        console.error("❌ History save error:", error);
+    }
+}
+
+// تحميل تاريخ المعاملات
+function loadTransactionHistory() {
+    if (!userData.userId) return;
+    try {
+        const storageKey = `vip_history_${userData.userId}`;
+        const saved = localStorage.getItem(storageKey);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            transactionHistory = {...transactionHistory, ...parsed};
+        }
+    } catch (error) {
+        console.error("❌ History load error:", error);
+    }
+}
+
+// ============================================
+// 14. EARNING SYSTEM - COMPLETE (الأصلي)
 // ============================================
 
 function initEarningPage() {
@@ -1925,11 +2751,21 @@ function watchAd() {
 function rewardAdWatched() {
     const reward = CONFIG.AD_REWARD;
     userData.balance += reward;
-    walletData.mwhBalance = userData.balance;
     userData.totalEarned += reward;
+    
+    // تحديث الرصيد في المحفظة
+    walletData.availableMWH += reward;
+    walletData.mwhBalance = walletData.availableMWH + walletData.lockedMWH;
     
     dailyStats.adsWatched++;
     dailyStats.adsEarned += reward;
+    
+    // تسجيل في تاريخ المعاملات
+    addToMiningHistory({
+        amount: reward,
+        timestamp: Date.now(),
+        type: 'ad_reward'
+    });
     
     saveUserData();
     saveWalletData();
@@ -1954,6 +2790,15 @@ function rewardAdWatched() {
     }
 }
 
+// إضافة إلى تاريخ التعدين
+function addToMiningHistory(entry) {
+    if (!transactionHistory.mining) {
+        transactionHistory.mining = [];
+    }
+    transactionHistory.mining.unshift(entry);
+    saveTransactionHistory();
+}
+
 function claimReferralChallenge(challengeIndex) {
     const challenge = CONFIG.REFERRAL_CHALLENGES[challengeIndex];
     
@@ -1973,14 +2818,17 @@ function claimReferralChallenge(challengeIndex) {
     }
     
     userData.balance += challenge.reward;
-    walletData.mwhBalance = userData.balance;
     userData.totalEarned += challenge.reward;
-    dailyStats.referralEarned += challenge.reward;
+    
+    // تحديث الرصيد في المحفظة
+    walletData.availableMWH += challenge.reward;
+    walletData.mwhBalance = walletData.availableMWH + walletData.lockedMWH;
     
     if (challenge.bonusBNB) {
         walletData.bnbBalance += challenge.bonusBNB;
     }
     
+    dailyStats.referralEarned += challenge.reward;
     challenge.claimed = true;
     
     saveUserData();
@@ -2049,7 +2897,7 @@ function loadDailyStats() {
 }
 
 // ============================================
-// 13. REAL-TIME LISTENER FOR USER DATA
+// 15. REAL-TIME LISTENER FOR USER DATA (الأصلي)
 // ============================================
 
 function setupRealTimeListeners() {
@@ -2111,7 +2959,8 @@ function updateUserLocalDeposit(firebaseId, depositData) {
             
             if (depositData.currency === 'MWH') {
                 userData.balance += depositData.amount;
-                walletData.mwhBalance = userData.balance;
+                walletData.availableMWH += depositData.amount;
+                walletData.mwhBalance = walletData.availableMWH + walletData.lockedMWH;
                 updateStakingBalance();
                 showMessage(`✅ Deposit approved! +${depositData.amount} MWH added`, 'success');
             } else if (depositData.currency === 'USDT') {
@@ -2164,6 +3013,7 @@ function updateUserLocalDeposit(firebaseId, depositData) {
     saveUserData();
     updateUI();
     updateWalletUI();
+    updateHistoryBadges();
 }
 
 function updateUserLocalWithdrawal(firebaseId, withdrawalData) {
@@ -2235,10 +3085,11 @@ function updateUserLocalWithdrawal(firebaseId, withdrawalData) {
     
     saveWalletData();
     updateWalletUI();
+    updateHistoryBadges();
 }
 
 // ============================================
-// 14. AUTO-CHECK TRANSACTIONS ON APP START
+// 16. AUTO-CHECK TRANSACTIONS ON APP START
 // ============================================
 
 async function checkAndUpdateTransactionsOnStart() {
@@ -2278,7 +3129,8 @@ async function checkAndUpdateTransactionsOnStart() {
                     if (status === 'approved') {
                         if (depositData.currency === 'MWH') {
                             userData.balance += depositData.amount;
-                            walletData.mwhBalance = userData.balance;
+                            walletData.availableMWH += depositData.amount;
+                            walletData.mwhBalance = walletData.availableMWH + walletData.lockedMWH;
                         } else if (depositData.currency === 'USDT') {
                             walletData.usdtBalance += depositData.amount;
                         } else if (depositData.currency === 'BNB') {
@@ -2341,7 +3193,7 @@ async function checkAndUpdateTransactionsOnStart() {
 }
 
 // ============================================
-// 15. FLOATING NOTIFICATION SYSTEM - COMPLETE
+// 17. FLOATING NOTIFICATION SYSTEM - COMPLETE (الأصلي)
 // ============================================
 
 const NOTIFICATION_MESSAGES = [
@@ -2617,433 +3469,7 @@ function checkAndShowNotification() {
 }
 
 // ============================================
-// 16. TRANSACTION HISTORY SYSTEM - COMPLETE
-// ============================================
-
-function showTransactionHistory() {
-    console.log("📜 Showing transaction history");
-    
-    const hasTransactions = 
-        walletData.pendingDeposits.length > 0 ||
-        walletData.pendingWithdrawals.length > 0 ||
-        walletData.depositHistory.length > 0 ||
-        walletData.withdrawalHistory.length > 0;
-    
-    if (!hasTransactions) {
-        const modalHTML = `
-            <div class="modal-overlay" id="historyModal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3><i class="fas fa-history"></i> Transaction History</h3>
-                        <button class="modal-close" onclick="closeModal()">×</button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="empty-history" style="display: block;">
-                            <div class="empty-icon">
-                                <i class="fas fa-inbox"></i>
-                            </div>
-                            <div class="empty-title">📭 No Transactions Yet</div>
-                            <div class="empty-text">
-                                Your transaction history will appear here<br>
-                                once you make deposits or withdrawals.
-                            </div>
-                            <div style="margin-top: 20px;">
-                                <button class="btn-primary" onclick="closeModal()" style="width: 100%; padding: 12px;">
-                                    <i class="fas fa-check"></i> OK
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        return;
-    }
-    
-    const modalHTML = `
-        <div class="modal-overlay" id="historyModal">
-            <div class="modal-content history-modal">
-                <div class="modal-header">
-                    <h3><i class="fas fa-history"></i> Transaction History</h3>
-                    <button class="modal-close" onclick="closeModal()">×</button>
-                </div>
-                
-                <div class="modal-body">
-                    <div class="history-tabs">
-                        <button class="tab-btn active" onclick="switchHistoryTab('pending')">
-                            <i class="fas fa-clock"></i>
-                            <span>Pending</span>
-                            ${walletData.pendingDeposits.length + walletData.pendingWithdrawals.length > 0 ? 
-                              `<span class="tab-badge">${walletData.pendingDeposits.length + walletData.pendingWithdrawals.length}</span>` : ''}
-                        </button>
-                        <button class="tab-btn" onclick="switchHistoryTab('deposits')">
-                            <i class="fas fa-download"></i>
-                            <span>Deposits</span>
-                        </button>
-                        <button class="tab-btn" onclick="switchHistoryTab('withdrawals')">
-                            <i class="fas fa-upload"></i>
-                            <span>Withdrawals</span>
-                        </button>
-                    </div>
-                    
-                    <div class="history-content" id="pendingTab">
-                        <div class="section-title">
-                            <i class="fas fa-clock"></i>
-                            <span>Pending Transactions</span>
-                        </div>
-                        
-                        ${renderPendingTransactions()}
-                    </div>
-                    
-                    <div class="history-content" id="depositsTab" style="display: none;">
-                        <div class="section-title">
-                            <i class="fas fa-download"></i>
-                            <span>Deposit History</span>
-                        </div>
-                        
-                        ${renderDepositHistory()}
-                    </div>
-                    
-                    <div class="history-content" id="withdrawalsTab" style="display: none;">
-                        <div class="section-title">
-                            <i class="fas fa-upload"></i>
-                            <span>Withdrawal History</span>
-                        </div>
-                        
-                        ${renderWithdrawalHistory()}
-                    </div>
-                    
-                    <div class="empty-history" id="emptyHistory" style="display: ${walletData.pendingDeposits.length === 0 && walletData.pendingWithdrawals.length === 0 && walletData.depositHistory.length === 0 && walletData.withdrawalHistory.length === 0 ? 'block' : 'none'};">
-                        <div class="empty-icon">
-                            <i class="fas fa-history"></i>
-                        </div>
-                        <div class="empty-title">No Transactions Yet</div>
-                        <div class="empty-text">
-                            Your transaction history will appear here once you make deposits or withdrawals.
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-}
-
-function renderPendingTransactions() {
-    if (walletData.pendingDeposits.length === 0 && walletData.pendingWithdrawals.length === 0) {
-        return `
-            <div class="empty-pending">
-                <div class="empty-icon-small">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <div class="empty-text">No pending transactions</div>
-            </div>
-        `;
-    }
-    
-    let html = '';
-    
-    walletData.pendingDeposits.forEach(deposit => {
-        const date = new Date(deposit.timestamp);
-        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        
-        html += `
-            <div class="transaction-card pending">
-                <div class="transaction-header">
-                    <div class="transaction-type">
-                        <div class="type-icon deposit">
-                            <i class="fas fa-download"></i>
-                        </div>
-                        <div class="type-info">
-                            <div class="type-title">Deposit Request</div>
-                            <div class="type-subtitle">${deposit.currency}</div>
-                        </div>
-                    </div>
-                    <div class="transaction-status pending-badge">
-                        <i class="fas fa-clock"></i>
-                        <span>Pending Review</span>
-                    </div>
-                </div>
-                <div class="transaction-details">
-                    <div class="detail-row">
-                        <span>Amount:</span>
-                        <span class="detail-value">${deposit.amount} ${deposit.currency}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span>Transaction Hash:</span>
-                        <span class="detail-value hash">${deposit.transactionHash.substring(0, 12)}...${deposit.transactionHash.substring(deposit.transactionHash.length - 6)}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span>Submitted:</span>
-                        <span class="detail-value">${formattedDate}</span>
-                    </div>
-                </div>
-                <div class="transaction-note">
-                    <i class="fas fa-info-circle"></i>
-                    <span>Awaiting manual review by admin</span>
-                </div>
-            </div>
-        `;
-    });
-    
-    walletData.pendingWithdrawals.forEach(withdrawal => {
-        const date = new Date(withdrawal.timestamp);
-        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        
-        html += `
-            <div class="transaction-card pending">
-                <div class="transaction-header">
-                    <div class="transaction-type">
-                        <div class="type-icon withdrawal">
-                            <i class="fas fa-upload"></i>
-                        </div>
-                        <div class="type-info">
-                            <div class="type-title">Withdrawal Request</div>
-                            <div class="type-subtitle">USDT</div>
-                        </div>
-                    </div>
-                    <div class="transaction-status pending-badge">
-                        <i class="fas fa-clock"></i>
-                        <span>Pending Processing</span>
-                    </div>
-                </div>
-                <div class="transaction-details">
-                    <div class="detail-row">
-                        <span>Amount:</span>
-                        <span class="detail-value">${withdrawal.amount} USDT</span>
-                    </div>
-                    <div class="detail-row">
-                        <span>Address:</span>
-                        <span class="detail-value hash">${withdrawal.address.substring(0, 12)}...${withdrawal.address.substring(withdrawal.address.length - 6)}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span>Network Fee:</span>
-                        <span class="detail-value">${withdrawal.fee} BNB</span>
-                    </div>
-                    <div class="detail-row">
-                        <span>Submitted:</span>
-                        <span class="detail-value">${formattedDate}</span>
-                    </div>
-                </div>
-                <div class="transaction-note">
-                    <i class="fas fa-info-circle"></i>
-                    <span>Awaiting manual processing by admin</span>
-                </div>
-            </div>
-        `;
-    });
-    
-    return html;
-}
-
-function renderDepositHistory() {
-    if (walletData.depositHistory.length === 0) {
-        return `
-            <div class="empty-history-section">
-                <div class="empty-icon-small">
-                    <i class="fas fa-download"></i>
-                </div>
-                <div class="empty-text">No deposit history</div>
-            </div>
-        `;
-    }
-    
-    let html = '';
-    
-    walletData.depositHistory.forEach(deposit => {
-        const date = new Date(deposit.timestamp);
-        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        
-        const status = deposit.status ? deposit.status.toLowerCase() : '';
-        let statusClass = 'completed-badge';
-        let statusIcon = 'fa-check';
-        let statusText = 'Completed';
-        
-        if (status === 'approved') {
-            statusClass = 'approved-badge';
-            statusIcon = 'fa-check-circle';
-            statusText = 'Approved';
-        } else if (status === 'rejected') {
-            statusClass = 'rejected-badge';
-            statusIcon = 'fa-times-circle';
-            statusText = 'Rejected';
-        }
-        
-        html += `
-            <div class="transaction-card ${status === 'rejected' ? 'rejected' : 'completed'}">
-                <div class="transaction-header">
-                    <div class="transaction-type">
-                        <div class="type-icon deposit ${status === 'rejected' ? 'rejected-icon' : ''}">
-                            <i class="fas fa-download"></i>
-                        </div>
-                        <div class="type-info">
-                            <div class="type-title">Deposit ${statusText}</div>
-                            <div class="type-subtitle">${deposit.currency}</div>
-                        </div>
-                    </div>
-                    <div class="transaction-status ${statusClass}">
-                        <i class="fas ${statusIcon}"></i>
-                        <span>${statusText}</span>
-                    </div>
-                </div>
-                <div class="transaction-details">
-                    <div class="detail-row">
-                        <span>Amount:</span>
-                        <span class="detail-value">${deposit.amount} ${deposit.currency}</span>
-                    </div>
-                    ${deposit.transactionHash ? `
-                    <div class="detail-row">
-                        <span>Transaction Hash:</span>
-                        <span class="detail-value hash">${deposit.transactionHash.substring(0, 12)}...${deposit.transactionHash.substring(deposit.transactionHash.length - 6)}</span>
-                    </div>
-                    ` : ''}
-                    <div class="detail-row">
-                        <span>Date:</span>
-                        <span class="detail-value">${formattedDate}</span>
-                    </div>
-                    ${deposit.rejectionReason ? `
-                    <div class="detail-row rejection-reason">
-                        <span>Reason:</span>
-                        <span class="detail-value" style="color: #ef4444;">${deposit.rejectionReason}</span>
-                    </div>
-                    ` : ''}
-                    ${deposit.adminNote && !deposit.rejectionReason ? `
-                    <div class="detail-row">
-                        <span>Note:</span>
-                        <span class="detail-value" style="color: #22c55e;">${deposit.adminNote}</span>
-                    </div>
-                    ` : ''}
-                </div>
-            </div>
-        `;
-    });
-    
-    return html;
-}
-
-function renderWithdrawalHistory() {
-    if (walletData.withdrawalHistory.length === 0) {
-        return `
-            <div class="empty-history-section">
-                <div class="empty-icon-small">
-                    <i class="fas fa-upload"></i>
-                </div>
-                <div class="empty-text">No withdrawal history</div>
-            </div>
-        `;
-    }
-    
-    let html = '';
-    
-    walletData.withdrawalHistory.forEach(withdrawal => {
-        const date = new Date(withdrawal.timestamp);
-        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        
-        const status = withdrawal.status ? withdrawal.status.toLowerCase() : '';
-        let statusClass = 'completed-badge';
-        let statusIcon = 'fa-check-circle';
-        let statusText = 'Completed';
-        
-        if (status === 'rejected') {
-            statusClass = 'rejected-badge';
-            statusIcon = 'fa-times-circle';
-            statusText = 'Rejected';
-        }
-        
-        html += `
-            <div class="transaction-card ${status === 'rejected' ? 'rejected' : 'completed'}">
-                <div class="transaction-header">
-                    <div class="transaction-type">
-                        <div class="type-icon withdrawal ${status === 'rejected' ? 'rejected-icon' : ''}">
-                            <i class="fas fa-upload"></i>
-                        </div>
-                        <div class="type-info">
-                            <div class="type-title">Withdrawal ${statusText}</div>
-                            <div class="type-subtitle">USDT</div>
-                        </div>
-                    </div>
-                    <div class="transaction-status ${statusClass}">
-                        <i class="fas ${statusIcon}"></i>
-                        <span>${statusText}</span>
-                    </div>
-                </div>
-                <div class="transaction-details">
-                    <div class="detail-row">
-                        <span>Amount:</span>
-                        <span class="detail-value">${withdrawal.amount} USDT</span>
-                    </div>
-                    <div class="detail-row">
-                        <span>Address:</span>
-                        <span class="detail-value hash">${withdrawal.address.substring(0, 12)}...${withdrawal.address.substring(withdrawal.address.length - 6)}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span>Network Fee:</span>
-                        <span class="detail-value">${withdrawal.fee} BNB</span>
-                    </div>
-                    <div class="detail-row">
-                        <span>Date:</span>
-                        <span class="detail-value">${formattedDate}</span>
-                    </div>
-                    ${withdrawal.rejectionReason ? `
-                    <div class="detail-row rejection-reason">
-                        <span>Reason:</span>
-                        <span class="detail-value" style="color: #ef4444;">${withdrawal.rejectionReason}</span>
-                    </div>
-                    ` : ''}
-                    ${withdrawal.completedBy && !withdrawal.rejectionReason ? `
-                    <div class="detail-row">
-                        <span>Processed by:</span>
-                        <span class="detail-value" style="color: #22c55e;">${withdrawal.completedBy}</span>
-                    </div>
-                    ` : ''}
-                </div>
-            </div>
-        `;
-    });
-    
-    return html;
-}
-
-function switchHistoryTab(tabName) {
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    document.querySelectorAll('.history-content').forEach(content => {
-        content.style.display = 'none';
-    });
-    
-    const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => 
-        btn.querySelector('span').textContent.toLowerCase().includes(tabName)
-    );
-    
-    if (activeBtn) {
-        activeBtn.classList.add('active');
-    }
-    
-    const contentId = tabName + 'Tab';
-    const content = document.getElementById(contentId);
-    if (content) {
-        content.style.display = 'block';
-    }
-    
-    const emptyHistory = document.getElementById('emptyHistory');
-    if (emptyHistory) {
-        if (tabName === 'pending') {
-            emptyHistory.style.display = walletData.pendingDeposits.length === 0 && walletData.pendingWithdrawals.length === 0 ? 'block' : 'none';
-        } else if (tabName === 'deposits') {
-            emptyHistory.style.display = walletData.depositHistory.length === 0 ? 'block' : 'none';
-        } else if (tabName === 'withdrawals') {
-            emptyHistory.style.display = walletData.withdrawalHistory.length === 0 ? 'block' : 'none';
-        }
-    }
-}
-
-// ============================================
-// 17. DEPOSIT MODAL - COMPLETE
+// 18. DEPOSIT MODAL - COMPLETE (الأصلي)
 // ============================================
 
 function openDepositModal(currency) {
@@ -3080,7 +3506,6 @@ function openDepositModal(currency) {
                             <span>Your ${currency} Deposit Address</span>
                         </div>
                         
-                        <!-- تصميم عمودي جديد للعنوان -->
                         <div class="address-container-vertical">
                             <div class="address-value-box">
                                 <span>${depositAddress.substring(0, 20)}</span>
@@ -3320,8 +3745,83 @@ async function submitDepositRequest(currency) {
     }
 }
 
+function copyDepositAddress() {
+    const depositAddress = CONFIG.DEPOSIT_ADDRESS;
+    
+    navigator.clipboard.writeText(depositAddress)
+        .then(() => {
+            const btn = document.querySelector('.copy-address-btn-large');
+            if (btn) {
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                btn.style.background = 'linear-gradient(135deg, #22c55e, #10b981)';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.style.background = 'linear-gradient(135deg, #3b82f6, #6366f1)';
+                }, 2000);
+            }
+            showMessage('✅ Address copied to clipboard!', 'success');
+        })
+        .catch(err => {
+            console.error('Copy error:', err);
+            showMessage('❌ Failed to copy address', 'error');
+        });
+}
+
+function validateTransactionHash() {
+    const hash = document.getElementById('transactionHash').value.trim();
+    const statusDiv = document.getElementById('transactionStatus');
+    const statusIcon = document.getElementById('statusIcon');
+    const statusText = document.getElementById('statusText');
+    const verifyBtn = document.getElementById('verifyDepositBtn');
+    
+    if (!hash) {
+        statusDiv.style.display = 'none';
+        verifyBtn.disabled = true;
+        return;
+    }
+    
+    if (walletData.usedTransactions.includes(hash.toLowerCase())) {
+        statusIcon.innerHTML = '<i class="fas fa-exclamation-circle" style="color: #ef4444;"></i>';
+        statusText.innerHTML = '<span style="color: #ef4444;">This transaction hash has already been used</span>';
+        statusDiv.style.display = 'flex';
+        statusDiv.style.background = 'rgba(239, 68, 68, 0.1)';
+        statusDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+        verifyBtn.disabled = true;
+        return;
+    }
+    
+    if (hash.length < CONFIG.MIN_TRANSACTION_LENGTH) {
+        statusIcon.innerHTML = '<i class="fas fa-times-circle" style="color: #ef4444;"></i>';
+        statusText.innerHTML = '<span style="color: #ef4444;">Invalid transaction hash (too short)</span>';
+        statusDiv.style.display = 'flex';
+        statusDiv.style.background = 'rgba(239, 68, 68, 0.1)';
+        statusDiv.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+        verifyBtn.disabled = true;
+        return;
+    }
+    
+    if (!hash.startsWith('0x') || hash.length !== 66) {
+        statusIcon.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i>';
+        statusText.innerHTML = '<span style="color: #f59e0b;">Verify this is a valid BEP20 transaction hash</span>';
+        statusDiv.style.display = 'flex';
+        statusDiv.style.background = 'rgba(245, 158, 11, 0.1)';
+        statusDiv.style.border = '1px solid rgba(245, 158, 11, 0.3)';
+        verifyBtn.disabled = false;
+        return;
+    }
+    
+    statusIcon.innerHTML = '<i class="fas fa-check-circle" style="color: #22c55e;"></i>';
+    statusText.innerHTML = '<span style="color: #22c55e;">Valid transaction hash detected</span>';
+    statusDiv.style.display = 'flex';
+    statusDiv.style.background = 'rgba(34, 197, 94, 0.1)';
+    statusDiv.style.border = '1px solid rgba(34, 197, 94, 0.3)';
+    verifyBtn.disabled = false;
+}
+
 // ============================================
-// 18. SWAP MODAL - COMPLETE
+// 19. SWAP MODAL - COMPLETE (الأصلي مع إضافة للتاريخ)
 // ============================================
 
 function openSwapModal(currency) {
@@ -3507,7 +4007,7 @@ function openSwapModal(currency) {
 
 function getBalanceByCurrency(currency) {
     switch(currency) {
-        case 'MWH': return walletData.mwhBalance;
+        case 'MWH': return walletData.availableMWH; // نستخدم المتاح فقط لل swap
         case 'USDT': return walletData.usdtBalance;
         case 'BNB': return walletData.bnbBalance;
         case 'TON': return walletData.tonBalance;
@@ -3628,27 +4128,44 @@ function executeSwap(fromCurrency, toCurrency) {
         return;
     }
     
+    // تسجيل المعاملة قبل التحديث
+    const swapRecord = {
+        fromCurrency: fromCurrency,
+        toCurrency: toCurrency,
+        fromAmount: fromAmount,
+        toAmount: toAmount,
+        timestamp: Date.now()
+    };
+    
     switch(fromCurrency) {
         case 'MWH':
-            walletData.mwhBalance -= fromAmount;
+            walletData.availableMWH -= fromAmount;
             walletData.usdtBalance += toAmount;
+            walletData.mwhBalance = walletData.availableMWH + walletData.lockedMWH;
             break;
         case 'USDT':
             walletData.usdtBalance -= fromAmount;
-            walletData.mwhBalance += toAmount;
+            walletData.availableMWH += toAmount;
+            walletData.mwhBalance = walletData.availableMWH + walletData.lockedMWH;
             break;
         case 'BNB':
             walletData.bnbBalance -= fromAmount;
-            walletData.mwhBalance += toAmount;
+            walletData.availableMWH += toAmount;
+            walletData.mwhBalance = walletData.availableMWH + walletData.lockedMWH;
             break;
     }
     
-    if (fromCurrency === 'MWH' || fromCurrency === 'USDT' || fromCurrency === 'BNB') {
-        userData.balance = walletData.mwhBalance;
+    userData.balance = walletData.availableMWH;
+    
+    // إضافة إلى تاريخ السواب
+    if (!transactionHistory.swaps) {
+        transactionHistory.swaps = [];
     }
+    transactionHistory.swaps.unshift(swapRecord);
     
     saveWalletData();
     saveUserData();
+    saveTransactionHistory();
     
     updateWalletUI();
     updateUI();
@@ -3659,7 +4176,7 @@ function executeSwap(fromCurrency, toCurrency) {
 }
 
 // ============================================
-// 19. WITHDRAWAL MODAL - COMPLETE
+// 20. WITHDRAWAL MODAL - COMPLETE (الأصلي)
 // ============================================
 
 function openWithdrawalModal() {
@@ -4021,7 +4538,7 @@ function saveWithdrawalToFirebase(withdrawalRequest) {
 }
 
 // ============================================
-// 20. UTILITY FUNCTIONS
+// 21. UTILITY FUNCTIONS
 // ============================================
 
 const elements = {};
@@ -4192,7 +4709,9 @@ async function processReferral(referralCode) {
                 
                 userData.referredBy = referralCode;
                 
-                walletData.mwhBalance = userData.balance;
+                walletData.availableMWH += CONFIG.REFERRER_REWARD;
+                walletData.mwhBalance = walletData.availableMWH + walletData.lockedMWH;
+                userData.balance = walletData.availableMWH;
                 
                 saveUserData();
                 updateUI();
@@ -4269,7 +4788,15 @@ function minePoints() {
     userData.totalEarned += reward;
     userData.lastMineTime = now;
     
-    walletData.mwhBalance = userData.balance;
+    walletData.availableMWH += reward;
+    walletData.mwhBalance = walletData.availableMWH + walletData.lockedMWH;
+    
+    // تسجيل في تاريخ التعدين
+    addToMiningHistory({
+        amount: reward,
+        timestamp: now,
+        type: 'mining_reward'
+    });
     
     console.log("📈 After mining - Balance:", userData.balance);
     
@@ -4319,7 +4846,10 @@ function animateMineButton(reward) {
 }
 
 function initWallet() {
-    walletData.mwhBalance = userData.balance;
+    // تهيئة الرصيد المتاح والمحجوز
+    walletData.availableMWH = userData.balance;
+    walletData.lockedMWH = 0;
+    walletData.mwhBalance = walletData.availableMWH + walletData.lockedMWH;
     
     const savedWallet = localStorage.getItem(`vip_wallet_${userData.userId}`);
     if (savedWallet) {
@@ -4335,6 +4865,12 @@ function initWallet() {
             walletData.depositHistory = parsed.depositHistory || [];
             walletData.withdrawalHistory = parsed.withdrawalHistory || [];
             walletData.usedTransactions = parsed.usedTransactions || [];
+            
+            // تحميل الحقول الجديدة إذا كانت موجودة
+            walletData.availableMWH = parsed.availableMWH || userData.balance;
+            walletData.lockedMWH = parsed.lockedMWH || 0;
+            walletData.mwhBalance = walletData.availableMWH + walletData.lockedMWH;
+            
             console.log("✅ Wallet data loaded");
         } catch (e) {
             console.error("❌ Error loading wallet:", e);
@@ -4417,30 +4953,6 @@ function getMinDeposit(currency) {
         case 'BNB': return CONFIG.MIN_DEPOSIT_BNB;
         default: return 1;
     }
-}
-
-function copyDepositAddress() {
-    const depositAddress = CONFIG.DEPOSIT_ADDRESS;
-    
-    navigator.clipboard.writeText(depositAddress)
-        .then(() => {
-            const btn = document.querySelector('.copy-address-btn-large');
-            if (btn) {
-                const originalHTML = btn.innerHTML;
-                btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-                btn.style.background = 'linear-gradient(135deg, #22c55e, #10b981)';
-                
-                setTimeout(() => {
-                    btn.innerHTML = originalHTML;
-                    btn.style.background = 'linear-gradient(135deg, #3b82f6, #6366f1)';
-                }, 2000);
-            }
-            showMessage('✅ Address copied to clipboard!', 'success');
-        })
-        .catch(err => {
-            console.error('Copy error:', err);
-            showMessage('❌ Failed to copy address', 'error');
-        });
 }
 
 function copyToClipboard(text) {
@@ -4798,6 +5310,7 @@ async function loadUserData() {
         loadStakingData();
         loadCardData();
         loadDailyStats();
+        loadTransactionHistory();
         
         if (db) {
             await loadUserFromFirebase();
@@ -4871,6 +5384,8 @@ function saveWalletData() {
         
         const dataToSave = {
             mwhBalance: walletData.mwhBalance,
+            availableMWH: walletData.availableMWH,
+            lockedMWH: walletData.lockedMWH,
             usdtBalance: walletData.usdtBalance,
             bnbBalance: walletData.bnbBalance,
             tonBalance: walletData.tonBalance,
@@ -4905,6 +5420,8 @@ function saveWalletToFirebase() {
         const firebaseData = {
             userId: userData.userId,
             mwhBalance: walletData.mwhBalance,
+            availableMWH: walletData.availableMWH,
+            lockedMWH: walletData.lockedMWH,
             usdtBalance: walletData.usdtBalance,
             bnbBalance: walletData.bnbBalance,
             tonBalance: walletData.tonBalance,
@@ -4928,7 +5445,7 @@ function saveWalletToFirebase() {
 }
 
 // ============================================
-// 21. FIREBASE FUNCTIONS
+// 22. FIREBASE FUNCTIONS (الأصلية)
 // ============================================
 
 async function syncUserWithFirebase() {
@@ -5073,7 +5590,7 @@ function updateLocalUserData(userId, amount, currency) {
 }
 
 // ============================================
-// 22. INITIALIZE APPLICATION
+// 23. INITIALIZE APPLICATION
 // ============================================
 
 async function initApp() {
@@ -5134,6 +5651,7 @@ setInterval(() => {
         saveWalletData();
         saveStakingData();
         saveCardData();
+        saveTransactionHistory();
         checkCompletedStakes();
     }
 }, 30000);
@@ -5145,6 +5663,7 @@ window.addEventListener('beforeunload', function() {
         saveWalletData();
         saveStakingData();
         saveCardData();
+        saveTransactionHistory();
         stopNotificationTimer();
     }
 });
@@ -5156,7 +5675,7 @@ if (document.readyState === 'loading') {
 }
 
 // ============================================
-// 23. EXPORT ALL FUNCTIONS TO WINDOW
+// 24. EXPORT ALL FUNCTIONS TO WINDOW
 // ============================================
 
 window.showTransactionHistory = showTransactionHistory;
@@ -5219,12 +5738,16 @@ window.loadAdminPendingRequests = loadAdminPendingRequests;
 // Staking functions
 window.initStakingPage = initStakingPage;
 window.openStakingModal = openStakingModal;
-window.calculateStakingReturn = calculateStakingReturn;
+window.validateStakingAmount = validateStakingAmount;
 window.setMaxStakingAmount = setMaxStakingAmount;
 window.confirmStake = confirmStake;
 window.earlyWithdrawal = earlyWithdrawal;
+window.cancelStake = cancelStake;
+window.confirmCancelStake = confirmCancelStake;
+window.claimStake = claimStake;
 window.checkCompletedStakes = checkCompletedStakes;
 window.updateStakingBalance = updateStakingBalance;
+window.showActivePlans = showActivePlans;
 
 // Card functions
 window.updateCardStatus = updateCardStatus;
@@ -5239,4 +5762,4 @@ window.showComingSoon = function() {
     showMessage('🚀 This feature is coming soon!', 'info');
 };
 
-console.log("✅ VIP Mining Wallet v7.0 loaded with Advanced Earning System, MWH Pools, and MWH Pay Card!");
+console.log("✅ VIP Mining Wallet v7.0 loaded with Advanced Staking System, MWH Pay Card, and Complete Transaction History!");
