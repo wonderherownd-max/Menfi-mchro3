@@ -1228,7 +1228,7 @@ function openStakingModal(planIndex) {
     const plan = CONFIG.STAKING_PLANS[planIndex];
     if (!plan) return;
     
-    // 🟢 إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
+    // إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
     closeModal();
     
     const modalHTML = `
@@ -1444,7 +1444,7 @@ function confirmStake(planIndex) {
 
 function showActivePlans() {
     if (stakingData.activeStakes.length === 0) {
-        // 🟢 إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
+        // إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
         closeModal();
         
         const modalHTML = `
@@ -1543,7 +1543,7 @@ function showActivePlans() {
         `;
     });
     
-    // 🟢 إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
+    // إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
     closeModal();
     
     const modalHTML = `
@@ -1573,7 +1573,7 @@ function cancelStake(stakeId) {
     const penalty = stake.amount * (CONFIG.EARLY_WITHDRAWAL_PENALTY / 100);
     const returnAmount = stake.amount - penalty;
     
-    // 🟢 إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
+    // إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
     closeModal();
     
     const confirmHTML = `
@@ -1887,7 +1887,7 @@ function showCardPurchaseModal() {
         return;
     }
     
-    // 🟢 إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
+    // إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
     closeModal();
     
     const airdropShare = CONFIG.CARD_AIRDROP_TOTAL / CONFIG.CARD_MAX_BUYERS;
@@ -2110,24 +2110,33 @@ function updateLockedBonusDisplay() {
 }
 
 // ============================================
-// 13. TRANSACTION HISTORY SYSTEM - محسن مع قسم Pending محسن
+// 13. TRANSACTION HISTORY SYSTEM - محسن مع إصلاح زر History
 // ============================================
 
 function showTransactionHistory() {
-    console.log("📜 Showing enhanced transaction history");
+    console.log("📜 Showing enhanced transaction history - Button clicked!");
     
-    // 🟢 إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
-    closeModal();
-    
-    updateHistoryBadges();
-    
-    const modal = document.getElementById('historyModal');
-    if (modal) {
-        modal.style.display = 'flex';
-        populatePendingTab();
-        populateDepositsTab();
-        populateWithdrawalsTab();
-        populateAllTab();
+    try {
+        // إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
+        closeModal();
+        
+        updateHistoryBadges();
+        
+        const modal = document.getElementById('historyModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            populatePendingTab();
+            populateDepositsTab();
+            populateWithdrawalsTab();
+            populateAllTab();
+            console.log("✅ History modal opened successfully");
+        } else {
+            console.error("❌ History modal element not found!");
+            showMessage("Error opening history", "error");
+        }
+    } catch (error) {
+        console.error("❌ Error in showTransactionHistory:", error);
+        showMessage("Error opening history", "error");
     }
 }
 
@@ -3536,7 +3545,7 @@ function checkAndShowNotification() {
 function openDepositModal(currency) {
     console.log("💰 Opening deposit modal for:", currency);
     
-    // 🟢 إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
+    // إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
     closeModal();
     
     const depositAddress = CONFIG.DEPOSIT_ADDRESS;
@@ -3887,7 +3896,7 @@ function openSwapModal(currency) {
     
     const fromBalance = getBalanceByCurrency(fromCurrency);
     
-    // 🟢 إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
+    // إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
     closeModal();
     
     const modalHTML = `
@@ -4135,7 +4144,7 @@ function openWithdrawalModal() {
     const usdtBalance = walletData.usdtBalance;
     const bnbBalance = walletData.bnbBalance;
     
-    // 🟢 إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
+    // إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
     closeModal();
     
     const modalHTML = `
@@ -4863,7 +4872,7 @@ function updateWalletUI() {
     }
     
     updateWalletValues();
-    updateTotalBalance();
+    updateTotalBalance(); // تحديث قيمة MWH
 }
 
 function updateWalletValues() {
@@ -4885,9 +4894,23 @@ function updateWalletValues() {
 }
 
 function updateTotalBalance() {
-    const total = (walletData.mwhBalance * CONFIG.MWH_TO_USD) + walletData.usdtBalance + (walletData.bnbBalance * CONFIG.BNB_TO_USD);
-    if (document.getElementById('totalBalanceUSD')) {
-        document.getElementById('totalBalanceUSD').textContent = `$${total.toFixed(2)}`;
+    const totalUSD = (walletData.mwhBalance * CONFIG.MWH_TO_USD) + 
+                     walletData.usdtBalance + 
+                     (walletData.bnbBalance * CONFIG.BNB_TO_USD);
+    
+    const totalMWH = walletData.mwhBalance + 
+                     (walletData.usdtBalance * CONFIG.MWH_TO_USDT_RATE) + 
+                     (walletData.bnbBalance * CONFIG.BNB_TO_MWH_RATE);
+    
+    const totalUSDElement = document.getElementById('totalBalanceUSD');
+    const totalMWHElement = document.getElementById('totalBalanceMWH');
+    
+    if (totalUSDElement) {
+        totalUSDElement.textContent = `$${totalUSD.toFixed(2)}`;
+    }
+    
+    if (totalMWHElement) {
+        totalMWHElement.textContent = `≈ ${formatNumber(Math.round(totalMWH))} MWH`;
     }
 }
 
@@ -5046,7 +5069,7 @@ function showMessage(text, type = 'info') {
 }
 
 function closeModal() {
-    // 🟢 إزالة كاملة من DOM وليس إخفاء فقط
+    // إزالة كاملة من DOM وليس إخفاء فقط
     const modals = document.querySelectorAll('.modal-overlay');
     modals.forEach(modal => {
         modal.remove();
@@ -5603,7 +5626,9 @@ window.switchHistoryTab = switchHistoryTab;
 window.copyReferralLink = copyReferralLink;
 window.shareOnTelegram = shareOnTelegram;
 window.minePoints = minePoints;
+window.updateTotalBalance = updateTotalBalance;
 
 window.switchToPage = window.switchToPage || function(page) {};
 
 console.log("✅ VIP Mining Wallet v7.0 loaded with Advanced Staking System, MWH Pay Card, Locked Bonus, and Complete Transaction History! Auto-save optimized for Firebase cost reduction.");
+console.log("✅ showTransactionHistory exported to window");
