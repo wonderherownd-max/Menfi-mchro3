@@ -2110,32 +2110,26 @@ function updateLockedBonusDisplay() {
 }
 
 // ============================================
-// 13. TRANSACTION HISTORY SYSTEM - محسن مع إصلاح زر History
+// 13. TRANSACTION HISTORY SYSTEM - النسخة الأصلية التي كانت تعمل
 // ============================================
 
 function showTransactionHistory() {
-    console.log("📜 Showing enhanced transaction history - Button clicked!");
+    console.log("📜 Showing enhanced transaction history");
     
-    try {
-        // إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
-        closeModal();
-        
-        updateHistoryBadges();
-        
-        const modal = document.getElementById('historyModal');
-        if (modal) {
-            modal.style.display = 'flex';
-            populatePendingTab();
-            populateDepositsTab();
-            populateWithdrawalsTab();
-            populateAllTab();
-            console.log("✅ History modal opened successfully");
-        } else {
-            console.error("❌ History modal element not found!");
-            showMessage("Error opening history", "error");
-        }
-    } catch (error) {
-        console.error("❌ Error in showTransactionHistory:", error);
+    // إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
+    closeModal();
+    
+    updateHistoryBadges();
+    
+    const modal = document.getElementById('historyModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        populatePendingTab();
+        populateDepositsTab();
+        populateWithdrawalsTab();
+        populateAllTab();
+    } else {
+        console.error("❌ History modal not found");
         showMessage("Error opening history", "error");
     }
 }
@@ -2153,24 +2147,13 @@ function populatePendingTab() {
     const pendingDepositsList = document.getElementById('pendingDepositsList');
     if (pendingDepositsList) {
         if (!walletData.pendingDeposits || walletData.pendingDeposits.length === 0) {
-            pendingDepositsList.innerHTML = `
-                <div class="empty-pending-state">
-                    <div class="empty-pending-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="empty-pending-title">No Pending Deposits</div>
-                    <div class="empty-pending-text">Your deposit requests will appear here</div>
-                    <button class="empty-pending-btn" onclick="closeModal(); openDepositModal('USDT')">
-                        <i class="fas fa-download"></i> Make a Deposit
-                    </button>
-                </div>
-            `;
+            pendingDepositsList.innerHTML = '<div class="empty-text">No pending deposits</div>';
         } else {
             let html = '';
             walletData.pendingDeposits.forEach(deposit => {
                 const date = new Date(deposit.timestamp);
                 html += `
-                    <div class="history-item-card pending-enhanced">
+                    <div class="history-item-card">
                         <div class="history-item-header">
                             <div class="history-item-type">
                                 <div class="history-type-icon pending"><i class="fas fa-clock"></i></div>
@@ -2190,7 +2173,6 @@ function populatePendingTab() {
                         </div>
                         <div class="history-item-footer">
                             <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()} ${date.toLocaleTimeString()}</span>
-                            <span class="pending-status-badge">Awaiting Review</span>
                         </div>
                     </div>
                 `;
@@ -2202,24 +2184,13 @@ function populatePendingTab() {
     const pendingWithdrawalsList = document.getElementById('pendingWithdrawalsList');
     if (pendingWithdrawalsList) {
         if (!walletData.pendingWithdrawals || walletData.pendingWithdrawals.length === 0) {
-            pendingWithdrawalsList.innerHTML = `
-                <div class="empty-pending-state">
-                    <div class="empty-pending-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="empty-pending-title">No Pending Withdrawals</div>
-                    <div class="empty-pending-text">Your withdrawal requests will appear here</div>
-                    <button class="empty-pending-btn" onclick="closeModal(); openWithdrawalModal()">
-                        <i class="fas fa-upload"></i> Make a Withdrawal
-                    </button>
-                </div>
-            `;
+            pendingWithdrawalsList.innerHTML = '<div class="empty-text">No pending withdrawals</div>';
         } else {
             let html = '';
             walletData.pendingWithdrawals.forEach(withdrawal => {
                 const date = new Date(withdrawal.timestamp);
                 html += `
-                    <div class="history-item-card pending-enhanced">
+                    <div class="history-item-card">
                         <div class="history-item-header">
                             <div class="history-item-type">
                                 <div class="history-type-icon pending"><i class="fas fa-clock"></i></div>
@@ -2239,7 +2210,6 @@ function populatePendingTab() {
                         </div>
                         <div class="history-item-footer">
                             <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()} ${date.toLocaleTimeString()}</span>
-                            <span class="pending-status-badge">Awaiting Review</span>
                         </div>
                     </div>
                 `;
@@ -5631,4 +5601,3 @@ window.updateTotalBalance = updateTotalBalance;
 window.switchToPage = window.switchToPage || function(page) {};
 
 console.log("✅ VIP Mining Wallet v7.0 loaded with Advanced Staking System, MWH Pay Card, Locked Bonus, and Complete Transaction History! Auto-save optimized for Firebase cost reduction.");
-console.log("✅ showTransactionHistory exported to window");
