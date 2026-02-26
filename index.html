@@ -212,7 +212,7 @@
     </div>
 
     <!-- =========================================== -->
-    <!-- Wallet Page - مع هيدر محسن (شعاع) -->
+    <!-- Wallet Page - مع هيدر محسن (شعاع حيوي) -->
     <!-- =========================================== -->
 
     <div id="walletPage" class="page hidden">
@@ -222,13 +222,14 @@
         </div>
         
         <div class="wallet-container">
-            <!-- Total Balance - Compact Version -->
-            <div class="total-balance-card compact">
+            <!-- Total Balance - بطاقة محسنة وأكبر -->
+            <div class="total-balance-card enhanced">
                 <div class="total-balance-label">
-                    <i class="fas fa-chart-line"></i> Assets
+                    <i class="fas fa-chart-pie"></i> Total Balance
                 </div>
                 <div class="total-balance-amount" id="totalBalanceUSD">$0.00</div>
-                <div class="total-balance-sub">Total Balance</div>
+                <div class="total-balance-mwh" id="totalBalanceMWH">≈ 0 MWH</div>
+                <div class="total-balance-sub">Your total assets value</div>
             </div>
 
             <!-- Quick Actions -->
@@ -464,7 +465,7 @@
     </div>
 
     <!-- =========================================== -->
-    <!-- Earning Page - مع هيدر محسن (شعاع) -->
+    <!-- Earning Page - مع هيدر محسن (شعاع حيوي) -->
     <!-- =========================================== -->
 
     <div id="earningPage" class="page hidden">
@@ -721,7 +722,7 @@
     </div>
 
     <!-- =========================================== -->
-    <!-- MWH Pools Page - مع هيدر محسن (شعاع) وبطاقة محسنة -->
+    <!-- MWH Pools Page - مع هيدر محسن (شعاع حيوي) وبطاقة محسنة -->
     <!-- =========================================== -->
 
     <div id="poolsPage" class="page hidden">
@@ -1246,7 +1247,7 @@
         }
         
         function closeModal() {
-            // 🟢 إزالة كاملة من DOM وليس إخفاء فقط
+            // إزالة كاملة من DOM وليس إخفاء فقط
             const modals = document.querySelectorAll('.modal-overlay');
             modals.forEach(modal => {
                 modal.remove();
