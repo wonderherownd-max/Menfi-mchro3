@@ -55,7 +55,7 @@
 
     <!-- Main Home Page -->
     <div class="container" id="homePage">
-        <!-- Header Section (يُحتفظ به فقط في الصفحة الرئيسية) -->
+        <!-- Header Section -->
         <header class="app-header">
             <div class="logo">
                 <i class="fas fa-gem"></i>
@@ -212,12 +212,13 @@
     </div>
 
     <!-- =========================================== -->
-    <!-- Wallet Page - بدون زر الرجوع -->
+    <!-- Wallet Page - مع هيدر محسن (شعاع) -->
     <!-- =========================================== -->
+
     <div id="walletPage" class="page hidden">
-        <!-- تم إزالة عنصر الرجوع بالكامل، وتمت إضافة كلاس wallet-header لتوسيط العنوان -->
-        <div class="page-header wallet-header">
+        <div class="page-header wallet-header glow-header">
             <h2><i class="fas fa-wallet"></i> MWH Wallet</h2>
+            <div class="header-glow"></div>
         </div>
         
         <div class="wallet-container">
@@ -463,12 +464,13 @@
     </div>
 
     <!-- =========================================== -->
-    <!-- Earning Page - بدون زر الرجوع -->
+    <!-- Earning Page - مع هيدر محسن (شعاع) -->
     <!-- =========================================== -->
+
     <div id="earningPage" class="page hidden">
-        <!-- تم إزالة عنصر الرجوع بالكامل، وتمت إضافة كلاس earning-header لتوسيط العنوان -->
-        <div class="page-header earning-header">
+        <div class="page-header earning-header glow-header">
             <h2><i class="fas fa-chart-line"></i> Earning Center</h2>
+            <div class="header-glow"></div>
         </div>
         
         <div class="earning-content">
@@ -719,12 +721,13 @@
     </div>
 
     <!-- =========================================== -->
-    <!-- MWH Pools Page - بطاقة محسنة بدون نصوص على البطاقة -->
+    <!-- MWH Pools Page - مع هيدر محسن (شعاع) وبطاقة محسنة -->
     <!-- =========================================== -->
+
     <div id="poolsPage" class="page hidden">
-        <!-- تم إزالة عنصر الرجوع بالكامل، وتمت إضافة كلاس pools-header لتوسيط العنوان -->
-        <div class="page-header pools-header">
+        <div class="page-header pools-header glow-header">
             <h2><i class="fas fa-water"></i> MWH Pools</h2>
+            <div class="header-glow"></div>
         </div>
         
         <div class="pools-content">
@@ -757,7 +760,7 @@
                                     <!-- رقم البطاقة -->
                                     <div class="card-number">**** **** **** 2026</div>
                                     
-                                    <!-- اسم المستخدم في أسفل يسار -->
+                                    <!-- اسم المستخدم في أسفل يسار - تم التعديل هنا -->
                                     <div class="card-holder-bottom" id="cardUserName">USER NAME</div>
                                     
                                     <!-- التاريخ في أسفل يمين -->
@@ -1012,8 +1015,9 @@
     </div>
 
     <!-- =========================================== -->
-    <!-- History Modal - محسن -->
+    <!-- History Modal - محسن مع قسم Pending محسن -->
     <!-- =========================================== -->
+
     <div id="historyModal" class="modal-overlay" style="display: none;">
         <div class="modal-content history-modal-premium">
             <div class="modal-header">
@@ -1048,20 +1052,20 @@
                     <div class="history-list" id="allTransactionsList"></div>
                 </div>
 
-                <!-- Pending Tab -->
+                <!-- Pending Tab - محسنة -->
                 <div id="pendingTabContent" class="history-tab-content">
                     <div class="history-section">
                         <h4 class="history-section-title">
                             <i class="fas fa-hourglass-half"></i> Pending Deposits
                         </h4>
-                        <div id="pendingDepositsList" class="history-list"></div>
+                        <div id="pendingDepositsList" class="history-list pending-enhanced"></div>
                     </div>
                     
                     <div class="history-section">
                         <h4 class="history-section-title">
                             <i class="fas fa-hourglass-half"></i> Pending Withdrawals
                         </h4>
-                        <div id="pendingWithdrawalsList" class="history-list"></div>
+                        <div id="pendingWithdrawalsList" class="history-list pending-enhanced"></div>
                     </div>
                 </div>
 
@@ -1105,6 +1109,7 @@
     <!-- =========================================== -->
     <!-- Active Plans Modal -->
     <!-- =========================================== -->
+
     <div id="activePlansModal" class="modal-overlay" style="display: none;">
         <div class="modal-content active-plans-modal">
             <div class="modal-header">
@@ -1124,6 +1129,7 @@
     <!-- =========================================== -->
     <!-- Bottom Navigation -->
     <!-- =========================================== -->
+
     <div class="bottom-nav">
         <div class="nav-item active" onclick="switchToPage('home')">
             <i class="fas fa-home"></i>
@@ -1240,9 +1246,10 @@
         }
         
         function closeModal() {
+            // 🟢 إزالة كاملة من DOM وليس إخفاء فقط
             const modals = document.querySelectorAll('.modal-overlay');
             modals.forEach(modal => {
-                modal.style.display = 'none';
+                modal.remove();
             });
         }
         
