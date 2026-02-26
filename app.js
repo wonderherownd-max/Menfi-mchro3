@@ -2110,15 +2110,13 @@ function updateLockedBonusDisplay() {
 }
 
 // ============================================
-// 13. TRANSACTION HISTORY SYSTEM - النسخة الأصلية التي كانت تعمل
+// 13. TRANSACTION HISTORY SYSTEM - النسخة الأصلية (تم إزالة closeModal)
 // ============================================
 
 function showTransactionHistory() {
     console.log("📜 Showing enhanced transaction history");
     
-    // إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
-    closeModal();
-    
+    // 🟢 تم إزالة closeModal() من هنا - هذا هو التعديل الوحيد!
     updateHistoryBadges();
     
     const modal = document.getElementById('historyModal');
@@ -5039,10 +5037,10 @@ function showMessage(text, type = 'info') {
 }
 
 function closeModal() {
-    // إزالة كاملة من DOM وليس إخفاء فقط
+    // إخفاء فقط وليس إزالة - كما كان في الكود الأول
     const modals = document.querySelectorAll('.modal-overlay');
     modals.forEach(modal => {
-        modal.remove();
+        modal.style.display = 'none';
     });
 }
 
