@@ -101,6 +101,24 @@ body {
     100% { opacity: 0.6; }
 }
 
+@keyframes headerGlow {
+    0% {
+        box-shadow: 0 0 5px rgba(59, 130, 246, 0.3),
+                    0 0 10px rgba(59, 130, 246, 0.2),
+                    0 0 15px rgba(59, 130, 246, 0.1);
+    }
+    50% {
+        box-shadow: 0 0 10px rgba(59, 130, 246, 0.5),
+                    0 0 20px rgba(59, 130, 246, 0.3),
+                    0 0 30px rgba(59, 130, 246, 0.2);
+    }
+    100% {
+        box-shadow: 0 0 5px rgba(59, 130, 246, 0.3),
+                    0 0 10px rgba(59, 130, 246, 0.2),
+                    0 0 15px rgba(59, 130, 246, 0.1);
+    }
+}
+
 /* =========================================== */
 /* Page System */
 /* =========================================== */
@@ -139,7 +157,7 @@ body {
 }
 
 /* =========================================== */
-/* Page Headers - بدون أزرار رجوع */
+/* Page Headers - مع تأثير الشعاع (Glow) */
 /* =========================================== */
 
 .page-header {
@@ -151,10 +169,41 @@ body {
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
 }
 
 .wallet-header, .earning-header, .pools-header {
     justify-content: center;
+}
+
+.glow-header {
+    position: relative;
+    animation: headerGlow 3s infinite ease-in-out;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.glow-header::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, 
+        #3b82f6, #8b5cf6, #3b82f6, #8b5cf6);
+    background-size: 400% 400%;
+    border-radius: 22px;
+    z-index: -1;
+    animation: gradientShift 3s ease infinite;
+    opacity: 0.5;
+    filter: blur(8px);
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 .page-header h2 {
@@ -165,6 +214,9 @@ body {
     align-items: center;
     gap: 10px;
     margin: 0 auto;
+    position: relative;
+    z-index: 2;
+    text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
 }
 
 /* =========================================== */
@@ -2034,15 +2086,21 @@ body {
     z-index: 3;
 }
 
+/* اسم المستخدم في الزاوية السفلية اليسرى - تم التعديل */
 .card-holder-bottom {
     position: absolute;
-    bottom: 55px;
+    bottom: 30px;
     left: 25px;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.9);
     letter-spacing: 0.5px;
     z-index: 3;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .card-expiry-bottom {
@@ -3072,7 +3130,7 @@ body {
 }
 
 /* =========================================== */
-/* History Modal */
+/* History Modal - مع قسم Pending محسن */
 /* =========================================== */
 
 .history-modal-premium .modal-content {
@@ -3171,6 +3229,94 @@ body {
     display: flex;
     flex-direction: column;
     gap: 10px;
+}
+
+/* تصميم محسن لقسم Pending */
+.history-list.pending-enhanced {
+    gap: 12px;
+}
+
+.empty-pending-state {
+    background: rgba(15, 23, 42, 0.6);
+    border: 2px dashed rgba(59, 130, 246, 0.3);
+    border-radius: 20px;
+    padding: 40px 20px;
+    text-align: center;
+    margin: 15px 0;
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+}
+
+.empty-pending-state:hover {
+    border-color: rgba(59, 130, 246, 0.6);
+    transform: translateY(-2px);
+}
+
+.empty-pending-icon {
+    font-size: 48px;
+    color: #60a5fa;
+    margin-bottom: 15px;
+    opacity: 0.7;
+    animation: progressPulse 2s infinite;
+}
+
+.empty-pending-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #f8fafc;
+    margin-bottom: 8px;
+}
+
+.empty-pending-text {
+    font-size: 14px;
+    color: #94a3b8;
+    margin-bottom: 20px;
+}
+
+.empty-pending-btn {
+    background: rgba(59, 130, 246, 0.2);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 12px;
+    padding: 12px 24px;
+    color: #60a5fa;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+}
+
+.empty-pending-btn:hover {
+    background: rgba(59, 130, 246, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.2);
+}
+
+/* بطاقات Pending المحسنة */
+.history-item-card.pending-enhanced {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
+    border-left: 4px solid #f59e0b;
+    border-radius: 16px;
+    padding: 16px;
+    transition: all 0.3s ease;
+}
+
+.history-item-card.pending-enhanced:hover {
+    transform: translateX(4px);
+    border-left-color: #fbbf24;
+    box-shadow: 0 5px 15px rgba(245, 158, 11, 0.2);
+}
+
+.pending-status-badge {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+    border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 /* Transaction Cards */
@@ -4962,8 +5108,10 @@ body {
     }
     
     .card-holder-bottom {
-        bottom: 50px;
+        bottom: 25px;
+        left: 20px;
         font-size: 12px;
+        max-width: 120px;
     }
     
     .card-expiry-bottom {
@@ -5220,9 +5368,10 @@ body {
     }
     
     .card-holder-bottom {
-        bottom: 45px;
+        bottom: 20px;
         left: 20px;
         font-size: 11px;
+        max-width: 100px;
     }
     
     .card-expiry-bottom {
