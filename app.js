@@ -1228,6 +1228,9 @@ function openStakingModal(planIndex) {
     const plan = CONFIG.STAKING_PLANS[planIndex];
     if (!plan) return;
     
+    // 🟢 إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
+    closeModal();
+    
     const modalHTML = `
         <div class="modal-overlay" id="stakingModal">
             <div class="modal-content staking-modal">
@@ -1441,6 +1444,9 @@ function confirmStake(planIndex) {
 
 function showActivePlans() {
     if (stakingData.activeStakes.length === 0) {
+        // 🟢 إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
+        closeModal();
+        
         const modalHTML = `
             <div class="modal-overlay" id="activePlansModal" style="display: flex;">
                 <div class="modal-content active-plans-modal">
@@ -1537,6 +1543,9 @@ function showActivePlans() {
         `;
     });
     
+    // 🟢 إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
+    closeModal();
+    
     const modalHTML = `
         <div class="modal-overlay" id="activePlansModal" style="display: flex;">
             <div class="modal-content active-plans-modal">
@@ -1563,6 +1572,9 @@ function cancelStake(stakeId) {
     
     const penalty = stake.amount * (CONFIG.EARLY_WITHDRAWAL_PENALTY / 100);
     const returnAmount = stake.amount - penalty;
+    
+    // 🟢 إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
+    closeModal();
     
     const confirmHTML = `
         <div class="modal-overlay" id="confirmCancelModal" style="display: flex;">
@@ -1601,7 +1613,6 @@ function cancelStake(stakeId) {
         </div>
     `;
     
-    closeModal();
     document.body.insertAdjacentHTML('beforeend', confirmHTML);
 }
 
@@ -1801,7 +1812,7 @@ function updateLockTimer() {
     if (timeLeft <= 0) {
         // المكافأة أصبحت قابلة للمطالبة
         document.getElementById('unlockDate1').textContent = 'Ready to claim';
-        document.getElementById('lockProgress1').style.width = '100%';
+        document.getElementById('cardProgress1').style.width = '100%';
         document.getElementById('claimSmallBtn1').disabled = false;
         return;
     }
@@ -1812,7 +1823,7 @@ function updateLockTimer() {
     document.getElementById('unlockDate1').textContent = `Unlocks in ${days}d ${hours}h`;
     
     // حساب نسبة التقدم
-    const totalLockTime = CONFIG.CARD_LOCK_MONTHS * 30 * 24 * 60 * 60 * 1000;
+    const totalLockTime = 30 * 24 * 60 * 60 * 1000; // 30 يوم بالمللي ثانية
     const progress = ((totalLockTime - timeLeft) / totalLockTime) * 100;
     document.getElementById('cardProgress1').style.width = `${progress}%`;
 }
@@ -1875,6 +1886,9 @@ function showCardPurchaseModal() {
         flipCard();
         return;
     }
+    
+    // 🟢 إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
+    closeModal();
     
     const airdropShare = CONFIG.CARD_AIRDROP_TOTAL / CONFIG.CARD_MAX_BUYERS;
     const progressPercent = (CONFIG.CARD_CURRENT_BUYERS / CONFIG.CARD_MAX_BUYERS) * 100;
@@ -1968,7 +1982,7 @@ function purchaseCard() {
     const bonusAmount = CONFIG.CARD_BONUS_MWH;
     
     const unlockDate = new Date();
-    unlockDate.setDate(unlockDate.getDate() + 30); // 30 يوم بدلاً من 3 شهور
+    unlockDate.setDate(unlockDate.getDate() + 30); // 30 يوم بالضبط
     
     cardData.purchased = true;
     cardData.purchaseDate = Date.now();
@@ -2096,11 +2110,14 @@ function updateLockedBonusDisplay() {
 }
 
 // ============================================
-// 13. TRANSACTION HISTORY SYSTEM - محسن
+// 13. TRANSACTION HISTORY SYSTEM - محسن مع قسم Pending محسن
 // ============================================
 
 function showTransactionHistory() {
     console.log("📜 Showing enhanced transaction history");
+    
+    // 🟢 إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
+    closeModal();
     
     updateHistoryBadges();
     
@@ -2127,13 +2144,24 @@ function populatePendingTab() {
     const pendingDepositsList = document.getElementById('pendingDepositsList');
     if (pendingDepositsList) {
         if (!walletData.pendingDeposits || walletData.pendingDeposits.length === 0) {
-            pendingDepositsList.innerHTML = '<div class="empty-text">No pending deposits</div>';
+            pendingDepositsList.innerHTML = `
+                <div class="empty-pending-state">
+                    <div class="empty-pending-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="empty-pending-title">No Pending Deposits</div>
+                    <div class="empty-pending-text">Your deposit requests will appear here</div>
+                    <button class="empty-pending-btn" onclick="closeModal(); openDepositModal('USDT')">
+                        <i class="fas fa-download"></i> Make a Deposit
+                    </button>
+                </div>
+            `;
         } else {
             let html = '';
             walletData.pendingDeposits.forEach(deposit => {
                 const date = new Date(deposit.timestamp);
                 html += `
-                    <div class="history-item-card">
+                    <div class="history-item-card pending-enhanced">
                         <div class="history-item-header">
                             <div class="history-item-type">
                                 <div class="history-type-icon pending"><i class="fas fa-clock"></i></div>
@@ -2153,6 +2181,7 @@ function populatePendingTab() {
                         </div>
                         <div class="history-item-footer">
                             <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()} ${date.toLocaleTimeString()}</span>
+                            <span class="pending-status-badge">Awaiting Review</span>
                         </div>
                     </div>
                 `;
@@ -2164,13 +2193,24 @@ function populatePendingTab() {
     const pendingWithdrawalsList = document.getElementById('pendingWithdrawalsList');
     if (pendingWithdrawalsList) {
         if (!walletData.pendingWithdrawals || walletData.pendingWithdrawals.length === 0) {
-            pendingWithdrawalsList.innerHTML = '<div class="empty-text">No pending withdrawals</div>';
+            pendingWithdrawalsList.innerHTML = `
+                <div class="empty-pending-state">
+                    <div class="empty-pending-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="empty-pending-title">No Pending Withdrawals</div>
+                    <div class="empty-pending-text">Your withdrawal requests will appear here</div>
+                    <button class="empty-pending-btn" onclick="closeModal(); openWithdrawalModal()">
+                        <i class="fas fa-upload"></i> Make a Withdrawal
+                    </button>
+                </div>
+            `;
         } else {
             let html = '';
             walletData.pendingWithdrawals.forEach(withdrawal => {
                 const date = new Date(withdrawal.timestamp);
                 html += `
-                    <div class="history-item-card">
+                    <div class="history-item-card pending-enhanced">
                         <div class="history-item-header">
                             <div class="history-item-type">
                                 <div class="history-type-icon pending"><i class="fas fa-clock"></i></div>
@@ -2190,6 +2230,7 @@ function populatePendingTab() {
                         </div>
                         <div class="history-item-footer">
                             <span class="history-item-time"><i class="far fa-clock"></i> ${date.toLocaleDateString()} ${date.toLocaleTimeString()}</span>
+                            <span class="pending-status-badge">Awaiting Review</span>
                         </div>
                     </div>
                 `;
@@ -3495,6 +3536,9 @@ function checkAndShowNotification() {
 function openDepositModal(currency) {
     console.log("💰 Opening deposit modal for:", currency);
     
+    // 🟢 إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
+    closeModal();
+    
     const depositAddress = CONFIG.DEPOSIT_ADDRESS;
     const minDeposit = getMinDeposit(currency);
     
@@ -3843,6 +3887,9 @@ function openSwapModal(currency) {
     
     const fromBalance = getBalanceByCurrency(fromCurrency);
     
+    // 🟢 إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
+    closeModal();
+    
     const modalHTML = `
         <div class="modal-overlay" id="swapModal">
             <div class="modal-content swap-modal-professional">
@@ -4087,6 +4134,9 @@ function executeSwap(fromCurrency, toCurrency) {
 function openWithdrawalModal() {
     const usdtBalance = walletData.usdtBalance;
     const bnbBalance = walletData.bnbBalance;
+    
+    // 🟢 إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
+    closeModal();
     
     const modalHTML = `
         <div class="modal-overlay" id="withdrawalModal">
@@ -4996,9 +5046,10 @@ function showMessage(text, type = 'info') {
 }
 
 function closeModal() {
+    // 🟢 إزالة كاملة من DOM وليس إخفاء فقط
     const modals = document.querySelectorAll('.modal-overlay');
     modals.forEach(modal => {
-        modal.style.display = 'none';
+        modal.remove();
     });
 }
 
