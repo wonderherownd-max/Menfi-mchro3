@@ -105,7 +105,7 @@ let stakingData = {
 };
 
 // ============================================
-// 7. CARD DATA - بطاقة MWH Pay مع المكافأة المقفلة
+// 7. CARD DATA - بطاقة MWH Pay مع المكافأة المقفلة (مدة القفل 30 يوم)
 // ============================================
 let cardData = {
     purchased: false,
@@ -217,7 +217,7 @@ const CONFIG = {
     
     CARD_PRICE_BNB: 0.019,
     CARD_BONUS_MWH: 100000,
-    CARD_LOCK_MONTHS: 3,
+    CARD_LOCK_MONTHS: 1, // تم التعديل من 3 إلى 1 (30 يوم)
     CARD_AIRDROP_TOTAL: 500000000,
     CARD_MAX_BUYERS: 5000,
     CARD_CURRENT_BUYERS: 3803
@@ -1763,22 +1763,12 @@ function loadStakingData() {
 
 function updateCardStatus() {
     const cardStatus = document.querySelector('.card-status');
-    const lockedBonusSection = document.getElementById('lockedBonusSection');
-    const lockedBonusSectionBack = document.getElementById('lockedBonusSectionBack');
     const myCardsSection = document.getElementById('myCardsSection');
     
     if (cardData.purchased) {
         if (cardStatus) {
             cardStatus.textContent = '✅ Active';
             cardStatus.classList.add('active');
-        }
-        
-        // إظهار المكافأة المقفلة
-        if (lockedBonusSection) {
-            lockedBonusSection.style.display = 'block';
-        }
-        if (lockedBonusSectionBack) {
-            lockedBonusSectionBack.style.display = 'block';
         }
         
         // إظهار قسم My Cards
@@ -1795,12 +1785,6 @@ function updateCardStatus() {
             cardStatus.classList.remove('active');
         }
         
-        if (lockedBonusSection) {
-            lockedBonusSection.style.display = 'none';
-        }
-        if (lockedBonusSectionBack) {
-            lockedBonusSectionBack.style.display = 'none';
-        }
         if (myCardsSection) {
             myCardsSection.style.display = 'none';
         }
@@ -1816,33 +1800,21 @@ function updateLockTimer() {
     
     if (timeLeft <= 0) {
         // المكافأة أصبحت قابلة للمطالبة
-        document.getElementById('lockTimer').textContent = 'Ready to claim';
-        document.getElementById('lockTimerBack').textContent = 'Ready to claim';
-        document.getElementById('lockProgress').style.width = '100%';
-        
-        const claimBtn = document.getElementById('claimBonusBtn');
-        const claimSmallBtn = document.getElementById('claimSmallBtn1');
-        
-        if (claimBtn) claimBtn.disabled = false;
-        if (claimSmallBtn) claimSmallBtn.disabled = false;
-        
+        document.getElementById('unlockDate1').textContent = 'Ready to claim';
+        document.getElementById('lockProgress1').style.width = '100%';
+        document.getElementById('claimSmallBtn1').disabled = false;
         return;
     }
     
     const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
     const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     
-    document.getElementById('lockTimer').textContent = `${days}d ${hours}h`;
-    document.getElementById('lockTimerBack').textContent = `${days}d ${hours}h`;
+    document.getElementById('unlockDate1').textContent = `Unlocks in ${days}d ${hours}h`;
     
     // حساب نسبة التقدم
-    const totalLockTime = CONFIG.CARD_LOCK_MONTHS * 30 * 24 * 60 * 60 * 1000; // تقريباً
+    const totalLockTime = CONFIG.CARD_LOCK_MONTHS * 30 * 24 * 60 * 60 * 1000;
     const progress = ((totalLockTime - timeLeft) / totalLockTime) * 100;
-    document.getElementById('lockProgress').style.width = `${progress}%`;
-    
-    if (document.getElementById('cardProgress1')) {
-        document.getElementById('cardProgress1').style.width = `${progress}%`;
-    }
+    document.getElementById('cardProgress1').style.width = `${progress}%`;
 }
 
 function claimLockedBonus() {
@@ -1874,9 +1846,8 @@ function claimLockedBonus() {
     saveCardData();
     saveWalletData();
     
-    // إخفاء المكافأة المقفلة
-    document.getElementById('lockedBonusSection').style.display = 'none';
-    document.getElementById('lockedBonusSectionBack').style.display = 'none';
+    // إخفاء قسم My Cards أو تحديثه
+    document.getElementById('myCardsSection').style.display = 'none';
     
     updateStakingBalance();
     updateWalletUI();
@@ -1931,7 +1902,7 @@ function showCardPurchaseModal() {
                     
                     <div class="purchase-rewards">
                         <div class="purchase-reward-item">
-                            <span class="purchase-reward-label">Bonus (locked 3 months)</span>
+                            <span class="purchase-reward-label">Bonus (locked 30 days)</span>
                             <span class="purchase-reward-value">+${CONFIG.CARD_BONUS_MWH.toLocaleString()} MWH</span>
                         </div>
                         <div class="purchase-reward-item">
@@ -1997,7 +1968,7 @@ function purchaseCard() {
     const bonusAmount = CONFIG.CARD_BONUS_MWH;
     
     const unlockDate = new Date();
-    unlockDate.setMonth(unlockDate.getMonth() + CONFIG.CARD_LOCK_MONTHS);
+    unlockDate.setDate(unlockDate.getDate() + 30); // 30 يوم بدلاً من 3 شهور
     
     cardData.purchased = true;
     cardData.purchaseDate = Date.now();
@@ -2034,7 +2005,7 @@ function purchaseCard() {
     
     closeModal();
     
-    showMessage(`✅ Card purchased successfully! You received ${airdropShare.toLocaleString()} MWH instantly and ${bonusAmount.toLocaleString()} MWH locked for 3 months.`, 'success');
+    showMessage(`✅ Card purchased successfully! You received ${airdropShare.toLocaleString()} MWH instantly and ${bonusAmount.toLocaleString()} MWH locked for 30 days.`, 'success');
     
     setTimeout(() => {
         flipCard();
@@ -2941,14 +2912,15 @@ function loadDailyStats() {
 }
 
 // ============================================
-// 15. REAL-TIME LISTENER FOR USER DATA
+// 15. REAL-TIME LISTENER FOR USER DATA - تم تعديله ليشمل المعاملات المالية فقط
 // ============================================
 
 function setupRealTimeListeners() {
     if (!db || !userData.userId) return;
     
-    console.log("👂 Setting up real-time listeners...");
+    console.log("👂 Setting up real-time listeners for financial transactions only...");
     
+    // الاستماع فقط لطلبات الإيداع (المعاملات المالية)
     db.collection('deposit_requests')
         .where('userId', '==', userData.userId)
         .onSnapshot((snapshot) => {
@@ -2962,6 +2934,7 @@ function setupRealTimeListeners() {
             });
         });
     
+    // الاستماع فقط لطلبات السحب (المعاملات المالية)
     db.collection('withdrawals')
         .where('userId', '==', userData.userId)
         .onSnapshot((snapshot) => {
@@ -2974,6 +2947,9 @@ function setupRealTimeListeners() {
                 }
             });
         });
+    
+    // لم نعد نستمع لتغييرات المستخدم أو المحفظة لأنها ليست معاملات مالية
+    console.log("✅ Real-time listeners set for financial transactions only");
 }
 
 function updateUserLocalDeposit(firebaseId, depositData) {
@@ -5462,29 +5438,48 @@ function saveWalletToFirebase() {
 }
 
 // ============================================
-// 24. SET INTERVALS AND WINDOW EVENTS
+// 24. SET INTERVALS AND WINDOW EVENTS - تم تعديله لتقليل عمليات Firebase
 // ============================================
 
 setInterval(updateEnergyBelt, 1000);
 
+// حفظ البيانات كل 5 دقائق في localStorage فقط
+// حفظ في Firebase كل ساعة
+let lastFirebaseSaveTime = Date.now();
+
 setInterval(() => {
     if (userData.userId && userData.isInitialized) {
+        // حفظ محلي (مجاني)
         saveUserData();
         saveWalletData();
         saveStakingData();
         saveCardData();
         saveTransactionHistory();
+        saveDailyStats();
+        
+        // حفظ في Firebase كل ساعة فقط
+        const now = Date.now();
+        if (now - lastFirebaseSaveTime > 3600000) { // 60 دقيقة
+            if (db) {
+                saveUserToFirebase();
+                saveWalletToFirebase();
+                console.log("💾 Hourly Firebase save completed");
+            }
+            lastFirebaseSaveTime = now;
+        }
+        
         checkCompletedStakes();
     }
-}, 30000);
+}, 300000); // كل 5 دقائق بدلاً من 30 ثانية
 
 window.addEventListener('beforeunload', () => {
     if (userData.userId) {
-        saveUserData();
-        saveWalletData();
-        saveStakingData();
-        saveCardData();
-        saveTransactionHistory();
+        // حفظ محلي فقط عند الخروج
+        localStorage.setItem(`vip_mining_${userData.userId}`, JSON.stringify(userData));
+        localStorage.setItem(`vip_wallet_${userData.userId}`, JSON.stringify(walletData));
+        localStorage.setItem(`vip_staking_${userData.userId}`, JSON.stringify(stakingData));
+        localStorage.setItem(`vip_card_${userData.userId}`, JSON.stringify(cardData));
+        localStorage.setItem(`vip_history_${userData.userId}`, JSON.stringify(transactionHistory));
         stopNotificationTimer();
     }
 });
@@ -5560,4 +5555,4 @@ window.minePoints = minePoints;
 
 window.switchToPage = window.switchToPage || function(page) {};
 
-console.log("✅ VIP Mining Wallet v7.0 loaded with Advanced Staking System, MWH Pay Card, Locked Bonus, and Complete Transaction History!");
+console.log("✅ VIP Mining Wallet v7.0 loaded with Advanced Staking System, MWH Pay Card, Locked Bonus, and Complete Transaction History! Auto-save optimized for Firebase cost reduction.");
