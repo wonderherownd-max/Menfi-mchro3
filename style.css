@@ -139,7 +139,36 @@ body {
 }
 
 /* =========================================== */
-/* Header & User Section */
+/* Page Headers - بدون أزرار رجوع */
+/* =========================================== */
+
+.page-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px;
+    padding: 15px 20px;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.wallet-header, .earning-header, .pools-header {
+    justify-content: center;
+}
+
+.page-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #f8fafc;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 auto;
+}
+
+/* =========================================== */
+/* Header & User Section (للهوم فقط) */
 /* =========================================== */
 
 .app-header {
@@ -239,49 +268,6 @@ body {
     color: #94a3b8;
     font-family: monospace;
     opacity: 0.8;
-}
-
-/* =========================================== */
-/* Page Header */
-/* =========================================== */
-
-.page-header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 25px;
-    padding: 20px;
-    background: rgba(30, 41, 59, 0.8);
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-}
-
-.back-btn {
-    background: rgba(59, 130, 246, 0.1);
-    color: #60a5fa;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.back-btn:hover {
-    background: rgba(59, 130, 246, 0.2);
-    transform: scale(1.1);
-}
-
-.page-header h2 {
-    font-size: 20px;
-    font-weight: 700;
-    color: #f8fafc;
-    display: flex;
-    align-items: center;
-    gap: 10px;
 }
 
 /* =========================================== */
@@ -1901,12 +1887,12 @@ body {
     border-radius: 12px;
 }
 
-/* بطاقة Flip */
+/* بطاقة Flip - محسنة ومكبرة */
 .card-flip-container {
     width: 100%;
-    max-width: 340px;
-    height: 210px;
-    margin: 0 auto 15px auto;
+    max-width: 360px;
+    height: 230px;
+    margin: 0 auto 20px auto;
     perspective: 1000px;
     cursor: pointer;
 }
@@ -1919,7 +1905,7 @@ body {
     transition: transform 0.6s;
     transform-style: preserve-3d;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-    border-radius: 18px;
+    border-radius: 22px;
 }
 
 .card-flip-inner.flipped {
@@ -1932,7 +1918,7 @@ body {
     height: 100%;
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
-    border-radius: 18px;
+    border-radius: 22px;
     overflow: hidden;
 }
 
@@ -1971,7 +1957,7 @@ body {
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     z-index: 1;
-    border-radius: 18px;
+    border-radius: 22px;
     opacity: 0.7;
     pointer-events: none;
 }
@@ -1979,22 +1965,22 @@ body {
 .card-content {
     position: relative;
     z-index: 2;
-    padding: 15px;
+    padding: 18px;
     height: 100%;
     display: flex;
     flex-direction: column;
 }
 
 .back-content {
-    padding: 15px;
+    padding: 18px;
 }
 
 /* عناصر البطاقة - الأمامية */
 .card-holder-top {
     position: absolute;
-    top: 15px;
-    left: 15px;
-    font-size: 14px;
+    top: 18px;
+    left: 18px;
+    font-size: 15px;
     font-weight: 600;
     color: #f8fafc;
     letter-spacing: 0.5px;
@@ -2003,12 +1989,12 @@ body {
 
 .card-status {
     position: absolute;
-    top: 15px;
-    right: 15px;
-    font-size: 11px;
+    top: 18px;
+    right: 18px;
+    font-size: 12px;
     color: #f59e0b;
     background: rgba(245, 158, 11, 0.15);
-    padding: 4px 12px;
+    padding: 5px 14px;
     border-radius: 30px;
     border: 1px solid rgba(245, 158, 11, 0.3);
     font-weight: 600;
@@ -2023,13 +2009,13 @@ body {
 
 .card-chip {
     position: absolute;
-    top: 60px;
-    left: 20px;
+    top: 70px;
+    left: 25px;
     z-index: 3;
 }
 
 .card-chip i {
-    font-size: 35px;
+    font-size: 40px;
     color: #fbbf24;
     transform: rotate(90deg);
     filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.3));
@@ -2038,11 +2024,11 @@ body {
 
 .card-number {
     position: absolute;
-    top: 110px;
-    left: 20px;
-    font-size: 16px;
+    top: 125px;
+    left: 25px;
+    font-size: 18px;
     font-family: 'Courier New', monospace;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
     color: rgba(255, 255, 255, 0.9);
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
     z-index: 3;
@@ -2050,9 +2036,9 @@ body {
 
 .card-holder-bottom {
     position: absolute;
-    bottom: 45px;
-    left: 20px;
-    font-size: 12px;
+    bottom: 55px;
+    left: 25px;
+    font-size: 13px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.8);
     letter-spacing: 0.5px;
@@ -2061,22 +2047,22 @@ body {
 
 .card-expiry-bottom {
     position: absolute;
-    bottom: 25px;
-    right: 20px;
-    font-size: 12px;
+    bottom: 30px;
+    right: 25px;
+    font-size: 13px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.8);
     z-index: 3;
 }
 
 .card-expiry-bottom.back {
-    bottom: 45px;
+    bottom: 55px;
 }
 
 .visa-logo-bottom {
     position: absolute;
-    bottom: 5px;
-    right: 20px;
+    bottom: 8px;
+    right: 25px;
     display: flex;
     align-items: center;
     gap: 3px;
@@ -2084,7 +2070,7 @@ body {
 }
 
 .visa-logo-bottom i {
-    font-size: 20px;
+    font-size: 22px;
     background: linear-gradient(135deg, #fbbf24, #f59e0b);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -2092,7 +2078,7 @@ body {
 }
 
 .visa-logo-bottom span {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
     background: linear-gradient(135deg, #fbbf24, #f59e0b);
     -webkit-background-clip: text;
@@ -2100,88 +2086,15 @@ body {
 }
 
 .visa-logo-bottom.back {
-    bottom: 25px;
-}
-
-/* المكافأة المقفلة */
-.locked-bonus-info {
-    position: absolute;
-    bottom: 45px;
-    left: 20px;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(5px);
-    border-radius: 8px;
-    padding: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    z-index: 4;
-    max-width: 150px;
-}
-
-.locked-bonus-info.back {
-    bottom: 100px;
-    left: 15px;
-}
-
-.locked-amount {
-    font-size: 12px;
-    font-weight: 700;
-    color: #fbbf24;
-    margin-bottom: 3px;
-}
-
-.locked-timer {
-    font-size: 10px;
-    color: #94a3b8;
-    margin-bottom: 5px;
-}
-
-.locked-progress {
-    margin-bottom: 5px;
-}
-
-.progress-bar-locked {
-    height: 4px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 2px;
-    overflow: hidden;
-}
-
-.progress-fill-locked {
-    height: 100%;
-    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-    border-radius: 2px;
-}
-
-.claim-bonus-btn {
-    background: linear-gradient(135deg, #22c55e, #10b981);
-    border: none;
-    border-radius: 4px;
-    padding: 4px 8px;
-    color: white;
-    font-size: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    width: 100%;
-    transition: all 0.3s;
-}
-
-.claim-bonus-btn:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
-}
-
-.claim-bonus-btn:disabled {
-    background: rgba(255, 255, 255, 0.1);
-    color: #94a3b8;
-    cursor: not-allowed;
+    bottom: 30px;
 }
 
 /* الوجه الخلفي */
 .back-header {
     position: absolute;
-    top: 15px;
-    left: 15px;
-    font-size: 14px;
+    top: 18px;
+    left: 18px;
+    font-size: 15px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.7);
     z-index: 3;
@@ -2189,30 +2102,30 @@ body {
 
 .magnetic-strip {
     position: absolute;
-    top: 50px;
+    top: 60px;
     left: 0;
     right: 0;
-    height: 25px;
+    height: 30px;
     background: #2d3748;
     z-index: 3;
 }
 
 .magnetic-strip.second {
-    top: 80px;
-    height: 8px;
+    top: 95px;
+    height: 10px;
     background: #1e293b;
 }
 
 .magnetic-strip.third {
-    top: 93px;
-    height: 8px;
+    top: 110px;
+    height: 10px;
     background: #1e293b;
 }
 
 .cvv-section {
     position: absolute;
-    top: 120px;
-    left: 20px;
+    top: 140px;
+    left: 25px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -2220,17 +2133,17 @@ body {
 }
 
 .cvv-label {
-    font-size: 11px;
+    font-size: 12px;
     color: #94a3b8;
     font-weight: 600;
 }
 
 .cvv-hidden {
     background: rgba(255, 255, 255, 0.1);
-    padding: 4px 12px;
+    padding: 5px 15px;
     border-radius: 4px;
     font-family: monospace;
-    font-size: 14px;
+    font-size: 15px;
     letter-spacing: 2px;
     position: relative;
     cursor: pointer;
@@ -2263,13 +2176,13 @@ body {
 
 .signature-section {
     position: absolute;
-    top: 160px;
-    left: 20px;
+    top: 185px;
+    left: 25px;
     z-index: 3;
 }
 
 .signature-label {
-    font-size: 9px;
+    font-size: 10px;
     color: #94a3b8;
     margin-bottom: 3px;
     display: block;
@@ -2277,10 +2190,10 @@ body {
 }
 
 .signature-line {
-    height: 20px;
+    height: 25px;
     background: rgba(255, 255, 255, 0.05);
     border-bottom: 1px solid #fbbf24;
-    width: 150px;
+    width: 180px;
 }
 
 /* شريط إيردروب */
@@ -2294,6 +2207,7 @@ body {
     justify-content: space-between;
     gap: 8px;
     margin-top: 5px;
+    margin-bottom: 20px;
     backdrop-filter: blur(10px);
     font-size: 12px;
     animation: progressPulse 3s infinite;
@@ -2372,117 +2286,7 @@ body {
     animation: cardGlow 1s ease;
 }
 
-/* رصيد MWH في Staking */
-.wallet-balance-staking {
-    background: rgba(30, 41, 59, 0.8);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    padding: 15px 20px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    border: 1px solid rgba(59, 130, 246, 0.2);
-}
-
-.balance-icon {
-    width: 48px;
-    height: 48px;
-    background: rgba(59, 130, 246, 0.15);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #3b82f6;
-    font-size: 22px;
-    border: 2px solid rgba(59, 130, 246, 0.3);
-}
-
-.balance-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.balance-label {
-    font-size: 13px;
-    color: #94a3b8;
-    margin-bottom: 4px;
-}
-
-.balance-amount-staking {
-    font-size: 24px;
-    font-weight: 700;
-    color: #fbbf24;
-    line-height: 1.2;
-}
-
-/* إحصائيات Staking */
-.staking-stats-premium {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 25px;
-}
-
-.stat-card-premium {
-    background: rgba(30, 41, 59, 0.8);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 18px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: all 0.3s ease;
-    position: relative;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-}
-
-.stat-card-premium:hover {
-    transform: translateY(-3px);
-    border-color: rgba(59, 130, 246, 0.3);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-}
-
-.stat-icon-premium {
-    font-size: 28px;
-    margin-bottom: 10px;
-    background: rgba(59, 130, 246, 0.15);
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.stat-content-premium {
-    margin-bottom: 5px;
-}
-
-.stat-value-premium {
-    font-size: 20px;
-    font-weight: 800;
-    color: #fbbf24;
-    margin-bottom: 4px;
-}
-
-.stat-label-premium {
-    font-size: 11px;
-    color: #94a3b8;
-    white-space: nowrap;
-}
-
-.stat-click-hint {
-    font-size: 9px;
-    color: #60a5fa;
-    margin-top: 5px;
-    opacity: 0.7;
-}
-
-/* My Cards Section */
+/* My Cards Section - تحت البطاقة مباشرة */
 .my-cards-section {
     background: rgba(30, 41, 59, 0.8);
     border-radius: 20px;
@@ -2594,6 +2398,116 @@ body {
     background: rgba(255, 255, 255, 0.1);
     color: #94a3b8;
     cursor: not-allowed;
+}
+
+/* رصيد MWH في Staking */
+.wallet-balance-staking {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.balance-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(59, 130, 246, 0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #3b82f6;
+    font-size: 22px;
+    border: 2px solid rgba(59, 130, 246, 0.3);
+}
+
+.balance-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.balance-label {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-bottom: 4px;
+}
+
+.balance-amount-staking {
+    font-size: 24px;
+    font-weight: 700;
+    color: #fbbf24;
+    line-height: 1.2;
+}
+
+/* إحصائيات Staking */
+.staking-stats-premium {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 25px;
+}
+
+.stat-card-premium {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 18px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.stat-card-premium:hover {
+    transform: translateY(-3px);
+    border-color: rgba(59, 130, 246, 0.3);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.stat-icon-premium {
+    font-size: 28px;
+    margin-bottom: 10px;
+    background: rgba(59, 130, 246, 0.15);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-content-premium {
+    margin-bottom: 5px;
+}
+
+.stat-value-premium {
+    font-size: 20px;
+    font-weight: 800;
+    color: #fbbf24;
+    margin-bottom: 4px;
+}
+
+.stat-label-premium {
+    font-size: 11px;
+    color: #94a3b8;
+    white-space: nowrap;
+}
+
+.stat-click-hint {
+    font-size: 9px;
+    color: #60a5fa;
+    margin-top: 5px;
+    opacity: 0.7;
 }
 
 /* Pools Section Title */
@@ -5039,40 +4953,34 @@ body {
     
     .card-flip-container {
         max-width: 300px;
-        height: 185px;
+        height: 200px;
     }
     
     .card-number {
-        font-size: 14px;
-        top: 100px;
+        font-size: 16px;
+        top: 115px;
     }
     
     .card-holder-bottom {
-        bottom: 40px;
-        font-size: 11px;
+        bottom: 50px;
+        font-size: 12px;
     }
     
     .card-expiry-bottom {
-        bottom: 20px;
-        font-size: 11px;
+        bottom: 25px;
+        font-size: 12px;
     }
     
     .visa-logo-bottom {
-        bottom: 3px;
+        bottom: 5px;
     }
     
     .visa-logo-bottom i {
-        font-size: 18px;
+        font-size: 20px;
     }
     
     .visa-logo-bottom span {
-        font-size: 10px;
-    }
-    
-    .locked-bonus-info {
-        bottom: 40px;
-        left: 15px;
-        max-width: 130px;
+        font-size: 11px;
     }
     
     .airdrop-strip {
@@ -5301,13 +5209,39 @@ body {
     }
     
     .card-flip-container {
-        max-width: 280px;
-        height: 175px;
+        max-width: 260px;
+        height: 180px;
     }
     
     .card-number {
-        font-size: 13px;
-        top: 95px;
+        font-size: 14px;
+        top: 105px;
+        left: 20px;
+    }
+    
+    .card-holder-bottom {
+        bottom: 45px;
+        left: 20px;
+        font-size: 11px;
+    }
+    
+    .card-expiry-bottom {
+        bottom: 20px;
+        right: 20px;
+        font-size: 11px;
+    }
+    
+    .visa-logo-bottom {
+        bottom: 3px;
+        right: 20px;
+    }
+    
+    .visa-logo-bottom i {
+        font-size: 18px;
+    }
+    
+    .visa-logo-bottom span {
+        font-size: 10px;
     }
     
     .airdrop-strip {
