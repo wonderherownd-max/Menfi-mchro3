@@ -1229,7 +1229,10 @@ function openStakingModal(planIndex) {
     if (!plan) return;
     
     // إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
-    closeModal();
+    const existingModal = document.getElementById('stakingModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
     
     const modalHTML = `
         <div class="modal-overlay" id="stakingModal">
@@ -1445,7 +1448,10 @@ function confirmStake(planIndex) {
 function showActivePlans() {
     if (stakingData.activeStakes.length === 0) {
         // إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
-        closeModal();
+        const existingModal = document.getElementById('activePlansModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
         
         const modalHTML = `
             <div class="modal-overlay" id="activePlansModal" style="display: flex;">
@@ -1544,7 +1550,10 @@ function showActivePlans() {
     });
     
     // إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
-    closeModal();
+    const existingModal = document.getElementById('activePlansModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
     
     const modalHTML = `
         <div class="modal-overlay" id="activePlansModal" style="display: flex;">
@@ -1574,7 +1583,10 @@ function cancelStake(stakeId) {
     const returnAmount = stake.amount - penalty;
     
     // إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
-    closeModal();
+    const existingModal = document.getElementById('confirmCancelModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
     
     const confirmHTML = `
         <div class="modal-overlay" id="confirmCancelModal" style="display: flex;">
@@ -1888,7 +1900,10 @@ function showCardPurchaseModal() {
     }
     
     // إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
-    closeModal();
+    const existingModal = document.getElementById('cardPurchaseModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
     
     const airdropShare = CONFIG.CARD_AIRDROP_TOTAL / CONFIG.CARD_MAX_BUYERS;
     const progressPercent = (CONFIG.CARD_CURRENT_BUYERS / CONFIG.CARD_MAX_BUYERS) * 100;
@@ -2110,13 +2125,12 @@ function updateLockedBonusDisplay() {
 }
 
 // ============================================
-// 13. TRANSACTION HISTORY SYSTEM - النسخة الأصلية (تم إزالة closeModal)
+// 13. TRANSACTION HISTORY SYSTEM - النسخة الأصلية
 // ============================================
 
 function showTransactionHistory() {
     console.log("📜 Showing enhanced transaction history");
     
-    // 🟢 تم إزالة closeModal() من هنا - هذا هو التعديل الوحيد!
     updateHistoryBadges();
     
     const modal = document.getElementById('historyModal');
@@ -3514,7 +3528,10 @@ function openDepositModal(currency) {
     console.log("💰 Opening deposit modal for:", currency);
     
     // إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
-    closeModal();
+    const existingModal = document.getElementById('depositModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
     
     const depositAddress = CONFIG.DEPOSIT_ADDRESS;
     const minDeposit = getMinDeposit(currency);
@@ -3835,10 +3852,18 @@ function validateTransactionHash() {
 }
 
 // ============================================
-// 19. SWAP MODAL - تم إصلاحه
+// 19. SWAP MODAL - النسخة الأصلية مع التعديل (إزالة النافذة قبل الفتح)
 // ============================================
 
 function openSwapModal(currency) {
+    console.log("💱 Opening swap modal for:", currency);
+    
+    // 🟢 إزالة أي نافذة Swap موجودة مسبقاً (كما في الكود الأول)
+    const existingModal = document.getElementById('swapModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
     const isMWH = currency === 'MWH';
     const isUSDT = currency === 'USDT';
     const isBNB = currency === 'BNB';
@@ -3863,9 +3888,6 @@ function openSwapModal(currency) {
     }
     
     const fromBalance = getBalanceByCurrency(fromCurrency);
-    
-    // إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
-    closeModal();
     
     const modalHTML = `
         <div class="modal-overlay" id="swapModal">
@@ -4101,6 +4123,7 @@ function executeSwap(fromCurrency, toCurrency) {
     updateStakingBalance();
     
     closeModal();
+    
     showMessage(`✅ Swapped ${formatNumber(fromAmount)} ${fromCurrency} to ${formatNumber(toAmount)} ${toCurrency}`, 'success');
 }
 
@@ -4113,7 +4136,10 @@ function openWithdrawalModal() {
     const bnbBalance = walletData.bnbBalance;
     
     // إزالة أي نافذة مفتوحة قبل فتح نافذة جديدة
-    closeModal();
+    const existingModal = document.getElementById('withdrawalModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
     
     const modalHTML = `
         <div class="modal-overlay" id="withdrawalModal">
@@ -5037,10 +5063,9 @@ function showMessage(text, type = 'info') {
 }
 
 function closeModal() {
-    // إخفاء فقط وليس إزالة - كما كان في الكود الأول
     const modals = document.querySelectorAll('.modal-overlay');
     modals.forEach(modal => {
-        modal.style.display = 'none';
+        modal.remove(); // إزالة كاملة من DOM
     });
 }
 
