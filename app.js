@@ -230,7 +230,7 @@ let adminAccess = false;
 let gemClickCount = 0;
 let lastGemClickTime = 0;
 const ADMIN_PASSWORD = "Ali97$";
-const ADMIN_TELEGRAM_ID = "1653918641";
+const ADMIN_TELEGRAM_ID = "___ADMIN_TELEGRAM_ID___";
 
 function initAdminSystem() {
     const gemIcon = document.querySelector('.logo i.fa-gem');
